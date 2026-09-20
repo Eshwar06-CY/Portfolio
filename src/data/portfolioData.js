@@ -2,62 +2,59 @@ import { projectsData, specraDeepDive } from './projects';
 
 export const portfolioData = {
   profile: {
-    name: "ESHWAR M",
-    title: "AI • PRODUCT • DATA",
-    subtitle: "Computer Science Engineering Student & Aspiring Product / Data / AI Professional",
-    heroStatement: "BUILDING IDEAS INTO INTELLIGENT PRODUCTS.",
+    name: "Eshwar M",
+    title: "AI • PRODUCT • DATA • INNOVATION",
+    subtitle: "B.E. Computer Science & Engineering Student",
+    institution: "Vidyavardhaka College of Engineering (VVCE), Mysuru",
+    graduation: "Graduating 2028",
+    heroStatement: "Building at the intersection of AI, Product, Data & Innovation.",
     status: "OPEN FOR COLLABORATION & ROLES",
-    location: "KARNATAKA, INDIA",
+    location: "MYSURU, KARNATAKA",
     portrait: "/assets/images/portrait.png",
-    email: "eshwar.contact@example.com",
+    email: "meshwar824@gmail.com",
+    academic: {
+      degree: "B.E. Computer Science & Engineering Student",
+      institution: "Vidyavardhaka College of Engineering (VVCE), Mysuru",
+      graduation: "Graduating 2028"
+    },
     links: {
       github: "https://github.com/Eshwar06-CY",
-      linkedin: "https://linkedin.com",
-      email: "mailto:eshwar.contact@example.com"
+      linkedin: "https://www.linkedin.com/in/eshwar-m-90b86332a",
+      email: "mailto:meshwar824@gmail.com"
     }
   },
 
   about: {
     kicker: "01 — ABOUT",
     headline: "I BUILD THINGS\nTHAT SOLVE\nPROBLEMS.",
-    supportingCopy: "I'm a Computer Science Engineering student exploring AI, product thinking and data-driven problem solving. I enjoy taking messy problems, understanding the underlying need, and turning them into practical digital experiences.",
-    subheading: "ENGINEERING · AI · DATA · PRODUCT",
-    biography: [
-      "I'm a Computer Science Engineering student exploring AI, product thinking and data-driven problem solving. I enjoy taking messy problems, understanding the underlying need, and turning them into practical digital experiences.",
-      "My work spans practical machine learning, data analytics engines, and user-first product architecture. Whether building real-time logistics networks, enterprise product intelligence platforms, or AI timetable synthesis, my goal remains consistent: eliminate friction and create measurable clarity."
+    heroLead: "I’m a Computer Science and Engineering student exploring the intersection of AI, Product, Data and Innovation.",
+    paragraphs: [
+      "I’m a Computer Science and Engineering student exploring the intersection of AI, Product, Data and Innovation.",
+      "I enjoy turning real-world problems into practical technology solutions, experimenting with new ideas, and building products that are useful beyond the code itself.",
+      "My interests span Generative AI, product development, data analytics and entrepreneurship. I enjoy understanding problems, designing solutions, and bringing ideas from concept to implementation.",
+      "I’m currently looking for opportunities to learn, build, collaborate and gain real-world experience across AI, product, data and business-oriented technology."
     ],
-    pillars: [
+    exploring: [
       {
-        title: "Computer Science Engineering",
-        tag: "FOUNDATION",
-        description: "Core algorithmic thinking, systems architecture, data structures, and dependable software engineering practices."
+        num: "01",
+        title: "GENERATIVE AI",
+        desc: "Exploring how LLMs and AI can be used to build practical applications, automate workflows, and create intelligent user experiences."
       },
       {
-        title: "AI & Generative AI",
-        tag: "INTELLIGENCE",
-        description: "Applied generative AI, LLM prompting pipelines, document parsing, and practical intelligence embedded into software."
+        num: "02",
+        title: "PRODUCT",
+        desc: "Interested in understanding users, identifying meaningful problems, defining solutions, and turning ideas into useful products."
       },
       {
-        title: "Data Analytics",
-        tag: "RIGOR",
-        description: "End-to-end data pipelines, exploratory data analysis, KPI modeling, and translating numbers into decisions."
+        num: "03",
+        title: "DATA",
+        desc: "Working with data to uncover patterns, generate insights, support decisions, and understand real-world outcomes."
       },
       {
-        title: "Product Thinking",
-        tag: "VALUE",
-        description: "User journey mapping, requirements analysis, problem discovery, and metric-driven execution."
-      },
-      {
-        title: "Entrepreneurship",
-        tag: "INITIATIVE",
-        description: "High agency, rapid MVP execution, organizing campus hackathons, and bringing ideas from zero to one."
+        num: "04",
+        title: "ENTREPRENEURSHIP",
+        desc: "Exploring startup ideas, innovation, business models, and how technology can be transformed into solutions for real-world problems."
       }
-    ],
-    stats: [
-      { value: "05+", label: "CORE SYSTEMS ARCHITECTED" },
-      { value: "06+", label: "HACKATHONS TACKLED" },
-      { value: "100%", label: "FOCUS ON PRODUCT UTILITY" },
-      { value: "2026", label: "GRADUATION HORIZON" }
     ]
   },
 
@@ -67,75 +64,155 @@ export const portfolioData = {
   expertise: [
     {
       number: "01",
-      category: "AI & GENERATIVE AI",
-      skills: ["LLMs", "Generative AI", "Prompt Engineering", "Gemini API", "AI Application Development"],
-      description: "Developing practical AI applications with modern LLM APIs, prompt engineering frameworks, vector embeddings, and intelligent workflows."
+      category: "AI & Emerging Technology",
+      skills: [
+        "Generative AI",
+        "Large Language Models (LLMs)",
+        "Prompt Engineering",
+        "LLM Integration",
+        "AI Application Development",
+        "Google Gemini API"
+      ],
+      description: "Developing practical AI applications with modern LLM APIs, prompt engineering frameworks, intelligent workflows, and structured outputs."
     },
     {
       number: "02",
-      category: "DATA",
-      skills: ["Python", "SQL", "PostgreSQL", "Data Analytics", "EDA", "Data Visualization"],
-      description: "Cleaning messy datasets, performing exploratory data analysis (EDA), modeling relational schemas in PostgreSQL, and deriving key metrics."
+      category: "Product & Problem Solving",
+      skills: [
+        "Product Thinking",
+        "Requirements Analysis",
+        "Problem Solving",
+        "Product Development",
+        "Innovation",
+        "Entrepreneurship"
+      ],
+      description: "Understanding users, identifying meaningful operational problems, scoping clear requirements, and turning ideas into useful products."
     },
     {
       number: "03",
-      category: "PRODUCT",
-      skills: ["Product Thinking", "Requirements Analysis", "Problem Solving"],
-      description: "Deconstructing ambiguous problems, scoping customer journeys, drafting PRDs, and ensuring technological architecture drives real user utility."
+      category: "Data & Database",
+      skills: [
+        "Data Analytics",
+        "SQL",
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "DBMS",
+        "Database Design"
+      ],
+      description: "Working with data to uncover patterns, generate actionable insights, support decisions, and engineer structured relational schemas."
     },
     {
       number: "04",
-      category: "DEVELOPMENT",
-      skills: ["React", "JavaScript", "FastAPI", "Flask", "REST APIs"],
-      description: "Architecting responsive, high-performance web applications and robust backend services with clean API contracts."
+      category: "Development",
+      skills: [
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "React.js",
+        "FastAPI",
+        "Flask",
+        "API Development",
+        "Back-End Development",
+        "Web Services",
+        "Object-Oriented Programming",
+        "Data Structures",
+        "Algorithms"
+      ],
+      description: "Architecting responsive, high-performance web applications and robust backend services with clean API contracts and solid engineering fundamentals."
     },
     {
       number: "05",
-      category: "TOOLS",
-      skills: ["Git", "GitHub", "VS Code", "AI Development Tools"],
-      description: "Modern developer workflow tools, version control, automated staging, and state-of-the-art AI pair programming workflows."
+      category: "Tools",
+      skills: [
+        "Git",
+        "GitHub",
+        "VS Code",
+        "Vite",
+        "SQLAlchemy",
+        "Testing & Debugging"
+      ],
+      description: "Modern developer workflow tools, version control discipline, automated testing, and dependable development practices."
     }
   ],
 
   experience: [
     {
-      period: "LEADERSHIP & INNOVATION",
-      role: "VVCE E-CELL ASPERA",
-      timeline: "Entrepreneurship / Innovation / Events",
-      organization: "VVCE E-Cell Aspera",
-      description: "Driving campus entrepreneurial culture, organizing startup summits and hackathons, and fostering cross-disciplinary teams to build innovative solutions."
+      period: "July 2026 – Present",
+      role: "Sub-Core Member",
+      organization: "VVCE E-Cell ASPERA",
+      description: "Contribute to entrepreneurship and innovation initiatives, events, and activities within the VVCE ecosystem, with involvement in organizing and coordinating college-level programs."
     },
     {
-      period: "STUDENT LEADERSHIP",
-      role: "VVCE SHIKSHA",
-      timeline: "Joint Secretary",
+      period: "March 2025 – July 2026",
+      role: "Member",
+      organization: "VVCE E-Cell ASPERA",
+      description: "Contributed to entrepreneurship and innovation-related activities, events, and initiatives, supporting E-Cell programs and student-focused activities."
+    },
+    {
+      period: "September 2026 – Present",
+      role: "President",
       organization: "VVCE Shiksha",
-      description: "Serving as Joint Secretary, coordinating academic mentorship programs and empowering junior engineering students in core computing skills."
+      description: "Lead the organization and coordinate student-focused initiatives, activities, and programs as part of the leadership team."
     },
     {
-      period: "COMPETITIVE BUILDING",
-      role: "HACKATHONS",
-      timeline: "6+ Hackathon Experiences",
-      organization: "National & Regional Hackathons",
-      description: "Participated in 6+ fast-paced 24–48 hour hackathons across India, architecting working MVPs, validating product-market fit, and pitching functional software under pressure."
+      period: "September 2025 – September 2026",
+      role: "Joint Secretary",
+      organization: "VVCE Shiksha",
+      description: "Supported organizational planning, coordination, and execution of student-focused initiatives and activities."
     }
   ],
+
+  achievements: [
+    {
+      title: "6+ Hackathons",
+      whatIDid: "Participated in multiple hackathons and technology-building events.",
+      result: "Participation"
+    },
+    {
+      title: "TiE U Global Pitch Competition 2026",
+      whatIDid: "Developed and pitched CAPACITYX — 'Turn Empty Space Into Trade.'",
+      result: "Participating"
+    },
+    {
+      title: "EDD Campus Connect 2025–26",
+      whatIDid: "Represented my college and E-Cell at the event.",
+      result: "Participation"
+    },
+    {
+      title: "EDD ENIGMA / E-Summit 2025–26",
+      whatIDid: "Participated and developed solutions for problem statements provided on the spot.",
+      result: "Participation"
+    },
+    {
+      title: "Best Event Coordinator — 2026",
+      whatIDid: "Coordinated multiple events, including State and National Level hackathons.",
+      result: "Best Event Coordinator — 2026"
+    }
+  ],
+
+  education: {
+    institution: "Vidyavardhaka College of Engineering",
+    degree: "B.E. Computer Science & Engineering",
+    location: "Mysuru, Karnataka",
+    period: "2024 – 2028"
+  },
 
   finalStatement: {
     line1: "NOT JUST CODE.",
     line2: "USEFUL PRODUCTS.",
-    subtext: "Turning messy problems and raw data into intelligent, measurable digital experiences."
+    subtext: "Turning real-world problems and raw data into practical, dependable solutions."
   },
 
   contact: {
-    kicker: "07 — CONTACT",
+    kicker: "05 — CONNECT",
     headline: "LET'S BUILD\nSOMETHING.",
-    subheadline: "Have an idea, problem or opportunity worth exploring?",
-    email: "eshwar.contact@example.com",
+    subheadline: "Have an idea, opportunity, or problem worth solving?",
+    email: "meshwar824@gmail.com",
     links: [
-      { name: "LINKEDIN", url: "https://linkedin.com", label: "LINKEDIN" },
-      { name: "GITHUB", url: "https://github.com/Eshwar06-CY", label: "GITHUB" },
-      { name: "EMAIL", url: "mailto:eshwar.contact@example.com", label: "EMAIL" }
+      { name: "EMAIL", url: "mailto:meshwar824@gmail.com", label: "EMAIL" },
+      { name: "LINKEDIN", url: "https://www.linkedin.com/in/eshwar-m-90b86332a", label: "LINKEDIN" },
+      { name: "GITHUB", url: "https://github.com/Eshwar06-CY", label: "GITHUB" }
     ]
   }
 };

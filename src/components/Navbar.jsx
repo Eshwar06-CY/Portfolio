@@ -9,8 +9,8 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
   const [activeSection, setActiveSection] = useState('hero');
 
   const navItems = [
-    { label: 'WORK', id: 'work', num: '01' },
-    { label: 'ABOUT', id: 'about', num: '02' },
+    { label: 'ABOUT', id: 'about', num: '01' },
+    { label: 'WORK', id: 'work', num: '02' },
     { label: 'EXPERIENCE', id: 'experience', num: '03' },
     { label: 'CONTACT', id: 'contact', num: '04' }
   ];
@@ -58,10 +58,10 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label="Return to top"
           >
-            <span className="brand-name">{profile.name || 'ESHWAR M'}</span>
+            <span className="brand-name">{profile.name || 'Eshwar M'}</span>
             <div className="status-indicator">
               <span className="status-dot" aria-hidden="true" />
-              <span>AI · PRODUCT · DATA</span>
+              <span>AI · PRODUCT · DATA · INNOVATION</span>
             </div>
           </button>
         </Magnetic>
@@ -126,8 +126,8 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             aria-label="Mobile Navigation"
           >
             <div className="mobile-editorial-header">
-              <span className="mobile-brand-title">{profile.name || 'ESHWAR M'}</span>
-              <span className="mobile-brand-sub">AI · PRODUCT · DATA</span>
+              <span className="mobile-brand-title">{profile.name || 'Eshwar M'}</span>
+              <span className="mobile-brand-sub">AI · PRODUCT · DATA · INNOVATION</span>
             </div>
 
             <div className="mobile-editorial-list">
@@ -148,7 +148,7 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             </div>
 
             <div className="mobile-editorial-footer">
-              <span className="mobile-footer-tag">MYSORE, INDIA</span>
+              <span className="mobile-footer-tag">MYSURU, KARNATAKA</span>
               {profile.email && (
                 <a href={`mailto:${profile.email}`} className="mobile-footer-email">
                   {profile.email}

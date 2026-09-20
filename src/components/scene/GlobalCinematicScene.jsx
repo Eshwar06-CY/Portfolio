@@ -54,11 +54,13 @@ function GlobalAtmosphericParticles({
 
     // Mode-specific subtle behavioral adjustments
     let driftMultiplier = 1.0;
-    if (atmosphereMode === 'ai' || atmosphereMode === 'p3') driftMultiplier = 1.5;
-    if (atmosphereMode === 'data' || atmosphereMode === 'p1') driftMultiplier = 0.7;
-    if (atmosphereMode === 'dev' || atmosphereMode === 'p4') driftMultiplier = 1.2;
-    if (atmosphereMode === 'p2') driftMultiplier = 1.35;
-    if (atmosphereMode === 'p5') driftMultiplier = 0.55;
+    if (atmosphereMode === 'hero') driftMultiplier = 1.25;
+    else if (atmosphereMode === 'about') driftMultiplier = 0.75;
+    else if (atmosphereMode === 'ai' || atmosphereMode === 'p3') driftMultiplier = 1.5;
+    else if (atmosphereMode === 'data' || atmosphereMode === 'p1') driftMultiplier = 0.7;
+    else if (atmosphereMode === 'dev' || atmosphereMode === 'p4') driftMultiplier = 1.2;
+    else if (atmosphereMode === 'p2') driftMultiplier = 1.35;
+    else if (atmosphereMode === 'p5') driftMultiplier = 0.55;
 
     // Ambient floating drift
     const baseSpeed = isProject ? 0.003 : 0.007;
@@ -81,7 +83,9 @@ function GlobalAtmosphericParticles({
     if (materialRef.current && !isProject) {
       const contactBoost = Math.max(0, (scrollProgress - 0.72) / 0.28) * 0.18;
       let targetOpacity = 0.26;
-      if (atmosphereMode === 'ai' || atmosphereMode === 'p3') targetOpacity = 0.35;
+      if (atmosphereMode === 'hero') targetOpacity = 0.32;
+      else if (atmosphereMode === 'about') targetOpacity = 0.22;
+      else if (atmosphereMode === 'ai' || atmosphereMode === 'p3') targetOpacity = 0.35;
       else if (atmosphereMode === 'data' || atmosphereMode === 'p1') targetOpacity = 0.32;
       else if (atmosphereMode === 'p2') targetOpacity = 0.28;
       else if (atmosphereMode === 'p4') targetOpacity = 0.30;

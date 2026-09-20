@@ -5,44 +5,88 @@ import TextReveal from './TextReveal';
 export default function Expertise({ expertiseData, onCursorChange }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
-  // Normalize category names to match canonical typography
-  const canonicalCategories = [
+  // Exact 5 categorized skill groups from Source of Truth
+  const fallbackCategories = [
     {
       number: "01",
-      title: "AI & GENERATIVE AI",
+      category: "AI & Emerging Technology",
       mode: "ai",
-      skills: "LLMs · Generative AI · Prompt Engineering · Gemini API · Vector Workflows",
-      description: "Developing practical AI applications with modern LLM APIs, prompt engineering frameworks, and intelligent autonomous workflows."
+      skills: [
+        "Generative AI",
+        "Large Language Models (LLMs)",
+        "Prompt Engineering",
+        "LLM Integration",
+        "AI Application Development",
+        "Google Gemini API"
+      ],
+      description: "Developing practical AI applications with modern LLM APIs, prompt engineering frameworks, intelligent workflows, and structured outputs."
     },
     {
       number: "02",
-      title: "DATA & ANALYTICS",
-      mode: "data",
-      skills: "Python · Pandas · SQL · PostgreSQL · EDA · Data Visualization",
-      description: "Cleaning multi-year tabular datasets, schema modeling in PostgreSQL, and deriving actionable metric decision layers."
+      category: "Product & Problem Solving",
+      mode: "ai",
+      skills: [
+        "Product Thinking",
+        "Requirements Analysis",
+        "Problem Solving",
+        "Product Development",
+        "Innovation",
+        "Entrepreneurship"
+      ],
+      description: "Understanding users, identifying meaningful operational problems, scoping clear requirements, and turning ideas into useful products."
     },
     {
       number: "03",
-      title: "PRODUCT",
-      mode: "ai",
-      skills: "Product Strategy · User Journey Scoping · System Design · KPI Metrics",
-      description: "Deconstructing operational friction into structured technical PRDs, balancing algorithmic complexity against human usability."
+      category: "Data & Database",
+      mode: "data",
+      skills: [
+        "Data Analytics",
+        "SQL",
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "DBMS",
+        "Database Design"
+      ],
+      description: "Working with data to uncover patterns, generate actionable insights, support decisions, and engineer structured relational schemas."
     },
     {
       number: "04",
-      title: "DEVELOPMENT",
+      category: "Development",
       mode: "dev",
-      skills: "React · JavaScript · FastAPI · Flask · REST APIs · High-Perf UI",
-      description: "Architecting responsive, high-performance web applications and resilient backend microservices with clear contracts."
+      skills: [
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "React.js",
+        "FastAPI",
+        "Flask",
+        "API Development",
+        "Back-End Development",
+        "Web Services",
+        "Object-Oriented Programming",
+        "Data Structures",
+        "Algorithms"
+      ],
+      description: "Architecting responsive, high-performance web applications and robust backend services with clean API contracts and solid engineering fundamentals."
     },
     {
       number: "05",
-      title: "TOOLS",
+      category: "Tools",
       mode: "default",
-      skills: "Git · GitHub · Linux Shell · VS Code · AI Development Ecosystem",
-      description: "Modern production developer workflows, version control discipline, and state-of-the-art agentic pairing."
+      skills: [
+        "Git",
+        "GitHub",
+        "VS Code",
+        "Vite",
+        "SQLAlchemy",
+        "Testing & Debugging"
+      ],
+      description: "Modern developer workflow tools, version control discipline, automated testing, and dependable development practices."
     }
   ];
+
+  const categories = (expertiseData && expertiseData.length > 0) ? expertiseData : fallbackCategories;
 
   return (
     <section id="expertise" className="cinematic-section expertise-section" aria-label="Expertise and Competencies">
@@ -54,11 +98,11 @@ export default function Expertise({ expertiseData, onCursorChange }) {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px' }}
       >
-        <span className="kicker">03 — EXPERTISE</span>
+        <span className="kicker">04 — SKILLS &amp; TECHNOLOGIES</span>
       </motion.div>
 
       <TextReveal
-        lines={["WHAT I WORK WITH"]}
+        lines={["SKILLS &", "TECHNOLOGIES"]}
         as="h2"
         className="section-title"
       />
@@ -75,13 +119,16 @@ export default function Expertise({ expertiseData, onCursorChange }) {
         aria-hidden="true"
       />
 
-      {/* Editorial Large Typography List (No generic cards) */}
+      {/* Editorial Large Typography List (No generic cards or tag walls) */}
       <div className="editorial-expertise-stack">
-        {canonicalCategories.map((item, idx) => {
+        {categories.map((item, idx) => {
           const isHovered = hoveredIdx === idx;
+          const formattedSkills = Array.isArray(item.skills) ? item.skills.join(' · ') : item.skills;
+          const itemMode = item.mode || (idx === 0 ? 'ai' : idx === 2 ? 'data' : idx === 3 ? 'dev' : 'default');
+
           return (
             <motion.div
-              key={item.title}
+              key={item.category}
               className={`editorial-expertise-item ${isHovered ? 'item-active' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +138,7 @@ export default function Expertise({ expertiseData, onCursorChange }) {
                 setHoveredIdx(idx);
                 onCursorChange?.('hover');
                 if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: item.mode }));
+                  window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: itemMode }));
                   window.dispatchEvent(new CustomEvent('camera-shift', {
                     detail: { x: (idx - 2) * 0.12, y: (2 - idx) * 0.08 }
                   }));
@@ -109,11 +156,11 @@ export default function Expertise({ expertiseData, onCursorChange }) {
               <div className="item-main-row">
                 <div className="item-title-col">
                   <span className="item-number">{item.number}</span>
-                  <h3 className="item-title-text">{item.title}</h3>
+                  <h3 className="item-title-text">{item.category.toUpperCase()}</h3>
                 </div>
 
                 <div className="item-skills-tag">
-                  <span>{item.skills}</span>
+                  <span>{formattedSkills}</span>
                 </div>
               </div>
 

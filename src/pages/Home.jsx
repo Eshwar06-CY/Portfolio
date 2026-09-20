@@ -47,15 +47,17 @@ export default function Home({
         onCursorChange={onCursorChange}
       />
 
-      {/* 4. EXPERTISE */}
-      <Expertise
-        expertiseData={portfolioData.expertise}
+      {/* 4. EXPERIENCE & LEADERSHIP, ACHIEVEMENTS, EDUCATION */}
+      <Experience
+        experiences={portfolioData.experience}
+        achievements={portfolioData.achievements}
+        education={portfolioData.education}
         onCursorChange={onCursorChange}
       />
 
-      {/* 5. EXPERIENCE / LEADERSHIP */}
-      <Experience
-        experiences={portfolioData.experience}
+      {/* 5. SKILLS & TECHNOLOGIES */}
+      <Expertise
+        expertiseData={portfolioData.expertise}
         onCursorChange={onCursorChange}
       />
 

@@ -26,6 +26,10 @@ export function useLenis() {
     });
 
     lenisRef.current = lenis;
+    if (typeof window !== 'undefined') {
+      window.lenis = lenis;
+      window.ScrollTrigger = ScrollTrigger;
+    }
 
     // Sync Lenis with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
@@ -41,6 +45,9 @@ export function useLenis() {
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
       lenisRef.current = null;
+      if (typeof window !== 'undefined' && window.lenis === lenis) {
+        window.lenis = null;
+      }
     };
   }, []);
 

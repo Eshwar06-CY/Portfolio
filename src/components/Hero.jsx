@@ -1,34 +1,161 @@
-import React from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function Hero({ profile, onScrollExplore, onCursorChange }) {
-  const { scrollY } = useScroll();
+  const heroRootRef = useRef(null);
+  const contentRef = useRef(null);
+  const titleRef = useRef(null);
+  const roleRef = useRef(null);
+  const statementRef = useRef(null);
+  const portraitRef = useRef(null);
+  const bottomBarRef = useRef(null);
+  const ambientRef = useRef(null);
 
-  // Scroll parallax & physical typography transformation:
-  // ESHWAR M behaves as a monumental architectural mass moving horizontally & receding upward
-  const mastheadX = useTransform(scrollY, [0, 600], [0, -40]);
-  const mastheadY = useTransform(scrollY, [0, 600], [0, -80]);
-  const mastheadScale = useTransform(scrollY, [0, 600], [1, 0.96]);
-  const mastheadOpacity = useTransform(scrollY, [0, 480], [1, 0.15]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  // Ambient lighting shifts as user scrolls
-  const ambientOpacity = useTransform(scrollY, [0, 380], [1, 0.15]);
-  const ambientScale = useTransform(scrollY, [0, 500], [1, 1.08]);
+  useEffect(() => {
+    const checkEnvironment = () => {
+      setIsMobile(window.innerWidth < 800);
+    };
+    checkEnvironment();
 
-  // Portrait recedes deeper into background darkness rather than simply vanishing
-  const portraitY = useTransform(scrollY, [0, 600], [0, 45]);
-  const portraitScale = useTransform(scrollY, [0, 600], [1, 0.91]);
-  const portraitBrightness = useTransform(scrollY, [0, 480], [1, 0.18]);
-  const portraitOpacity = useTransform(scrollY, [0, 550], [1, 0.08]);
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setIsReducedMotion(motionQuery.matches);
+    const handleMotionChange = (e) => setIsReducedMotion(e.matches);
+    motionQuery.addEventListener('change', handleMotionChange);
 
-  // Bottom scroll indicator fades out as soon as exploration begins
-  const bottomBarOpacity = useTransform(scrollY, [0, 140], [1, 0]);
-  const bottomBarY = useTransform(scrollY, [0, 140], [0, 16]);
+    window.addEventListener('resize', checkEnvironment);
+    return () => {
+      window.removeEventListener('resize', checkEnvironment);
+      motionQuery.removeEventListener('change', handleMotionChange);
+    };
+  }, []);
+
+  // GSAP ScrollTrigger continuous camera-like depth & transition into About
+  useEffect(() => {
+    const root = heroRootRef.current;
+    if (!root) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const mobile = window.innerWidth < 800;
+
+    const ctx = gsap.context(() => {
+      // 1. Atmospheric mode shift: deep cinematic in Hero, calming in About
+      ScrollTrigger.create({
+        trigger: root,
+        start: 'top 30%',
+        end: 'bottom 40%',
+        onEnter: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'hero' }));
+          }
+        },
+        onLeave: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'about' }));
+          }
+        },
+        onEnterBack: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'hero' }));
+          }
+        }
+      });
+
+      // 2. Scroll indicator retracts & fades out immediately in the first 110px
+      if (bottomBarRef.current) {
+        gsap.to(bottomBarRef.current, {
+          scrollTrigger: {
+            trigger: root,
+            start: 'top top',
+            end: '+=110',
+            scrub: 0.3
+          },
+          y: 18,
+          autoAlpha: 0,
+          ease: 'none'
+        });
+      }
+
+      // 3. Continuous Hero exit timeline scrubbing over 100svh
+      const exitTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: root,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.6
+        }
+      });
+
+      // Portrait recedes gently with subtle camera depth:
+      // scale: 1.00 -> 0.955, y: -24px, x: 14px, autoAlpha: 0.16
+      if (portraitRef.current) {
+        exitTl.to(portraitRef.current, {
+          scale: mobile ? 0.98 : 0.955,
+          y: mobile ? -8 : -24,
+          x: mobile ? 4 : 14,
+          autoAlpha: 0.16,
+          ease: 'power1.in'
+        }, 0);
+      }
+
+      // Hero Typography moves upward & gently recedes
+      if (contentRef.current) {
+        exitTl.to(contentRef.current, {
+          y: mobile ? -20 : -48,
+          scale: mobile ? 0.99 : 0.975,
+          autoAlpha: 0.18,
+          ease: 'power1.in'
+        }, 0);
+      }
+
+      if (titleRef.current) {
+        exitTl.to(titleRef.current, {
+          y: mobile ? -10 : -28,
+          ease: 'none'
+        }, 0);
+      }
+
+      if (roleRef.current) {
+        exitTl.to(roleRef.current, {
+          x: mobile ? -6 : -14,
+          y: mobile ? -8 : -18,
+          ease: 'none'
+        }, 0);
+      }
+
+      if (statementRef.current) {
+        exitTl.to(statementRef.current, {
+          scale: 0.98,
+          autoAlpha: 0.45,
+          ease: 'none'
+        }, 0);
+      }
+
+      if (ambientRef.current) {
+        exitTl.to(ambientRef.current, {
+          scale: 1.04,
+          y: -14,
+          autoAlpha: 0.20,
+          ease: 'none'
+        }, 0);
+      }
+    }, root);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section id="hero" className="hero-container" aria-label="Hero Opening Sequence">
+    <section id="hero" ref={heroRootRef} className="hero-container" aria-label="Hero Opening Sequence">
       {/* 0–0.8s Opening Black Screen Veil */}
       <motion.div
         className="cinematic-blackout-veil"
@@ -39,30 +166,23 @@ export default function Hero({ profile, onScrollExplore, onCursorChange }) {
       />
 
       {/* Atmospheric Soft Light Behind Subject */}
-      <motion.div
+      <div
+        ref={ambientRef}
         className="hero-subject-ambient-glow"
-        style={{ opacity: ambientOpacity, scale: ambientScale }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.0, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
         aria-hidden="true"
       />
 
       {/* LEFT: Physical Monolithic Typography & Narrative Statement */}
-      <motion.div
+      <div
+        ref={contentRef}
         className="hero-content"
-        style={{
-          x: mastheadX,
-          y: mastheadY,
-          scale: mastheadScale,
-          opacity: mastheadOpacity
-        }}
       >
         {/* ESHWAR M monumental title */}
         <div className="hero-masthead-mask-wrapper">
           <motion.h1
+            ref={titleRef}
             className="hero-title"
-            aria-label={profile.name || "ESHWAR M"}
+            aria-label={profile.name || "Eshwar M"}
             initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0, x: -15 }}
             animate={{ clipPath: 'inset(0 -25% 0 0)', opacity: 1, x: 0 }}
             transition={{
@@ -71,7 +191,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange }) {
               ease: [0.16, 1, 0.3, 1]
             }}
           >
-            {profile.name || "ESHWAR M"}
+            {profile.name || "Eshwar M"}
           </motion.h1>
 
           {/* Delicate hairline accent */}
@@ -89,6 +209,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange }) {
 
         {/* Supporting Role */}
         <motion.div
+          ref={roleRef}
           className="hero-role"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -99,42 +220,52 @@ export default function Hero({ profile, onScrollExplore, onCursorChange }) {
           <span className="role-term">PRODUCT</span>
           <span className="role-divider">/</span>
           <span className="role-term">DATA</span>
+          <span className="role-divider">/</span>
+          <span className="role-term">INNOVATION</span>
         </motion.div>
 
-        {/* Guiding Statement */}
+        {/* Guiding Statement / Primary Positioning */}
         <motion.p
+          ref={statementRef}
           className="hero-supporting-line"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 2.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          {profile.heroStatement || "BUILDING IDEAS INTO INTELLIGENT PRODUCTS."}
+          {profile.heroStatement || "Building at the intersection of AI, Product, Data & Innovation."}
         </motion.p>
-      </motion.div>
 
-      {/* RIGHT: Hero Portrait Emerging from Darkness & Receding on Scroll */}
-      <motion.div
+        {/* Academic Line */}
+        <motion.div
+          className="hero-academic-line"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, delay: 2.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="academic-degree">B.E. Computer Science & Engineering Student</span>
+          <span className="academic-inst">Vidyavardhaka College of Engineering (VVCE), Mysuru</span>
+          <span className="academic-year">Graduating 2028</span>
+        </motion.div>
+      </div>
+
+      {/* RIGHT: Hero Portrait Emerging from Darkness & Receding with Subtle Depth */}
+      <div
+        ref={portraitRef}
         className="hero-portrait-stage"
-        style={{
-          y: portraitY,
-          scale: portraitScale,
-          opacity: portraitOpacity
-        }}
-        initial={{ opacity: 0, filter: 'contrast(1.08) brightness(0.2)' }}
-        animate={{ opacity: 1, filter: 'contrast(1.04) brightness(0.98)' }}
-        transition={{ duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
       >
-        {/* Subtle organic ambient float */}
+        {/* Subtle organic ambient float + initial entrance reveal */}
         <motion.div
           className="hero-portrait-float"
+          initial={{ opacity: 0, filter: 'contrast(1.08) brightness(0.2)' }}
           animate={{
+            opacity: 1,
+            filter: 'contrast(1.04) brightness(0.98)',
             y: [0, -6, 0]
           }}
           transition={{
-            repeat: Infinity,
-            duration: 8.0,
-            ease: 'easeInOut',
-            delay: 3.0
+            opacity: { duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] },
+            filter: { duration: 1.2, delay: 0.9, ease: [0.16, 1, 0.3, 1] },
+            y: { repeat: Infinity, duration: 8.0, ease: 'easeInOut', delay: 3.0 }
           }}
         >
           <div className="hero-portrait-mask-layer">
@@ -151,38 +282,43 @@ export default function Hero({ profile, onScrollExplore, onCursorChange }) {
             />
           </div>
         </motion.div>
-      </motion.div>
+      </div>
 
-      {/* BOTTOM BAR: Quiet Minimal Scroll Cue */}
-      <motion.div
+      {/* BOTTOM BAR: Quiet Minimal Scroll Cue (Fades & Retracts cleanly on scroll) */}
+      <div
+        ref={bottomBarRef}
         className="hero-bottom-bar"
-        style={{ opacity: bottomBarOpacity, y: bottomBarY }}
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 2.9, ease: [0.16, 1, 0.3, 1] }}
       >
-        <Magnetic strength={0.2}>
-          <button
-            className="scroll-indicator-button"
-            onClick={onScrollExplore}
-            onMouseEnter={() => onCursorChange?.('link')}
-            onMouseLeave={() => onCursorChange?.('default')}
-            aria-label="Scroll to explore"
-          >
-            <span className="scroll-arrow-box" aria-hidden="true">
-              <span className="scroll-pulsing-dot" />
-            </span>
-            <span className="btn-text">EXPLORE</span>
-            <ArrowDown size={13} className="btn-down-icon" />
-          </button>
-        </Magnetic>
+        <motion.div
+          className="hero-bottom-bar-inner"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 2.9, ease: [0.16, 1, 0.3, 1] }}
+          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <Magnetic strength={0.2}>
+            <button
+              className="scroll-indicator-button"
+              onClick={onScrollExplore}
+              onMouseEnter={() => onCursorChange?.('link')}
+              onMouseLeave={() => onCursorChange?.('default')}
+              aria-label="Scroll to explore"
+            >
+              <span className="scroll-arrow-box" aria-hidden="true">
+                <span className="scroll-pulsing-dot" />
+              </span>
+              <span className="btn-text">EXPLORE</span>
+              <ArrowDown size={13} className="btn-down-icon" />
+            </button>
+          </Magnetic>
 
-        <div className="hero-meta-details">
-          <span>{profile.location || 'KARNATAKA, INDIA'}</span>
-          <span className="meta-sep">•</span>
-          <span>{profile.status || 'OPEN FOR COLLABORATION'}</span>
-        </div>
-      </motion.div>
+          <div className="hero-meta-details">
+            <span>{profile.location || 'KARNATAKA, INDIA'}</span>
+            <span className="meta-sep">•</span>
+            <span>{profile.status || 'OPEN FOR COLLABORATION'}</span>
+          </div>
+        </motion.div>
+      </div>
     </section>
   );
 }

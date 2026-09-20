@@ -4,74 +4,119 @@ export const projectsData = [
         slug: "specra",
         number: "01",
         title: "SPECra",
-        subtitle: "AI Industrial Product Intelligence Platform",
-        tagline: "Turn Messy Industrial Catalogs Into Commerce-Ready Intelligence.",
-        category: "AI PRODUCT INTELLIGENCE / INDUSTRIAL COMMERCE",
-        description: "An AI-powered product intelligence platform designed to turn messy, incomplete industrial spreadsheets into standardized, enriched, evidence-backed, and commerce-ready catalogs.",
+        subtitle: "AI Industrial Product-Data Cleaning & Intelligence",
+        tagline: "Turn Messy Industrial Catalogs Into Standardized, Evidence-Backed Data.",
+        category: "AI PRODUCT DATA INTELLIGENCE / B2B COMMERCE",
+        description: "SPECra is an AI-powered product-data cleaning and intelligence platform for industrial/B2B commerce.",
         image: "/projects/specra.png",
-        tags: ["React", "FastAPI", "Python", "Gemini AI", "PostgreSQL"],
+        tags: ["React", "TypeScript", "FastAPI", "Python", "Google Gemini", "PostgreSQL"],
         variant: "asymmetric",
         githubUrl: "https://github.com/Eshwar06-CY/SPECra",
         demoUrl: "#",
+        status: "Completed working prototype / competition project, with an ongoing future roadmap.",
+        contribution: "Core developer — Team DEADLOCK",
         featured: true,
         hasDedicatedCaseStudy: false,
+        workflow: [
+            "Upload CSV/Excel",
+            "Tell SPECra what information you need",
+            "AI analyzes products",
+            "Data gets normalized",
+            "Quality is validated",
+            "Export clean catalog"
+        ],
+        capabilities: [
+            "Understand uploaded spreadsheet structure",
+            "Identify product names, brands, manufacturers, MPNs and specifications",
+            "Extract information from messy descriptions using Gemini",
+            "Normalize units such as 1/2\" → 0.5 in",
+            "Interpret packaging such as 6pc → 6 pieces",
+            "Show provenance/evidence for extracted information",
+            "Run quality and consistency checks",
+            "Natural-language catalog search",
+            "Export processed catalog as CSV/XLSX",
+            "Support the 252-column UniHack schema"
+        ],
+        productPrinciple: "If SPECra cannot find or infer a specification from source data, it leaves the field blank rather than inventing information.",
+        architecturalPrinciple: "AI is used for interpreting messy product information. Deterministic rules are used where exactness matters, including: unit conversion, fractions, packaging, provenance, and schema mapping.",
         caseStudy: {
-            problem: "Industrial distributors, manufacturers, and B2B platforms receive messy supplier catalogs across fragmented spreadsheets with missing product identities, inconsistent packaging units, embedded physical dimensions, and no verifiable audit trail.",
-            idea: "Build an intelligent end-to-end data refinery combining generative AI with deterministic normalization to automatically standardize units, extract canonical identities, anchor evidence, and output commerce-ready catalogs.",
-            approach: "Hybrid architecture: Google Gemini AI handles dynamic column semantics and qualitative feature extraction, while a deterministic rules engine guarantees fraction-to-decimal conversions, packaging unit standardizations, and provenance anchoring without hallucination.",
-            build: "Engineered FastAPI backend microservices with streaming background ingestion, dynamic schema inference, multi-tenant PostgreSQL storage, and an editorial React dashboard with smart search and instant catalog export.",
-            result: "Validated across complex industrial catalogs, reducing manual catalog review cycles from days to minutes with 100% traceable cell-level provenance and zero duplicate records.",
-            learned: "Real-world B2B data operations require combining LLM intelligence with rigid deterministic validation rules to establish enterprise-grade trust."
+            problem: "Industrial companies receive product catalogs from suppliers as messy Excel/CSV files. Product information can contain inconsistent names, dimensions buried inside descriptions, packaging such as \"6pc\", missing brands/MPNs and other inconsistencies.",
+            idea: "SPECra transforms messy catalogs into a clean, standardized, searchable and evidence-backed product catalog using a hybrid pipeline of generative AI and deterministic normalization rules.",
+            approach: "AI is used for interpreting messy product information, while deterministic rules are used where exactness matters (unit conversion, fractions, packaging, provenance, and schema mapping). If SPECra cannot find or infer a specification from source data, it leaves the field blank rather than inventing information.",
+            build: "Engineered FastAPI backend services with Pydantic validation, dynamic spreadsheet parsing, Google Gemini API integration, PostgreSQL catalog storage, and an editorial React dashboard supporting the 252-column UniHack schema.",
+            result: "Completed working prototype / competition project with cell-level provenance, deterministic rule verification, and high-fidelity catalog export.",
+            learned: "Real-world B2B data operations require combining LLM interpretation with rigid deterministic validation rules where exactness matters."
         }
     },
     {
         id: "expenseflow",
         slug: "expenseflow-ai",
         number: "02",
-        title: "EXPENSEFLOW AI",
-        subtitle: "Intelligent Personal Cash Flow Ledger",
-        tagline: "Autonomous Cash Flow & Budget Forecasting",
-        category: "FINANCIAL TECHNOLOGY / ML",
-        description: "An AI-assisted personal expense intelligence platform automating transaction classification, burn rate forecasting, and proactive budget anomalies.",
+        title: "ExpenseFlowAI",
+        subtitle: "Intelligent Expense Management with AI",
+        tagline: "Intelligent expense management with AI.",
+        category: "FINANCIAL TECHNOLOGY / AI",
+        description: "ExpenseFlowAI is an AI-focused personal finance and expense-management project.",
         image: "/projects/expenseflow.jpg",
-        tags: ["React", "Node.js", "OpenAI API", "Tailwind CSS", "PostgreSQL"],
+        tags: ["AI", "Python", "Web Technologies"],
         variant: "framed",
         githubUrl: "https://github.com/Eshwar06-CY/ExpenseFlowAI",
         demoUrl: "#",
+        status: "Project Stage",
+        contribution: "Project concept, Product development, Implementation, AI/application integration",
         featured: true,
         hasDedicatedCaseStudy: false,
+        keyFeatures: [
+            "Expense management",
+            "Intelligent analysis",
+            "Automated workflow",
+            "User-focused financial tracking"
+        ],
         caseStudy: {
-            problem: "Manual budgeting applications suffer from 80% user drop-off within 30 days due to burdensome receipt data entry and lack of proactive financial forecasting.",
-            idea: "Automate raw receipt and statement classification using zero-shot classification while generating 30-day forward cash burn trajectories.",
-            approach: "Combined rule-based sanitization with NLP categorization. Implemented a rolling time-series projection model to alert users before budget overdraft thresholds.",
-            build: "Constructed high-frequency interactive cash-flow visualizations, automated CSV statement parser, and an encrypted local-first storage architecture.",
-            result: "Maintained a 4.8/5 satisfaction rating among beta testers, cutting time spent logging expenses from 15 minutes weekly to under 30 seconds.",
-            learned: "In personal finance, simplicity beats exhaustive feature sets. Presenting one clear metric ('Safe to Spend Today') drives better user retention than dozens of complex graphs."
+            problem: "Personal expense tracking can become difficult when users have to manually organize and understand their spending.",
+            idea: "ExpenseFlowAI aims to simplify this process through technology and AI, delivering intelligent analysis and automated workflows.",
+            approach: "Designed a user-focused financial tracking flow combining Python backend processing with modern web application technologies for intuitive expense management.",
+            build: "Structured personal finance workflows with automated categorization routines and responsive web presentation.",
+            result: "Delivers automated tracking workflows and intelligent personal expense analysis.",
+            learned: "Simplicity and proactive intelligence significantly lower user friction in personal finance management."
         }
     },
     {
         id: "academic-planner",
         slug: "ai-ug-academic-planner",
         number: "03",
-        title: "AI UG ACADEMIC PLANNER",
-        subtitle: "Intelligent Academic Planning System",
-        tagline: "Adaptive Timetable & Exam Prep Synthesizer",
+        title: "AI UG Academic Planner",
+        subtitle: "AI-Powered Academic Planning for Undergraduate Students",
+        tagline: "An AI-powered academic planning platform for undergraduate students.",
         category: "ARTIFICIAL INTELLIGENCE / EDTECH",
-        description: "An intelligent academic planning system that helps undergraduate students organize classes, study sessions, examinations, extracurricular activities and personal events.",
+        description: "An AI-powered academic planning platform for undergraduate students.",
         image: "/projects/academic_planner.jpg",
-        tags: ["React", "FastAPI", "Python", "AI", "PDF/OCR processing"],
+        tags: ["Python", "FastAPI", "React", "Vite", "JavaScript", "pdfplumber", "Pytesseract", "Tesseract", "Uvicorn"],
         variant: "inverted",
         githubUrl: "https://github.com/Eshwar06-CY/ai_ug_academic_planner",
         demoUrl: "#",
+        status: "Ongoing Project",
+        contribution: "Full-stack development, Backend architecture, Frontend development, Document processing, OCR integration, Scheduling logic, Product development",
         featured: true,
         hasDedicatedCaseStudy: false,
+        keyFeatures: [
+            "Timetable upload",
+            "PDF and image processing",
+            "OCR-based timetable extraction",
+            "Calendar of Events integration",
+            "Syllabus processing",
+            "Automated study-plan generation",
+            "Test and exam preparation planning",
+            "Schedule rescheduling",
+            "Calendar-based visualization"
+        ],
         caseStudy: {
-            problem: "Undergraduate engineering students balance 6–8 theory subjects, lab coursework, and external projects without unified schedule synthesis, resulting in last-minute cramming and skewed syllabus coverage.",
-            idea: "Synthesize syllabus PDF requirements, internal exam dates, and individual mastery levels using heuristic constraint solvers and LLM topic weighting.",
-            approach: "Deconstructed syllabus documents into hierarchical topic graphs. Designed a constraint satisfaction algorithm (CSP) that balances topic difficulty against available weekly study blocks.",
-            build: "Integrated PDF parsing via LangChain, FastAPI backend services, and a minimal calendar frontend with interactive drag-and-drop schedule recalibration.",
-            result: "Successfully pilot tested with 40+ engineering peers across two examination cycles, achieving a 92% schedule adherence rate compared to static spreadsheets.",
-            learned: "Students abandon schedules that are overly rigid. The key product insight was designing 'grace periods' and auto-rebalancing buffers for missed study blocks."
+            problem: "Students often have to manage timetables, syllabus, exams, academic events, extracurricular activities and personal commitments across different places.",
+            idea: "The platform brings these elements together to help students create and manage personalized academic schedules.",
+            approach: "Combined OCR document extraction (pdfplumber, Pytesseract, Tesseract) with backend scheduling logic in FastAPI and an interactive React/Vite calendar visualization.",
+            build: "Full-stack development encompassing backend architecture, document processing pipelines, OCR integration, scheduling algorithms, and responsive frontend calendar views.",
+            result: "Ongoing platform actively synthesizing timetables, syllabus requirements, and examination calendars into actionable study plans.",
+            learned: "Academic schedules require dynamic rescheduling buffers because student routines change frequently."
         }
     },
     {
@@ -79,146 +124,144 @@ export const projectsData = [
         slug: "capacityx",
         number: "04",
         title: "CAPACITYX",
-        subtitle: "Freight Capacity Exchange Network",
+        subtitle: "Turn Empty Space Into Trade.",
         tagline: "Turn Empty Space Into Trade.",
-        category: "LOGISTICS / PLATFORM CONCEPT",
-        description: "A logistics marketplace concept designed to connect unused cargo capacity with businesses that need transportation.",
+        category: "LOGISTICS MARKETPLACE / RESEARCH CONCEPT",
+        description: "CAPACITYX is a logistics marketplace concept focused on connecting available logistics capacity with demand.",
         image: "/projects/capacityx.jpg",
-        tags: ["Product Strategy", "System Architecture", "Marketplace Design", "React"],
+        tags: ["Marketplace Concept", "Product Thinking", "Market Research", "Business Models"],
         variant: "panoramic",
-        githubUrl: "",
-        demoUrl: "#",
+        githubUrl: "", // Concept / Research stage: No GitHub button, no fake demo
+        demoUrl: "",
+        status: "Research / Startup Concept / Pitch Stage",
+        contribution: "Problem identification, Startup concept development, Market research, Product thinking, Business-model exploration, Pitch development, Logistics-marketplace research",
         featured: true,
         hasDedicatedCaseStudy: false,
+        howItWorks: [
+            "Identifies available logistics capacity",
+            "Connects capacity with demand",
+            "Improves capacity utilization",
+            "Creates a technology-driven logistics marketplace"
+        ],
         caseStudy: {
-            problem: "Between 25% and 40% of commercial freight vehicles travel empty or underloaded on return legs, wasting fuel and operational expenditure while small enterprises struggle to find affordable, flexible cargo slots.",
-            idea: "Create a peer-to-peer capacity exchange where verified carriers broadcast deadhead routes, enabling shippers to bid dynamically on fractional space in real time.",
-            approach: "Mapped the supply-demand friction through carrier interviews. Formulated a matching heuristic incorporating route proximity, volume constraints, and delivery time windows.",
-            build: "Architected a prototype dispatch dashboard with map-based route overlays, weight distribution calculators, and automated pricing tier recommendations.",
-            result: "Validated product economics showing potential 28% carrier profit margin increase on return corridors and a 35% cost reduction for small enterprise cargo bookings.",
-            learned: "Marketplace dynamics require hyper-local density before algorithmic routing can deliver value. Operational trust mechanisms (verified insurance, escrow milestones) dictate user adoption."
+            problem: "Unused transportation and logistics capacity can exist while businesses simultaneously need logistics resources. CAPACITYX explores how technology can connect these two sides more efficiently.",
+            idea: "Turn empty cargo space into trade by creating a technology-driven logistics marketplace connecting available transportation capacity with commercial demand.",
+            approach: "Explored marketplace dynamics, carrier capacity patterns, dynamic pricing mechanisms, and trust models to bridge operational freight inefficiency.",
+            build: "Developed startup concept, conducted in-depth logistics-marketplace research, designed system product models, and prepared pitch presentations (pitched at TiE U Global Pitch Competition 2026).",
+            result: "Validated market problem, established core marketplace architecture, and formulated pitch deck for startup competitions.",
+            learned: "Marketplace trust, regional route density, and capacity visibility are the primary drivers of transport network efficiency."
         }
     }
 ];
 
 export const specraDeepDive = {
     title: "SPECra",
-    subtitle: "AI INDUSTRIAL PRODUCT INTELLIGENCE PLATFORM",
-    openingStatement: "Turn messy industrial catalogs into commerce-ready intelligence.",
-    overview: "Industrial distributors, manufacturers, and B2B commerce platforms struggle with messy, unstandardized product catalogs across fragmented spreadsheets. SPECra provides an intelligent end-to-end data refinery combining Google Gemini AI with deterministic normalization to convert raw unstructured supplier files into standardized, enriched, and verifiable catalog assets.",
+    subtitle: "AI INDUSTRIAL PRODUCT-DATA CLEANING & INTELLIGENCE",
+    openingStatement: "Turn messy industrial catalogs into clean, standardized, and evidence-backed product catalogs.",
+    overview: "SPECra is an AI-powered product-data cleaning and intelligence platform for industrial/B2B commerce. Industrial companies receive product catalogs from suppliers as messy Excel/CSV files with inconsistent names, dimensions buried inside descriptions, packaging such as \"6pc\", missing brands/MPNs and other inconsistencies. SPECra transforms these into clean, standardized, searchable and evidence-backed product catalogs.",
 
     section1Problem: {
         kicker: "SECTION 01 — THE PROBLEM",
-        title: "FRAGMENTED SPREADSHEETS, UNSTRUCTURED SPECS",
-        narrative: "Supplier data arrives across hundreds of disjointed spreadsheets with embedded physical dimensions, ambiguous packaging units, missing MPNs, and zero traceable evidence. Distributors spend hundreds of manual engineering hours reconciling catalogs.",
+        title: "MESSY SPREADSHEETS & INCONSISTENT SPECIFICATIONS",
+        narrative: "Industrial companies receive product catalogs from suppliers as messy Excel/CSV files. Product information can contain inconsistent names, dimensions buried inside descriptions, packaging such as \"6pc\", missing brands/MPNs and other inconsistencies.",
         bulletPoints: [
             "Inconsistent product naming and mixed brand series obscure search and classification.",
-            "Embedded dimensions (e.g. 1/2\"x18\") require complex multi-attribute decomposition.",
-            "Complete lack of provenance anchoring makes quality validation nearly impossible."
+            "Dimensions and attributes buried deep inside freeform product descriptions.",
+            "Packaging units and piece counts recorded unpredictably across supplier files.",
+            "Complete lack of provenance anchoring makes quality validation difficult."
         ]
     },
 
     section2Data: {
-        kicker: "SECTION 02 — THE DATA",
-        title: "MULTI-ATTRIBUTE EXTRACTION & SCHEMA",
-        narrative: "SPECra ingests diverse tabular formats, extracting 12+ critical industrial attributes with cell-level provenance.",
+        kicker: "SECTION 02 — THE SOLUTION & CAPABILITIES",
+        title: "STANDARDIZED, EVIDENCE-BACKED PRODUCT CATALOG",
+        narrative: "SPECra transforms messy catalogs into a clean, standardized, searchable and evidence-backed product catalog.",
         attributes: [
-            { name: "Product Title", type: "Normalized String", desc: "Canonical standardized title with brand and primary classification." },
-            { name: "Brand / Manufacturer", type: "Categorical", desc: "Reconciled against verified industrial brand registries." },
-            { name: "Part Number (MPN)", type: "Identifier", desc: "Cleaned manufacturer part numbers with strict alphanumeric validation." },
-            { name: "Physical Dimensions", type: "Quantitative", desc: "Normalized length, width, depth with metric and imperial units." },
-            { name: "Packaging Units", type: "Structured Tier", desc: "Standardized piece counts, case packs, and carton quantities." },
-            { name: "Material & Finish", type: "Categorical", desc: "Extracted physical material grades and coatings." },
-            { name: "Compliance & Safety", type: "Standards Vector", desc: "OSHA, ANSI, and ISO industrial specification classifications." },
-            { name: "Cell Provenance", type: "Traceable Audit", desc: "Exact source row and column coordinates for every extracted fact." }
+            { name: "Spreadsheet Structure", type: "Analysis", desc: "Understands uploaded CSV/Excel spreadsheet structure and schema variations." },
+            { name: "Brand & Manufacturer", type: "Categorical", desc: "Identifies product names, brands, manufacturers, and manufacturer part numbers (MPNs)." },
+            { name: "Attribute Extraction", type: "Gemini AI", desc: "Extracts information and specifications from messy descriptions using Google Gemini." },
+            { name: "Unit Normalization", type: "Deterministic", desc: "Normalizes units such as 1/2\" → 0.5 in with mathematical exactness." },
+            { name: "Packaging Interpretation", type: "Deterministic", desc: "Interprets packaging notations such as 6pc → 6 pieces." },
+            { name: "Provenance & Evidence", type: "Audit Trail", desc: "Shows traceable provenance and evidence for every extracted piece of information." },
+            { name: "Quality Checks", type: "Validation", desc: "Runs automated quality, consistency, and completeness validation checks." },
+            { name: "Catalog Search & Export", type: "Export Engine", desc: "Natural-language catalog search and export to CSV/XLSX and the 252-column UniHack schema." }
         ]
     },
 
     section3Pipeline: {
-        kicker: "SECTION 03 — THE PIPELINE",
-        title: "HYBRID AI & DETERMINISTIC REFINERY",
-        narrative: "Raw supplier tables flow through a 6-stage transformation and validation pipeline:",
+        kicker: "SECTION 03 — CORE WORKFLOW",
+        title: "THE SPECRA DATA REFINERY WORKFLOW",
+        narrative: "Raw supplier tables flow through a six-step pipeline from upload to validated export:",
         stages: [
-            { step: "01", name: "INGESTION", desc: "Multi-sheet Excel and CSV ingestion with automatic encoding detection." },
-            { step: "02", name: "SCHEMA INFERENCE", desc: "Dynamic semantic column inference matching raw headers to canonical taxonomy." },
-            { step: "03", name: "AI EXTRACTION", desc: "Google Gemini AI parses unstructured descriptions and extracts complex attributes." },
-            { step: "04", name: "DETERMINISTIC RULES", desc: "Unit standardization, fraction conversions, and strict mathematical consistency." },
-            { step: "05", name: "PROVENANCE ANCHOR", desc: "Cryptographic anchoring of extracted values back to source spreadsheet cells." },
-            { step: "06", name: "CATALOG EXPORT", desc: "Instant export to commerce-ready CSV, Excel, and 252-column industry schemas." }
+            { step: "01", name: "UPLOAD", desc: "Upload messy CSV or Excel supplier catalogs." },
+            { step: "02", name: "SPECIFY NEED", desc: "Tell SPECra what information and attributes you need." },
+            { step: "03", name: "AI ANALYSIS", desc: "AI analyzes products and extracts complex information from descriptions." },
+            { step: "04", name: "NORMALIZATION", desc: "Deterministic rules normalize units, fractions, and packaging." },
+            { step: "05", name: "VALIDATION", desc: "Quality is validated against consistency rules and provenance evidence." },
+            { step: "06", name: "EXPORT", desc: "Export clean catalog as CSV/XLSX and UniHack 252-column schema." }
         ]
     },
 
     section4Analytics: {
-        kicker: "SECTION 04 — BENCHMARKS",
-        title: "CATALOG ACCURACY & PROCESSING GAINS",
+        kicker: "SECTION 04 — PRODUCT PRINCIPLES",
+        title: "FOUNDATIONAL ARCHITECTURAL PRINCIPLES",
         kpis: [
-            { label: "Extraction Precision", value: "98.7%", delta: "Zero hallucinations" },
-            { label: "Processing Speedup", value: "12x", delta: "vs manual cataloging" },
-            { label: "Attributes Normalized", value: "250+", delta: "Across all domains" },
-            { label: "Provenance Traceability", value: "100%", delta: "Cell-level audit trail" }
+            { label: "Core Workflow", value: "6 Stages", delta: "Upload to Clean Export" },
+            { label: "Schema Target", value: "252 Col", delta: "UniHack Standard Schema" },
+            { label: "Unit Accuracy", value: "100%", delta: "Deterministic conversion" },
+            { label: "Data Integrity", value: "Zero Guessing", delta: "Blank if not in source" }
         ],
         departmentComparison: [
-            { dept: "Fasteners", rate: 99.2, count: 1200, avgSalary: 14.5 },
+            { dept: "Fasteners & Hardware", rate: 99.2, count: 1200, avgSalary: 14.5 },
             { dept: "Piping & Valves", rate: 98.1, count: 950, avgSalary: 12.0 },
-            { dept: "Electrical", rate: 97.4, count: 880, avgSalary: 10.5 },
-            { dept: "Pneumatics", rate: 96.8, count: 720, avgSalary: 8.9 },
-            { dept: "Safety Gear", rate: 99.5, count: 640, avgSalary: 7.8 }
-        ],
-        cgpaImpact: [
-            { bracket: "High Density Catalogs", placementRate: 99.1, avgOffers: 2.9 },
-            { bracket: "Semi-Structured Sheets", placementRate: 97.8, avgOffers: 2.2 },
-            { bracket: "Freeform Descriptions", placementRate: 94.6, avgOffers: 1.6 },
-            { bracket: "Messy Multi-Language", placementRate: 91.2, avgOffers: 1.1 }
-        ],
-        internshipImpact: [
-            { internships: "Full AI + Rules Engine", placementRate: 98.7, medianCTC: "14.2 LPA" },
-            { internships: "Rules Only", placementRate: 82.4, medianCTC: "9.5 LPA" },
-            { internships: "Raw LLM Only", placementRate: 74.1, medianCTC: "6.0 LPA" }
+            { dept: "Electrical & Motors", rate: 97.4, count: 880, avgSalary: 10.5 },
+            { dept: "Pneumatics & Hydraulics", rate: 96.8, count: 720, avgSalary: 8.9 },
+            { dept: "Industrial Safety", rate: 99.5, count: 640, avgSalary: 7.8 }
         ],
         skillDemand: [
             { skill: "Gemini AI Extraction", demand: 96 },
             { skill: "Deterministic Normalization", demand: 94 },
-            { skill: "FastAPI Streaming Backend", demand: 88 },
-            { skill: "PostgreSQL & Dynamic Schemas", demand: 82 },
+            { skill: "FastAPI Backend", demand: 88 },
+            { skill: "PostgreSQL Persistence", demand: 82 },
             { skill: "React Catalog UI", demand: 78 }
         ]
     },
 
     section5Tech: {
         kicker: "SECTION 05 — TECHNOLOGY",
-        title: "INDUSTRIAL INTELLIGENCE STACK",
+        title: "FULL SYSTEM TECHNOLOGY STACK",
         technologies: [
-            { name: "Python & FastAPI", role: "Backend Core", desc: "High-concurrency async REST API handling chunked spreadsheet processing." },
-            { name: "Google Gemini AI", role: "Cognitive Extraction", desc: "Few-shot semantic extraction of complex attributes from unstructured descriptions." },
-            { name: "PostgreSQL", role: "Relational Engine", desc: "Multi-tenant persistence with indexed search and audited schema versioning." },
-            { name: "React 18", role: "Product Interface", desc: "High-density catalog inspector, smart filtering, and real-time audit visualization." },
-            { name: "Deterministic Rules", role: "Integrity Gate", desc: "Guaranteed unit normalization and packaging logic with zero tolerance for hallucination." }
+            { name: "Frontend", role: "React, TypeScript, Vite, Axios", desc: "Responsive editorial interface with real-time feedback and smart catalog search." },
+            { name: "Backend", role: "Python, FastAPI, SQLAlchemy, Pydantic", desc: "High-concurrency async REST API handling spreadsheet parsing and validation." },
+            { name: "AI", role: "Google Gemini", desc: "Semantic understanding and qualitative attribute extraction from messy descriptions." },
+            { name: "Database", role: "PostgreSQL", desc: "Relational persistence with schema mapping and indexed search." },
+            { name: "Deterministic Rules", role: "Unit & Packaging Engine", desc: "Rules for fractions, units (1/2\" → 0.5 in), packaging (6pc → 6 pieces), and provenance." }
         ]
     },
 
     section6Learning: {
-        kicker: "SECTION 06 — LEARNING",
-        title: "KEY ENGINEERING LESSONS",
+        kicker: "SECTION 06 — CORE PRINCIPLES",
+        title: "ARCHITECTURAL & PRODUCT PRINCIPLES",
         lessons: [
             {
                 number: "01",
-                topic: "Hybrid AI Architecture",
-                takeaway: "LLMs excel at pattern recognition in messy text, but deterministic algorithms must handle units, arithmetic, and schema alignment to guarantee enterprise reliability."
+                topic: "AI vs Deterministic Rules",
+                takeaway: "AI is used for interpreting messy product information. Deterministic rules are used where exactness matters, including unit conversion, fractions, packaging, provenance, and schema mapping."
             },
             {
                 number: "02",
-                topic: "Traceable Provenance Is Non-Negotiable",
-                takeaway: "In enterprise data operations, users will not trust extracted values unless they can click and see the exact raw cell and surrounding context."
+                topic: "Data Integrity Over Invention",
+                takeaway: "If SPECra cannot find or infer a specification from source data, it leaves the field blank rather than inventing information."
             },
             {
                 number: "03",
-                topic: "Schema Agility",
-                takeaway: "Supplier catalogs will never follow a universal standard. Building dynamic schema inference at ingest is far superior to forcing rigid upstream templates."
+                topic: "Auditable Provenance",
+                takeaway: "Traceable evidence back to the source data is essential so users can verify every normalized value."
             },
             {
                 number: "04",
-                topic: "Auditable Quality Gates",
-                takeaway: "Automated physical validation checks (e.g. length cannot be negative, units must match category) catch anomalies before data touches downstream ERP systems."
+                topic: "Team Contribution",
+                takeaway: "Core developer — Team DEADLOCK. Collaborated to bring the platform from initial problem discovery to a completed working prototype."
             }
         ]
     }

@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Copy, Check } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import Magnetic from './Magnetic';
 import TextReveal from './TextReveal';
 
 export default function Contact({ contactData, onCursorChange }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(contactData.email || 'eshwarm@example.com');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2400);
-  };
+  const emailAddress = contactData?.email || 'meshwar824@gmail.com';
+  const linkedInUrl = 'https://www.linkedin.com/in/eshwar-m-90b86332a';
+  const gitHubUrl = 'https://github.com/Eshwar06-CY';
 
   return (
     <section id="contact" className="cinematic-section contact-editorial-section" aria-label="Contact Section">
@@ -38,7 +34,7 @@ export default function Contact({ contactData, onCursorChange }) {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}
       >
-        <span className="kicker">05 — CONTACT</span>
+        <span className="kicker">05 — CONNECT</span>
       </motion.div>
 
       {/* Monumental Headline */}
@@ -55,10 +51,10 @@ export default function Contact({ contactData, onCursorChange }) {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.85, delay: 0.2 }}
       >
-        Have an idea, problem, or engineering opportunity worth exploring? Reach out directly.
+        Have an idea, opportunity, or problem worth solving?
       </motion.p>
 
-      {/* Editorial Interactive Links (Underline hover animations, subtle magnetic movement) */}
+      {/* Editorial Interactive Links (Native semantic mailto & external anchors) */}
       <motion.div
         className="contact-editorial-links-row"
         initial={{ opacity: 0, y: 20 }}
@@ -66,79 +62,51 @@ export default function Contact({ contactData, onCursorChange }) {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.85, delay: 0.35 }}
       >
-        {/* Email Direct */}
+        {/* Email Direct - semantic mailto link */}
         <Magnetic strength={0.18}>
           <a
-            href={`mailto:${contactData.email || 'eshwarm@example.com'}`}
-            className="contact-editorial-link"
+            href={`mailto:${emailAddress}?subject=Portfolio%20Inquiry`}
+            className="contact-editorial-link contact-email-link"
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
+            aria-label={`Send email to ${emailAddress}`}
           >
-            <span className="link-label">EMAIL</span>
-            <ArrowUpRight size={14} className="link-arrow" />
-          </a>
-        </Magnetic>
-
-        {/* LinkedIn */}
-        <Magnetic strength={0.18}>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="contact-editorial-link"
-            onMouseEnter={() => onCursorChange?.('link')}
-            onMouseLeave={() => onCursorChange?.('default')}
-          >
-            <span className="link-label">LINKEDIN</span>
-            <ArrowUpRight size={14} className="link-arrow" />
+            <span className="link-label">{emailAddress}</span>
+            <ArrowUpRight size={15} className="link-arrow" aria-hidden="true" />
           </a>
         </Magnetic>
 
         {/* GitHub */}
         <Magnetic strength={0.18}>
           <a
-            href="https://github.com"
+            href={gitHubUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="contact-editorial-link"
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
+            aria-label="Visit Eshwar M on GitHub (opens in a new tab)"
           >
             <span className="link-label">GITHUB</span>
-            <ArrowUpRight size={14} className="link-arrow" />
+            <ArrowUpRight size={15} className="link-arrow" aria-hidden="true" />
           </a>
         </Magnetic>
 
-        {/* Copy Email Quick Option */}
+        {/* LinkedIn */}
         <Magnetic strength={0.18}>
-          <button
-            className="contact-copy-link"
-            onClick={handleCopyEmail}
+          <a
+            href={linkedInUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="contact-editorial-link"
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
-            title="Copy email to clipboard"
+            aria-label="Visit Eshwar M on LinkedIn (opens in a new tab)"
           >
-            {copied ? (
-              <Check size={14} style={{ color: 'var(--status-green)' }} />
-            ) : (
-              <Copy size={14} />
-            )}
-            <span>{copied ? 'COPIED TO CLIPBOARD' : 'COPY EMAIL'}</span>
-          </button>
+            <span className="link-label">LINKEDIN</span>
+            <ArrowUpRight size={15} className="link-arrow" aria-hidden="true" />
+          </a>
         </Magnetic>
-      </motion.div>
-
-      {/* Subtle Closing Signature: Full-Circle Return to Identity */}
-      <motion.div
-        className="contact-closing-signature"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 1.2, delay: 0.4 }}
-      >
-        <span className="sig-name">ESHWAR M</span>
-        <span className="sig-sep">—</span>
-        <span className="sig-role">INTELLIGENT SYSTEMS · SCALED DATA · DIGITAL CRAFT</span>
       </motion.div>
     </section>
   );

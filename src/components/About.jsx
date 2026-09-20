@@ -1,58 +1,222 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function About({ aboutData, onCursorChange }) {
+  const aboutRootRef = useRef(null);
+  const aboutHeroBlockRef = useRef(null);
+  const openingHairlineRef = useRef(null);
+  const eyebrowRailRef = useRef(null);
+  const statementRef = useRef(null);
+  const heroLeadRef = useRef(null);
+  const subMetaRef = useRef(null);
+
+  const exploringMomentRef = useRef(null);
+
+  useEffect(() => {
+    const root = aboutRootRef.current;
+    if (!root) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const isDesktop = window.innerWidth >= 1025;
+
+    const ctx = gsap.context(() => {
+      // ====================================================================
+      // 0. ABOUT ENTRY CINEMATIC ARRIVAL (HERO → ABOUT OVERLAPPING HAND-OFF)
+      // ====================================================================
+      const heroBlock = aboutHeroBlockRef.current;
+      const openingHairline = openingHairlineRef.current;
+      const eyebrowRail = eyebrowRailRef.current;
+      const statement = statementRef.current;
+      const heroLead = heroLeadRef.current;
+      const subMeta = subMetaRef.current;
+
+      if (heroBlock) {
+        const entryTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: heroBlock,
+            start: 'top 92%',
+            end: 'top 45%',
+            scrub: 0.6
+          }
+        });
+
+        if (openingHairline) {
+          entryTl.fromTo(openingHairline,
+            { scaleX: 0 },
+            { scaleX: 1, ease: 'none', duration: 0.35 },
+            0
+          );
+        }
+
+        if (eyebrowRail) {
+          entryTl.fromTo(eyebrowRail,
+            { y: isDesktop ? 14 : 8, autoAlpha: 0.35 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.25 },
+            0.06
+          );
+        }
+
+        if (statement) {
+          entryTl.fromTo(statement,
+            { y: isDesktop ? 18 : 10, scale: 0.985, autoAlpha: 0.35 },
+            { y: 0, scale: 1.00, autoAlpha: 1, ease: 'power2.out', duration: 0.35 },
+            0.10
+          );
+        }
+
+        if (heroLead) {
+          entryTl.fromTo(heroLead,
+            { y: isDesktop ? 14 : 8, autoAlpha: 0.3 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.3 },
+            0.16
+          );
+        }
+
+        if (subMeta) {
+          entryTl.fromTo(subMeta,
+            { y: isDesktop ? 12 : 6, autoAlpha: 0.3 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
+            0.20
+          );
+        }
+      }
+
+      // ====================================================================
+      // 1. WHAT I'M EXPLORING: Restrained scroll reveal & active row emphasis
+      // ====================================================================
+      const exploringItems = exploringMomentRef.current?.querySelectorAll('.exploring-item') || [];
+      exploringItems.forEach((item) => {
+        const num = item.querySelector('.exploring-num');
+        const title = item.querySelector('.exploring-title');
+        const desc = item.querySelector('.exploring-desc');
+        const divider = item.querySelector('.exploring-divider');
+
+        // Restrained Entrance Reveal
+        const entranceTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 92%',
+            end: 'top 65%',
+            scrub: 0.5,
+          }
+        });
+
+        if (divider) {
+          entranceTl.fromTo(divider, { scaleX: 0 }, { scaleX: 1, ease: 'none', duration: 0.4 }, 0);
+        }
+        if (num) {
+          entranceTl.fromTo(num, { y: 10, autoAlpha: 0.35 }, { y: 0, autoAlpha: 0.75, ease: 'power1.out', duration: 0.3 }, 0.04);
+        }
+        if (title) {
+          entranceTl.fromTo(title, { x: isDesktop ? -10 : -4, y: 6, autoAlpha: 0.45 }, { x: 0, y: 0, autoAlpha: 0.85, ease: 'power2.out', duration: 0.35 }, 0.08);
+        }
+        if (desc) {
+          entranceTl.fromTo(desc, { y: 6, autoAlpha: 0.4 }, { y: 0, autoAlpha: 0.75, ease: 'power1.out', duration: 0.35 }, 0.12);
+        }
+
+        // Active Row Emphasis (Closest to visual center of viewport)
+        ScrollTrigger.create({
+          trigger: item,
+          start: 'top 60%',
+          end: 'bottom 40%',
+          onEnter: () => {
+            if (title) gsap.to(title, { color: '#ffffff', autoAlpha: 1, duration: 0.28 });
+            if (num) gsap.to(num, { color: '#ffffff', autoAlpha: 1, duration: 0.28 });
+            if (desc) gsap.to(desc, { color: '#cfd0dc', autoAlpha: 0.95, duration: 0.28 });
+            if (divider) gsap.to(divider, { backgroundColor: 'rgba(255, 255, 255, 0.22)', duration: 0.28 });
+          },
+          onLeave: () => {
+            if (title) gsap.to(title, { color: '#e0e0ea', autoAlpha: 0.75, duration: 0.28 });
+            if (num) gsap.to(num, { color: 'var(--text-muted)', autoAlpha: 0.65, duration: 0.28 });
+            if (desc) gsap.to(desc, { color: '#9898a8', autoAlpha: 0.7, duration: 0.28 });
+            if (divider) gsap.to(divider, { backgroundColor: 'rgba(255, 255, 255, 0.08)', duration: 0.28 });
+          },
+          onEnterBack: () => {
+            if (title) gsap.to(title, { color: '#ffffff', autoAlpha: 1, duration: 0.28 });
+            if (num) gsap.to(num, { color: '#ffffff', autoAlpha: 1, duration: 0.28 });
+            if (desc) gsap.to(desc, { color: '#cfd0dc', autoAlpha: 0.95, duration: 0.28 });
+            if (divider) gsap.to(divider, { backgroundColor: 'rgba(255, 255, 255, 0.22)', duration: 0.28 });
+          },
+          onLeaveBack: () => {
+            if (title) gsap.to(title, { color: '#e0e0ea', autoAlpha: 0.85, duration: 0.28 });
+            if (num) gsap.to(num, { color: 'var(--text-muted)', autoAlpha: 0.75, duration: 0.28 });
+            if (desc) gsap.to(desc, { color: '#9898a8', autoAlpha: 0.75, duration: 0.28 });
+            if (divider) gsap.to(divider, { backgroundColor: 'rgba(255, 255, 255, 0.08)', duration: 0.28 });
+          }
+        });
+      });
+
+      // ====================================================================
+      // 2. PARALLAX DEPTH ACROSS EDITORIAL LABELS (PRESERVED ON ALL VIEWPORTS)
+      // ====================================================================
+      const labels = root.querySelectorAll('.story-label, .about-eyebrow-rail');
+      labels.forEach(lbl => {
+        gsap.to(lbl, {
+          scrollTrigger: {
+            trigger: lbl,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2
+          },
+          y: isDesktop ? -14 : -6,
+          ease: 'none'
+        });
+      });
+    }, root);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="about" className="about-cinematic-page" aria-label="About Eshwar M">
+    <section id="about" ref={aboutRootRef} className="about-cinematic-page" aria-label="About Eshwar M">
 
       {/* ====================================================================
-          1. ABOUT HERO: ASYMMETRIC OPENING STATEMENT + CINEMATIC PORTRAIT
+          1. ABOUT HERO: MONUMENTAL ASYMMETRIC EDITORIAL STATEMENT
           ==================================================================== */}
-      <div className="about-hero-block">
-        <div className="about-eyebrow-rail">
+      <div ref={aboutHeroBlockRef} className="about-hero-block">
+        <div className="about-opening-hairline-track">
+          <div ref={openingHairlineRef} className="about-opening-hairline-fill" />
+        </div>
+
+        <div ref={eyebrowRailRef} className="about-eyebrow-rail">
           <span className="editorial-eyebrow">ABOUT / 01</span>
           <span className="eyebrow-sep">•</span>
           <span className="eyebrow-sub">INTRODUCTION & PHILOSOPHY</span>
         </div>
 
-        <div className="about-hero-grid">
-          {/* Monumental Asymmetric Typography */}
-          <div className="about-hero-statement-col">
-            <h1 className="asymmetric-statement">
-              <span className="statement-row row-1">I BUILD THINGS</span>
-              <span className="statement-row row-2">THAT SOLVE</span>
-              <span className="statement-row row-3">PROBLEMS.</span>
-            </h1>
+        <div className="about-hero-statement-col">
+          <h1 ref={statementRef} className="asymmetric-statement">
+            <span className="statement-row row-1">I BUILD THINGS</span>
+            <span className="statement-row row-2">THAT SOLVE</span>
+            <span className="statement-row row-3">PROBLEMS.</span>
+          </h1>
 
-            <p className="about-hero-lead">
-              A Computer Science student exploring the intersection of AI, product thinking,
-              and data-driven engineering.
+          <div className="about-hero-lead-row">
+            <p ref={heroLeadRef} className="about-hero-lead">
+              Turning complex problems into practical technology solutions, with a focus on real-world impact beyond the code itself.
             </p>
-          </div>
 
-          {/* Portrait Emerging from Dark Environment */}
-          <div className="about-hero-portrait-col">
-            <div className="about-portrait-ambient-glow" aria-hidden="true" />
-            <div className="about-portrait-frame">
-              <img
-                src="/portrait.png"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/assets/images/portrait.png";
-                }}
-                alt="Eshwar M — Editorial Portrait"
-                className="about-portrait-img"
-                loading="eager"
-                decoding="async"
-              />
-              <div className="about-portrait-fade-overlay" aria-hidden="true" />
+            <div ref={subMetaRef} className="about-hero-sub-meta">
+              <div className="sub-meta-item">
+                <span className="meta-kicker">DISCIPLINE</span>
+                <span className="meta-val">AI · PRODUCT · DATA</span>
+              </div>
+              <div className="sub-meta-item">
+                <span className="meta-kicker">LOCATION</span>
+                <span className="meta-val">MYSURU, KARNATAKA</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* ====================================================================
-          2. WHO I AM: DIRECT, PERSONAL INTRODUCTION (NO RESUME CLICHÉS)
+          2. WHO I AM: DIRECT, PERSONAL INTRODUCTION (SOURCE OF TRUTH BLOCKS)
           ==================================================================== */}
       <div className="about-story-moment who-i-am-moment">
         <div className="story-label-col">
@@ -60,91 +224,31 @@ export default function About({ aboutData, onCursorChange }) {
         </div>
         <div className="story-content-col">
           <p className="story-body-lead">
-            I am a Computer Science and Engineering undergraduate based in Mysore, India.
-            My work centers around designing and deploying software systems that bridge algorithmic
-            models with real-world usability.
+            I’m a Computer Science and Engineering student exploring the intersection of AI, Product, Data and Innovation.
           </p>
           <p className="story-body-text">
-            Rather than accumulating technologies for their own sake, I am drawn to the
-            practical mechanics of software: understanding user friction, architecting
-            resilient data pipelines, and turning raw ideas into tangible products that
-            people can actually use.
+            I enjoy turning real-world problems into practical technology solutions, experimenting with new ideas, and building products that are useful beyond the code itself.
+          </p>
+          <p className="story-body-text">
+            My interests span Generative AI, product development, data analytics and entrepreneurship. I enjoy understanding problems, designing solutions, and bringing ideas from concept to implementation.
+          </p>
+          <p className="story-body-text">
+            I’m currently looking for opportunities to learn, build, collaborate and gain real-world experience across AI, product, data and business-oriented technology.
           </p>
           <div className="story-context-tags">
-            <span className="context-tag">MYSORE, KARNATAKA</span>
+            <span className="context-tag">MYSURU, KARNATAKA</span>
             <span className="context-sep">•</span>
-            <span className="context-tag">CSE UNDERGRADUATE</span>
+            <span className="context-tag">VVCE CSE</span>
             <span className="context-sep">•</span>
-            <span className="context-tag">PRODUCT & DATA FOCUS</span>
+            <span className="context-tag">GRADUATING 2028</span>
           </div>
         </div>
       </div>
 
       {/* ====================================================================
-          3. WHAT I BUILD: SPATIALLY DISTRIBUTED TYPOGRAPHY (NO CARDS / PILLS)
+          2. WHAT I'M EXPLORING: PURE TYPOGRAPHIC DOMAINS (SOURCE OF TRUTH)
           ==================================================================== */}
-      <div className="about-story-moment what-i-build-moment">
-        <div className="story-label-col">
-          <span className="story-label">WHAT I BUILD</span>
-        </div>
-        <div className="story-content-col">
-          <div className="spatial-words-stack">
-            
-            <div className="spatial-word-row row-left">
-              <span className="spatial-word">AI</span>
-              <span className="spatial-word-desc">
-                Intelligent agents, autonomous workflows, and LLM-powered applications that automate complex manual tasks.
-              </span>
-            </div>
-
-            <div className="spatial-word-row row-center">
-              <span className="spatial-word">PRODUCT</span>
-              <span className="spatial-word-desc">
-                Scoped systems designed from user needs backward, emphasizing clarity, reduced friction, and fast feedback loops.
-              </span>
-            </div>
-
-            <div className="spatial-word-row row-right">
-              <span className="spatial-word">DATA</span>
-              <span className="spatial-word-desc">
-                ETL pipelines, tabular EDA, schema modeling in PostgreSQL, and analytics that surface clear decision metrics.
-              </span>
-            </div>
-
-            <div className="spatial-word-row row-offset">
-              <span className="spatial-word">SOFTWARE</span>
-              <span className="spatial-word-desc">
-                High-performance web applications, robust backend microservices, and maintainable production codebases.
-              </span>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* ====================================================================
-          4. HOW I THINK: QUIET EDITORIAL PHILOSOPHY
-          ==================================================================== */}
-      <div className="about-story-moment how-i-think-moment">
-        <div className="story-label-col">
-          <span className="story-label">HOW I THINK</span>
-        </div>
-        <div className="story-content-col">
-          <blockquote className="editorial-quote">
-            “I like understanding the problem first, then figuring out what technology actually needs to be there.”
-          </blockquote>
-          <p className="story-body-text">
-            Complexity is easy to add and difficult to remove. The goal is always to build the
-            simplest architecture that completely solves the problem—nothing more, nothing less.
-            When a system is designed well, the engineering becomes invisible, and the utility feels effortless.
-          </p>
-        </div>
-      </div>
-
-      {/* ====================================================================
-          5. WHAT I'M EXPLORING: PURE TYPOGRAPHIC DOMAINS
-          ==================================================================== */}
-      <div className="about-story-moment exploring-moment">
+      <div ref={exploringMomentRef} className="about-story-moment exploring-moment">
         <div className="story-label-col">
           <span className="story-label">WHAT I'M EXPLORING</span>
         </div>
@@ -154,64 +258,54 @@ export default function About({ aboutData, onCursorChange }) {
             <div className="exploring-item">
               <span className="exploring-num">01</span>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">GENERATIVE AI & AGENTIC WORKFLOWS</h3>
+                <h3 className="exploring-title">GENERATIVE AI</h3>
                 <p className="exploring-desc">
-                  Structured outputs, function calling with Gemini/OpenAI APIs, autonomous agent loops, and evaluation harnesses.
+                  Exploring how LLMs and AI can be used to build practical applications, automate workflows, and create intelligent user experiences.
                 </p>
               </div>
+              <div className="exploring-divider" />
             </div>
 
             <div className="exploring-item">
               <span className="exploring-num">02</span>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">PRODUCT ARCHITECTURE & SCOPING</h3>
+                <h3 className="exploring-title">PRODUCT</h3>
                 <p className="exploring-desc">
-                  Translating ambiguous operational friction into concise technical PRDs, user journey ergonomics, and edge-case handling.
+                  Interested in understanding users, identifying meaningful problems, defining solutions, and turning ideas into useful products.
                 </p>
               </div>
+              <div className="exploring-divider" />
             </div>
 
             <div className="exploring-item">
               <span className="exploring-num">03</span>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">DATA ANALYTICS & PIPELINES</h3>
+                <h3 className="exploring-title">DATA</h3>
                 <p className="exploring-desc">
-                  Tabular preprocessing with Pandas, SQL relational modeling, exploratory analysis, and automated KPI generation.
+                  Working with data to uncover patterns, generate insights, support decisions, and understand real-world outcomes.
                 </p>
               </div>
+              <div className="exploring-divider" />
             </div>
 
             <div className="exploring-item">
               <span className="exploring-num">04</span>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">INTELLIGENT SYSTEM INTEGRATION</h3>
+                <h3 className="exploring-title">ENTREPRENEURSHIP</h3>
                 <p className="exploring-desc">
-                  Connecting probabilistic AI models into deterministic web apps with instant reactivity, resilient fallbacks, and craft.
+                  Exploring startup ideas, innovation, business models, and how technology can be transformed into solutions for real-world problems.
                 </p>
               </div>
+              <div className="exploring-divider" />
             </div>
 
           </div>
         </div>
       </div>
 
-      {/* ====================================================================
-          6. TRANSITION TOWARD SELECTED WORK
-          ==================================================================== */}
-      <div className="about-transition-to-work">
-        <div className="trans-hairline" />
-        <div className="trans-content">
-          <div className="trans-kicker-box">
-            <span className="trans-kicker">02 / SELECTED WORK</span>
-            <span className="trans-sep">•</span>
-            <span className="trans-sub">5 ARCHITECTED PLATFORMS</span>
-          </div>
-          <p className="trans-lead">
-            The ideas in action: explore production builds spanning AI automation,
-            high-scale database planning, and predictive analytics.
-          </p>
-          <span className="trans-cue">SCROLL DOWN TO ADVANCE THE PROJECT REEL ↓</span>
-        </div>
+      {/* Subtle Hairline to conclude Section 01 */}
+      <div className="about-section-closing-track">
+        <div className="about-section-closing-line" />
       </div>
 
     </section>

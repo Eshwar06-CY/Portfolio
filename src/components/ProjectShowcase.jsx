@@ -202,6 +202,7 @@ function DesktopProjectReel({
   const imagesRef = useRef([]);
   const metasRef = useRef([]);
   const bgsRef = useRef([]);
+  const activeIdxRef = useRef(0);
 
   useEffect(() => {
     const root = reelRootRef.current;
@@ -209,7 +210,11 @@ function DesktopProjectReel({
     if (!root || !stage) return;
 
     const ctx = gsap.context(() => {
-      // Set initial states: Slide 0 is established at start; Slides 1..3 are hidden
+      const isMobile = window.innerWidth < 768;
+
+      // 1. Initial visual states
+      // Slide 0 starts in responsive entry state (ready to lock into focus on scroll)
+      // Slides 1..3 start hidden with personality-calibrated entry offsets
       projects.forEach((_, i) => {
         const slide = slidesRef.current[i];
         const num = numbersRef.current[i];
@@ -221,51 +226,115 @@ function DesktopProjectReel({
 
         if (i === 0) {
           if (slide) gsap.set(slide, { autoAlpha: 1, y: 0, scale: 1, zIndex: 10 });
-          if (num) gsap.set(num, { autoAlpha: 1, y: 0 });
-          if (title) gsap.set(title, { autoAlpha: 1, y: 0, scale: 1 });
-          if (visual) gsap.set(visual, { autoAlpha: 1, x: 0, y: 0, scale: 1, clipPath: 'inset(0% 0% 0% 0%)' });
-          if (img) gsap.set(img, { scale: 1.04 });
-          if (meta) gsap.set(meta, { autoAlpha: 1, y: 0 });
-          if (bg) gsap.set(bg, { opacity: 0.85 });
+          if (num) gsap.set(num, { autoAlpha: 0.45, y: isMobile ? 6 : 10 });
+          if (title) gsap.set(title, { autoAlpha: 0.55, y: isMobile ? 10 : 16, scale: 0.985 });
+          if (visual) gsap.set(visual, { autoAlpha: 0.65, x: 0, y: isMobile ? 12 : 18, scale: isMobile ? 1.01 : 1.035, clipPath: 'inset(0% 2% 0% 0%)' });
+          if (img) gsap.set(img, { scale: 1.05 });
+          if (meta) gsap.set(meta, { autoAlpha: 0.35, y: isMobile ? 8 : 14 });
+          if (bg) gsap.set(bg, { opacity: 0.5 });
         } else {
-          if (slide) gsap.set(slide, { autoAlpha: 0, y: 32, scale: 0.98, zIndex: 1 });
-          if (num) gsap.set(num, { autoAlpha: 0, y: 14 });
-          if (title) gsap.set(title, { autoAlpha: 0, y: 24, scale: 0.98 });
-          if (visual) gsap.set(visual, {
-            autoAlpha: 0,
-            x: i % 2 === 0 ? 36 : -36,
-            y: 24,
-            scale: 0.98,
-            clipPath: i % 2 === 0 ? 'inset(0% 0% 0% 8%)' : 'inset(0% 8% 0% 0%)'
-          });
-          if (img) gsap.set(img, { scale: 1.08 });
-          if (meta) gsap.set(meta, { autoAlpha: 0, y: 16 });
+          // Personality-calibrated initial positions for slides 1..3 (zero lateral shift on mobile to avoid overflow)
+          let initX = 0;
+          let initY = isMobile ? 16 : 22;
+          let initClip = 'inset(0% 0% 0% 0%)';
+          let initScale = isMobile ? 1.02 : 1.04;
+
+          if (!isMobile) {
+            if (i === 1) {
+              // ExpenseFlow AI: slightly flowing lateral glide
+              initX = 28;
+              initY = 16;
+              initClip = 'inset(0% 0% 0% 6%)';
+              initScale = 1.04;
+            } else if (i === 2) {
+              // AI UG Academic Planner: calm / organized steady vertical
+              initX = 0;
+              initY = 24;
+              initClip = 'inset(4% 0% 0% 0%)';
+              initScale = 1.03;
+            } else if (i === 3) {
+              // CAPACITYX: spatial / expansive panoramic breath
+              initX = -24;
+              initY = 18;
+              initClip = 'inset(0% 6% 0% 0%)';
+              initScale = 1.05;
+            }
+          }
+
+          if (slide) gsap.set(slide, { autoAlpha: 0, y: isMobile ? 16 : 24, scale: 0.99, zIndex: 1 });
+          if (num) gsap.set(num, { autoAlpha: 0, y: isMobile ? 10 : 14 });
+          if (title) gsap.set(title, { autoAlpha: 0, y: isMobile ? 14 : 22, scale: 0.98 });
+          if (visual) gsap.set(visual, { autoAlpha: 0, x: initX, y: initY, scale: initScale, clipPath: initClip });
+          if (img) gsap.set(img, { scale: 1.06 });
+          if (meta) gsap.set(meta, { autoAlpha: 0, y: isMobile ? 10 : 16 });
           if (bg) gsap.set(bg, { opacity: 0 });
         }
       });
 
-      // Master scrubbing timeline pinned over +=320% (balanced, no scroll fatigue)
+      // 2. Master pinned timeline scrubbing over 340%
+      // Scrub 0.65 ensures immediate physical connection to scroll wheel / touch without lag
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
           start: 'top top',
-          end: '+=320%',
+          end: '+=340%',
           pin: stage,
-          scrub: 0.85,
+          scrub: 0.65,
           anticipatePin: 1,
           onUpdate: (self) => {
             const p = self.progress;
+            // Map progress to discrete active index
             const idx = Math.min(projects.length - 1, Math.floor(p * projects.length));
-            setActiveIndex(idx);
-            if (typeof window !== 'undefined') {
-              const modes = ['p1', 'p2', 'p3', 'p4'];
-              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'default' }));
+            if (idx !== activeIdxRef.current) {
+              activeIdxRef.current = idx;
+              setActiveIndex(idx);
+              if (typeof window !== 'undefined') {
+                const modes = ['p1', 'p2', 'p3', 'p4'];
+                window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'default' }));
+              }
             }
           }
         }
       });
 
       const dur = 1.0;
+
+      // 3. First Project (SPECra) Entrance Sequence (t = 0.00 to 0.20)
+      // Selected Work heading settles -> SPECra visual enters -> number -> title becomes dominant -> meta settles
+      const p0Visual = visualsRef.current[0];
+      const p0Title = titlesRef.current[0];
+      const p0Num = numbersRef.current[0];
+      const p0Meta = metasRef.current[0];
+      const p0Img = imagesRef.current[0];
+      const p0Bg = bgsRef.current[0];
+
+      if (p0Visual) {
+        tl.to(p0Visual, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1.00,
+          clipPath: 'inset(0% 0% 0% 0%)',
+          ease: 'power2.out',
+          duration: 0.20 * dur
+        }, 0);
+      }
+      if (p0Img) {
+        tl.to(p0Img, { scale: 1.02, ease: 'none', duration: 0.20 * dur }, 0);
+      }
+      if (p0Num) {
+        tl.to(p0Num, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.16 * dur }, 0.03 * dur);
+      }
+      if (p0Title) {
+        tl.to(p0Title, { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.18 * dur }, 0.04 * dur);
+      }
+      if (p0Meta) {
+        tl.to(p0Meta, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.18 * dur }, 0.06 * dur);
+      }
+      if (p0Bg) {
+        tl.to(p0Bg, { opacity: 0.85, ease: 'power1.out', duration: 0.20 * dur }, 0);
+      }
+
+      // 4. Sequential Project Scenes & Continuous Overlapping Transitions
       for (let i = 0; i < projects.length; i++) {
         const currentSlide = slidesRef.current[i];
         const currentNum = numbersRef.current[i];
@@ -276,30 +345,32 @@ function DesktopProjectReel({
         const currentBg = bgsRef.current[i];
 
         const t0 = i * dur;
-        const holdEnd = t0 + 0.62 * dur;
+        const sceneHoldStart = i === 0 ? 0.20 * dur : t0;
+        // CapacityX (final chapter) receives extra breathing room (0.85 dur hold)
+        const isLastProject = i === projects.length - 1;
+        const holdDur = isLastProject ? 0.85 * dur : 0.65 * dur;
+        const holdEnd = sceneHoldStart + holdDur;
 
-        // Subtle differential camera-like parallax during scene hold
-        // 1. Visual scale breathes slowly from 1.04 down to 1.00 (camera settling)
+        // Differential Camera Parallax during active scene hold:
+        // Visual moves at a slightly different rate from typography
+        // Image slowly settles from 1.02 down to 1.00
         if (currentImg) {
-          tl.fromTo(currentImg,
-            { scale: 1.04 },
-            { scale: 1.00, ease: 'none', duration: 0.62 * dur },
-            t0
-          );
+          tl.to(currentImg, { scale: 1.00, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
-        // 2. Project visual moves slightly deeper than typography (y: -16 vs y: -10)
         if (currentVisual) {
-          tl.to(currentVisual, { y: -16, ease: 'none', duration: 0.62 * dur }, t0);
+          // Personality-specific hold drift (kept vertical on mobile to avoid lateral overflow)
+          const driftX = isMobile ? 0 : (i === 1 ? -6 : (i === 3 ? 8 : 0));
+          tl.to(currentVisual, { y: isMobile ? -8 : -16, x: driftX, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
         if (currentTitle) {
-          tl.to(currentTitle, { y: -10, ease: 'none', duration: 0.62 * dur }, t0);
+          tl.to(currentTitle, { y: isMobile ? -6 : -10, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
         if (currentBg) {
-          tl.to(currentBg, { y: -8, ease: 'none', duration: 0.62 * dur }, t0);
+          tl.to(currentBg, { y: isMobile ? -4 : -8, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
 
-        // Seamless Hand-off to Next Slide (Continuous camera tracking: Zero dead black space)
-        if (i < projects.length - 1) {
+        // Seamless Overlapping Hand-off to Next Slide (Scene 1 leaves WHILE Scene 2 arrives)
+        if (!isLastProject) {
           const nextSlide = slidesRef.current[i + 1];
           const nextNum = numbersRef.current[i + 1];
           const nextTitle = titlesRef.current[i + 1];
@@ -309,25 +380,25 @@ function DesktopProjectReel({
           const nextBg = bgsRef.current[i + 1];
 
           const transStart = holdEnd;
-          const transDur = 0.38 * dur;
+          const transDur = 0.35 * dur;
 
-          // 1. Current scene moves slightly out of frame and recedes into depth
+          // Outgoing Scene i: shifts away smoothly
           if (currentMeta) {
-            tl.to(currentMeta, { autoAlpha: 0, y: -14, ease: 'power1.in', duration: 0.22 * dur }, transStart);
+            tl.to(currentMeta, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart);
           }
           if (currentNum) {
-            tl.to(currentNum, { autoAlpha: 0, y: -14, ease: 'power1.in', duration: 0.20 * dur }, transStart);
+            tl.to(currentNum, { autoAlpha: 0, y: isMobile ? -8 : -12, ease: 'power1.in', duration: 0.20 * dur }, transStart);
           }
           if (currentTitle) {
-            tl.to(currentTitle, { autoAlpha: 0, y: -26, scale: 0.98, ease: 'power2.in', duration: 0.28 * dur }, transStart);
+            tl.to(currentTitle, { autoAlpha: 0, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.26 * dur }, transStart);
           }
           if (currentVisual) {
+            const exitX = isMobile ? 0 : (i === 0 ? -20 : (i === 1 ? 20 : -16));
             tl.to(currentVisual, {
               autoAlpha: 0,
-              x: i % 2 === 0 ? -36 : 36,
-              y: -24,
-              scale: 0.96,
-              clipPath: i % 2 === 0 ? 'inset(0% 8% 0% 0%)' : 'inset(0% 0% 0% 8%)',
+              x: exitX,
+              y: isMobile ? -14 : -24,
+              scale: isMobile ? 0.98 : 0.965,
               ease: 'power2.in',
               duration: 0.30 * dur
             }, transStart);
@@ -336,76 +407,106 @@ function DesktopProjectReel({
             tl.to(currentImg, { scale: 0.98, ease: 'power1.in', duration: 0.30 * dur }, transStart);
           }
           if (currentSlide) {
-            tl.to(currentSlide, { autoAlpha: 0, y: -20, ease: 'power2.inOut', duration: transDur }, transStart);
+            tl.to(currentSlide, { autoAlpha: 0, y: isMobile ? -10 : -18, ease: 'power2.inOut', duration: transDur }, transStart);
             tl.set(currentSlide, { zIndex: 1 }, transStart + transDur);
           }
           if (currentBg) {
-            tl.to(currentBg, { opacity: 0, duration: 0.28 * dur }, transStart + 0.08 * dur);
+            tl.to(currentBg, { opacity: 0, duration: 0.26 * dur }, transStart + 0.08 * dur);
           }
 
-          // 2. Next Scene ALREADY begins entering (OVERLAPPING HAND-OFF: Zero Dead Black Gap)
+          // Incoming Scene i+1: ALREADY begins entering (OVERLAPPING HAND-OFF)
+          const nextIndex = i + 1;
+          const arriveStart = transStart + 0.03 * dur;
+
           if (nextSlide) {
-            tl.set(nextSlide, { zIndex: 10 }, transStart + 0.04 * dur);
+            tl.set(nextSlide, { zIndex: 10 }, arriveStart);
             tl.fromTo(nextSlide,
-              { autoAlpha: 0, y: 24, scale: 0.99 },
-              { autoAlpha: 1, y: 0, scale: 1, ease: 'power2.out', duration: transDur },
-              transStart + 0.04 * dur
+              { autoAlpha: 0, y: isMobile ? 14 : 22, scale: 0.99 },
+              { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: transDur },
+              arriveStart
             );
           }
           if (nextBg) {
             tl.fromTo(nextBg,
               { opacity: 0 },
-              { opacity: 0.85, ease: 'power1.out', duration: 0.30 * dur },
-              transStart + 0.06 * dur
+              { opacity: 0.85, ease: 'power1.out', duration: 0.28 * dur },
+              arriveStart + 0.04 * dur
             );
           }
           if (nextNum) {
             tl.fromTo(nextNum,
-              { autoAlpha: 0, y: 14 },
+              { autoAlpha: 0, y: isMobile ? 8 : 14 },
               { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.24 * dur },
-              transStart + 0.08 * dur
+              arriveStart + 0.06 * dur
             );
           }
           if (nextTitle) {
             tl.fromTo(nextTitle,
-              { autoAlpha: 0, y: 24, scale: 0.98 },
-              { autoAlpha: 1, y: 0, scale: 1, ease: 'power2.out', duration: 0.30 * dur },
-              transStart + 0.10 * dur
+              { autoAlpha: 0, y: isMobile ? 12 : 20, scale: 0.98 },
+              { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.28 * dur },
+              arriveStart + 0.07 * dur
             );
           }
           if (nextVisual) {
+            let nextInitX = 0;
+            let nextInitY = isMobile ? 12 : 20;
+            let nextInitClip = 'inset(0% 0% 0% 0%)';
+            let nextInitScale = isMobile ? 1.02 : 1.04;
+
+            if (!isMobile) {
+              if (nextIndex === 1) {
+                // 02 ExpenseFlow AI: slightly flowing lateral glide
+                nextInitX = 28;
+                nextInitY = 16;
+                nextInitClip = 'inset(0% 0% 0% 6%)';
+                nextInitScale = 1.04;
+              } else if (nextIndex === 2) {
+                // 03 Academic Planner: calm / organized steady vertical rise
+                nextInitX = 0;
+                nextInitY = 24;
+                nextInitClip = 'inset(4% 0% 0% 0%)';
+                nextInitScale = 1.03;
+              } else if (nextIndex === 3) {
+                // 04 CAPACITYX: spatial / expansive panoramic breath
+                nextInitX = -24;
+                nextInitY = 18;
+                nextInitClip = 'inset(0% 6% 0% 0%)';
+                nextInitScale = 1.05;
+              }
+            }
+
             tl.fromTo(nextVisual,
               {
                 autoAlpha: 0,
-                x: (i + 1) % 2 === 0 ? 36 : -36,
-                y: 24,
-                scale: 0.98,
-                clipPath: (i + 1) % 2 === 0 ? 'inset(0% 0% 0% 8%)' : 'inset(0% 8% 0% 0%)'
+                x: nextInitX,
+                y: nextInitY,
+                scale: nextInitScale,
+                clipPath: nextInitClip
               },
               {
                 autoAlpha: 1,
                 x: 0,
                 y: 0,
-                scale: 1.0,
+                scale: 1.00,
                 clipPath: 'inset(0% 0% 0% 0%)',
                 ease: 'power2.out',
-                duration: 0.34 * dur
+                duration: 0.32 * dur
               },
-              transStart + 0.10 * dur
+              arriveStart + 0.06 * dur
             );
           }
           if (nextImg) {
             tl.fromTo(nextImg,
-              { scale: 1.08 },
-              { scale: 1.04, ease: 'power2.out', duration: 0.34 * dur },
-              transStart + 0.10 * dur
+              { scale: 1.06 },
+              { scale: 1.02, ease: 'power2.out', duration: 0.32 * dur },
+              arriveStart + 0.06 * dur
             );
           }
           if (nextMeta) {
             tl.fromTo(nextMeta,
-              { autoAlpha: 0, y: 16 },
+              { autoAlpha: 0, y: isMobile ? 10 : 16 },
               { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.25 * dur },
-              transStart + 0.16 * dur
+              arriveStart + 0.12 * dur
             );
           }
         }
@@ -449,9 +550,9 @@ function DesktopProjectReel({
         {/* 1. HUD Chrome: Top Header Bar */}
         <div className="reel-hud-top">
           <div className="hud-eyebrow-box">
-            <span className="hud-kicker">02 / SELECTED WORK</span>
+            <span className="hud-kicker">THE PROJECT REEL</span>
             <span className="hud-divider">•</span>
-            <span className="hud-reel-label">THE PROJECT REEL</span>
+            <span className="hud-reel-label">0{activeIndex + 1} / 0{projects.length}</span>
           </div>
           <div className="hud-category-box">
             <span className="hud-active-category">{activeProject.category}</span>
@@ -565,7 +666,9 @@ function DesktopProjectReel({
                             <span className="action-text">VIEW PROJECT</span>
                             <ArrowUpRight size={14} className="action-arrow" />
                           </a>
-                        ) : null}
+                        ) : (
+                          <span className="editorial-concept-badge">RESEARCH / CONCEPT STAGE</span>
+                        )}
 
                         {project.hasDedicatedCaseStudy && (
                           <button
@@ -620,12 +723,6 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
 
   return (
     <div className="mobile-project-reel" aria-label="Selected Work Mobile Reel">
-      <div className="mobile-reel-opener">
-        <span className="editorial-eyebrow">02 / SELECTED WORK</span>
-        <h2 className="mobile-reel-headline">THE PROJECTS</h2>
-        <p className="mobile-reel-sub">Five platforms architected with precision and real-world utility.</p>
-      </div>
-
       <div className="mobile-projects-stack">
         {projects.map((project, idx) => {
           const projectSlug = project.slug || project.id;
@@ -689,7 +786,9 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                     <span className="action-text">VIEW PROJECT</span>
                     <ArrowUpRight size={14} className="action-arrow" />
                   </a>
-                ) : null}
+                ) : (
+                  <span className="editorial-concept-badge">RESEARCH / CONCEPT STAGE</span>
+                )}
 
                 {project.hasDedicatedCaseStudy && (
                   <button
@@ -739,7 +838,51 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
 
   return (
     <section id="work" className="project-showcase-section" aria-label="Selected Work Showcase">
-      {isMobile || isReducedMotion ? (
+      {/* SINGLE DOMINANT EDITORIAL SECTION INTRODUCTION */}
+      <div className="work-editorial-intro">
+        <motion.div
+          className="work-intro-kicker-wrap"
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="kicker">02 — SELECTED WORK</span>
+        </motion.div>
+
+        <motion.h2
+          className="work-monumental-heading"
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          SELECTED WORK
+        </motion.h2>
+
+        <motion.p
+          className="work-supporting-text"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          The ideas in action: four projects exploring practical applications of technology.
+        </motion.p>
+
+        <motion.div
+          className="work-reel-cue"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.85, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="reel-cue-text">THE PROJECT REEL</span>
+          <span className="reel-cue-arrow">↓</span>
+        </motion.div>
+      </div>
+
+      {isReducedMotion ? (
         <MobileProjectReel
           projects={projects}
           onOpenCaseStudy={onOpenCaseStudy}
