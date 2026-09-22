@@ -14,7 +14,7 @@ export default function Experience({
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px' }}
       >
@@ -35,7 +35,7 @@ export default function Experience({
             className="editorial-timeline-item"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
+            viewport={{ once: false, amount: 0.25 }}
             transition={{ duration: 0.8, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
             onMouseEnter={() => onCursorChange?.('hover')}
             onMouseLeave={() => onCursorChange?.('default')}
@@ -59,7 +59,7 @@ export default function Experience({
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{ marginBottom: '20px' }}
           >
@@ -79,7 +79,7 @@ export default function Experience({
                 className="editorial-timeline-item"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
+                viewport={{ once: false, amount: 0.25 }}
                 transition={{ duration: 0.75, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
                 onMouseEnter={() => onCursorChange?.('hover')}
                 onMouseLeave={() => onCursorChange?.('default')}
@@ -106,7 +106,7 @@ export default function Experience({
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{ marginBottom: '20px' }}
           >
@@ -124,7 +124,7 @@ export default function Experience({
               className="editorial-timeline-item education-timeline-item"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
+              viewport={{ once: false, amount: 0.25 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               onMouseEnter={() => onCursorChange?.('hover')}
               onMouseLeave={() => onCursorChange?.('default')}

@@ -96,7 +96,7 @@ export default function CinematicTransitionVeil() {
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
             >
-              <span className="veil-label-num">SCENE</span>
+              <span className="veil-label-num">PROJECT</span>
               <span className="veil-label-text">{label}</span>
             </motion.div>
           )}

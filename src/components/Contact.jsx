@@ -30,7 +30,7 @@ export default function Contact({ contactData, onCursorChange }) {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}
       >
@@ -48,7 +48,7 @@ export default function Contact({ contactData, onCursorChange }) {
         className="contact-subline-text"
         initial={{ opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.85, delay: 0.2 }}
       >
         Have an idea, opportunity, or problem worth solving?
@@ -59,7 +59,7 @@ export default function Contact({ contactData, onCursorChange }) {
         className="contact-editorial-links-row"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.85, delay: 0.35 }}
       >
         {/* Email Direct - semantic mailto link */}

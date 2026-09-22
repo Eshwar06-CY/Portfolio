@@ -612,7 +612,7 @@ function DesktopProjectReel({
                       ref={(el) => (numbersRef.current[idx] = el)}
                       className="slide-num-eyebrow"
                     >
-                      <span className="slide-num-tag">SCENE 0{idx + 1}</span>
+                      <span className="slide-num-tag">PROJECT 0{idx + 1}</span>
                       <span className="slide-tagline">{project.tagline || project.subtitle}</span>
                     </div>
 
@@ -733,7 +733,7 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
               className="mobile-project-scene"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: false, amount: 0.2 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mobile-scene-eyebrow">
@@ -844,7 +844,7 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
           className="work-intro-kicker-wrap"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="kicker">02 — SELECTED WORK</span>
@@ -854,7 +854,7 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
           className="work-monumental-heading"
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
           SELECTED WORK
@@ -864,7 +864,7 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
           className="work-supporting-text"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
           The ideas in action: four projects exploring practical applications of technology.
@@ -874,7 +874,7 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
           className="work-reel-cue"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.85, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="reel-cue-text">THE PROJECT REEL</span>

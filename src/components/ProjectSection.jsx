@@ -11,7 +11,7 @@ export default function ProjectSection({ projects, onOpenCaseStudy, onCursorChan
           className="work-kicker-box"
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.7 }}
         >
           <span className="kicker">02 — SELECTED WORK</span>
@@ -23,7 +23,7 @@ export default function ProjectSection({ projects, onOpenCaseStudy, onCursorChan
             className="work-monumental-title"
             initial={{ opacity: 0, y: 25 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             SELECTED WORK
@@ -33,7 +33,7 @@ export default function ProjectSection({ projects, onOpenCaseStudy, onCursorChan
             className="work-header-narrative"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.9, delay: 0.2 }}
           >
             Each project is built around real operational friction: eliminating guesswork in campus placements, turning freight deadhead into revenue, and synthesizing complex schedules.

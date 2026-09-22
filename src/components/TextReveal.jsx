@@ -10,7 +10,7 @@ export default function TextReveal({
   duration = 0.9
 }) {
   const rootRef = useRef(null);
-  const isInView = useInView(rootRef, { once: true, amount: 0.15 });
+  const isInView = useInView(rootRef, { once: false, amount: 0.15 });
   const lineArray = Array.isArray(lines) ? lines : (typeof lines === 'string' ? lines.split('\n') : []);
 
   return (

@@ -7,7 +7,7 @@ export default function ExperienceTimeline({ experiences, onCursorChange }) {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.7 }}
       >
         <span className="kicker">04 — LEADERSHIP & EXPERIENCES</span>
@@ -17,7 +17,7 @@ export default function ExperienceTimeline({ experiences, onCursorChange }) {
         className="section-title"
         initial={{ opacity: 0, y: 25 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.9, delay: 0.1 }}
       >
         JOURNEY & IMPACT
@@ -32,7 +32,7 @@ export default function ExperienceTimeline({ experiences, onCursorChange }) {
             className="timeline-milestone"
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.8, delay: idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
             onMouseEnter={() => onCursorChange?.('hover')}
             onMouseLeave={() => onCursorChange?.(null)}

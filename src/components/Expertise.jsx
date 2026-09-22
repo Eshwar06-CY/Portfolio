@@ -94,7 +94,7 @@ export default function Expertise({ expertiseData, onCursorChange }) {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px' }}
       >
@@ -132,7 +132,7 @@ export default function Expertise({ expertiseData, onCursorChange }) {
               className={`editorial-expertise-item ${isHovered ? 'item-active' : ''}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: false, amount: 0.2 }}
               transition={{ duration: 0.8, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
               onMouseEnter={() => {
                 setHoveredIdx(idx);
