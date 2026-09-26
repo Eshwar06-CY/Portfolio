@@ -1,55 +1,90 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
-import TextReveal from './TextReveal';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Contact({ contactData, onCursorChange }) {
+  const contactRootRef = useRef(null);
   const emailAddress = contactData?.email || 'meshwar824@gmail.com';
   const linkedInUrl = 'https://www.linkedin.com/in/eshwar-m-90b86332a';
   const gitHubUrl = 'https://github.com/Eshwar06-CY';
 
-  return (
-    <section id="contact" className="cinematic-section contact-editorial-section" aria-label="Contact Section">
-      {/* Subtle Ambient Portrait Watermark: Completing the Visual Loop */}
-      <div className="contact-portrait-watermark" aria-hidden="true">
-        <img
-          src="/portrait.png"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/assets/images/portrait.png";
-          }}
-          alt=""
-          className="contact-watermark-img"
-          loading="lazy"
-        />
-        <div className="contact-watermark-veil" />
-      </div>
+  useEffect(() => {
+    const el = contactRootRef.current;
+    if (!el) return;
 
-      {/* Section Kicker */}
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: 'top 75%',
+      onEnter: () => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'connect' }));
+        }
+      },
+      onLeaveBack: () => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'data' }));
+        }
+      }
+    });
+
+    return () => {
+      trigger.kill();
+    };
+  }, []);
+
+  return (
+    <section id="contact" ref={contactRootRef} className="cinematic-section contact-editorial-section" aria-label="Contact Section">
+
+      {/* Section Kicker & Closing Session Telemetry */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0.85, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, amount: 'some' }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}
       >
-        <span className="kicker">05 — CONNECT</span>
+        <div className="contact-session-telemetry-row">
+          <span className="kicker">05 — CONNECT</span>
+          <span className="telemetry-sep">•</span>
+          <span className="telemetry-sub-tag">OPEN TO COLLABORATION &amp; OPPORTUNITIES</span>
+        </div>
       </motion.div>
 
-      {/* Monumental Headline */}
-      <TextReveal
-        lines={["LET'S BUILD", <em key="em" className="headline-emphasis">SOMETHING.</em>]}
-        as="h2"
-        className="contact-monumental-headline"
-      />
+      {/* Choreographed Monumental Headline with Fail-Safe Visibility */}
+      <h2 className="contact-monumental-headline">
+        <motion.span
+          className="contact-headline-line line-1"
+          style={{ display: 'block' }}
+          initial={{ opacity: 0.85, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.75, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+        >
+          LET'S BUILD
+        </motion.span>
+        <motion.span
+          className="contact-headline-line line-2"
+          style={{ display: 'block' }}
+          initial={{ opacity: 0.85, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.8, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <em className="headline-emphasis">SOMETHING.</em>
+        </motion.span>
+      </h2>
 
       <motion.p
         className="contact-subline-text"
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0.85, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
-        transition={{ duration: 0.85, delay: 0.2 }}
+        viewport={{ once: true, amount: 'some' }}
+        transition={{ duration: 0.75, delay: 0.36, ease: [0.16, 1, 0.3, 1] }}
       >
         Have an idea, opportunity, or problem worth solving?
       </motion.p>
@@ -57,10 +92,10 @@ export default function Contact({ contactData, onCursorChange }) {
       {/* Editorial Interactive Links (Native semantic mailto & external anchors) */}
       <motion.div
         className="contact-editorial-links-row"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0.85, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
-        transition={{ duration: 0.85, delay: 0.35 }}
+        viewport={{ once: true, amount: 'some' }}
+        transition={{ duration: 0.8, delay: 0.48, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* Email Direct - semantic mailto link */}
         <Magnetic strength={0.18}>

@@ -178,6 +178,15 @@ function InteractiveProjectVisual({
         <div ref={glareRef} className="slide-visual-glare" />
         <div className="slide-visual-vignette" />
         <div className="slide-visual-film-edge" />
+        {/* Optical corner reticle micro-marks */}
+        <span className="slide-visual-reticle reticle-tl" aria-hidden="true">+</span>
+        <span className="slide-visual-reticle reticle-tr" aria-hidden="true">+</span>
+        <span className="slide-visual-reticle reticle-bl" aria-hidden="true">+</span>
+        <span className="slide-visual-reticle reticle-br" aria-hidden="true">+</span>
+        <div className="slide-visual-telemetry-badge" aria-hidden="true">
+          <span className="telemetry-badge-dot" />
+          <span className="telemetry-badge-code">16:10 ANAMORPHIC // OPTICAL FRAME</span>
+        </div>
       </div>
     </div>
   );
@@ -226,12 +235,12 @@ function DesktopProjectReel({
 
         if (i === 0) {
           if (slide) gsap.set(slide, { autoAlpha: 1, y: 0, scale: 1, zIndex: 10 });
-          if (num) gsap.set(num, { autoAlpha: 0.45, y: isMobile ? 6 : 10 });
-          if (title) gsap.set(title, { autoAlpha: 0.55, y: isMobile ? 10 : 16, scale: 0.985 });
-          if (visual) gsap.set(visual, { autoAlpha: 0.65, x: 0, y: isMobile ? 12 : 18, scale: isMobile ? 1.01 : 1.035, clipPath: 'inset(0% 2% 0% 0%)' });
-          if (img) gsap.set(img, { scale: 1.05 });
-          if (meta) gsap.set(meta, { autoAlpha: 0.35, y: isMobile ? 8 : 14 });
-          if (bg) gsap.set(bg, { opacity: 0.5 });
+          if (num) gsap.set(num, { autoAlpha: 1, y: 0 });
+          if (title) gsap.set(title, { autoAlpha: 1, y: 0, scale: 1.0 });
+          if (visual) gsap.set(visual, { autoAlpha: 1, x: 0, y: 0, scale: 1.0, clipPath: 'inset(0% 0% 0% 0%)' });
+          if (img) gsap.set(img, { scale: 1.0 });
+          if (meta) gsap.set(meta, { autoAlpha: 1, y: 0 });
+          if (bg) gsap.set(bg, { opacity: 0.85 });
         } else {
           // Personality-calibrated initial positions for slides 1..3 (zero lateral shift on mobile to avoid overflow)
           let initX = 0;
@@ -271,16 +280,28 @@ function DesktopProjectReel({
         }
       });
 
-      // 2. Master pinned timeline scrubbing over 340%
-      // Scrub 0.65 ensures immediate physical connection to scroll wheel / touch without lag
+      // 2. Master pinned timeline scrubbing over calibrated travel (+240%)
+      // Eliminates excessive empty scroll distance while giving each project ample showcase time
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
           start: 'top top',
-          end: '+=340%',
+          end: '+=240%',
           pin: stage,
           scrub: 0.65,
           anticipatePin: 1,
+          onEnter: () => {
+            const modes = ['p1', 'p2', 'p3', 'p4'];
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[activeIdxRef.current] || 'p1' }));
+            }
+          },
+          onEnterBack: () => {
+            const modes = ['p1', 'p2', 'p3', 'p4'];
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[activeIdxRef.current] || 'p4' }));
+            }
+          },
           onUpdate: (self) => {
             const p = self.progress;
             // Map progress to discrete active index
@@ -299,8 +320,7 @@ function DesktopProjectReel({
 
       const dur = 1.0;
 
-      // 3. First Project (SPECra) Entrance Sequence (t = 0.00 to 0.20)
-      // Selected Work heading settles -> SPECra visual enters -> number -> title becomes dominant -> meta settles
+      // 3. First Project (SPECra) starts active and locked in
       const p0Visual = visualsRef.current[0];
       const p0Title = titlesRef.current[0];
       const p0Num = numbersRef.current[0];
@@ -319,16 +339,16 @@ function DesktopProjectReel({
         }, 0);
       }
       if (p0Img) {
-        tl.to(p0Img, { scale: 1.02, ease: 'none', duration: 0.20 * dur }, 0);
+        tl.to(p0Img, { scale: 1.00, ease: 'none', duration: 0.20 * dur }, 0);
       }
       if (p0Num) {
-        tl.to(p0Num, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.16 * dur }, 0.03 * dur);
+        tl.to(p0Num, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.16 * dur }, 0);
       }
       if (p0Title) {
-        tl.to(p0Title, { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.18 * dur }, 0.04 * dur);
+        tl.to(p0Title, { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.18 * dur }, 0);
       }
       if (p0Meta) {
-        tl.to(p0Meta, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.18 * dur }, 0.06 * dur);
+        tl.to(p0Meta, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.18 * dur }, 0);
       }
       if (p0Bg) {
         tl.to(p0Bg, { opacity: 0.85, ease: 'power1.out', duration: 0.20 * dur }, 0);
@@ -510,6 +530,14 @@ function DesktopProjectReel({
             );
           }
         }
+
+        // Final Project (CAPACITYX) remains 100% visible and stable through to the unpinning into Experience
+        if (isLastProject) {
+          // No vanishing exit: keep elements visible so there is zero black gap before Experience
+          if (currentSlide) {
+            tl.to(currentSlide, { autoAlpha: 1, y: 0, duration: 0.1 }, holdEnd);
+          }
+        }
       }
     }, root);
 
@@ -550,11 +578,16 @@ function DesktopProjectReel({
         {/* 1. HUD Chrome: Top Header Bar */}
         <div className="reel-hud-top">
           <div className="hud-eyebrow-box">
-            <span className="hud-kicker">THE PROJECT REEL</span>
-            <span className="hud-divider">•</span>
-            <span className="hud-reel-label">0{activeIndex + 1} / 0{projects.length}</span>
+            <span className="hud-kicker">SELECTED WORK</span>
+            <span className="hud-divider">/</span>
+            <span className="hud-reel-label">PROJECT_REEL</span>
+            <span className="hud-divider">/</span>
+            <span className="hud-chapter-counter">CHAPTER 0{activeIndex + 1} OF 0{projects.length}</span>
           </div>
-          <div className="hud-category-box">
+          <div className="hud-telemetry-box">
+            <span className="hud-telemetry-label">PROJECT</span>
+            <span className="hud-telemetry-val">{activeProject.title}</span>
+            <span className="hud-divider">•</span>
             <span className="hud-active-category">{activeProject.category}</span>
           </div>
         </div>
@@ -562,27 +595,30 @@ function DesktopProjectReel({
         {/* 2. HUD Chrome: Bottom Indicator Bar */}
         <div className="reel-hud-bottom">
           <div className="hud-counter-box">
+            <span className="hud-chapter-label">CHAPTER</span>
             <div className="hud-digit-current-wrap">
               <span key={activeIndex} className="hud-digit-current hud-digit-rolling">
                 0{activeIndex + 1}
               </span>
             </div>
+            <span className="hud-digit-sep">/</span>
+            <span className="hud-digit-total">0{projects.length}</span>
             <div className="hud-progress-track">
               <div
                 className="hud-progress-fill"
                 style={{ width: `${((activeIndex + 1) / projects.length) * 100}%` }}
               />
             </div>
-            <span className="hud-digit-total">0{projects.length}</span>
           </div>
 
           <div className="hud-scroll-cue">
-            <span className="hud-scroll-text">SCROLL TO ADVANCE REEL</span>
+            <span className="hud-pulse-dot" />
+            <span className="hud-scroll-text">SCROLL TO ADVANCE CHAPTERS</span>
             <span className="hud-scroll-arrow">↓</span>
           </div>
         </div>
 
-        {/* 3. The 5 Project Scenes */}
+        {/* 3. The 4 Project Scenes */}
         <div className="reel-slides-viewport">
           {projects.map((project, idx) => {
             const isCurrent = idx === activeIndex;
@@ -612,8 +648,14 @@ function DesktopProjectReel({
                       ref={(el) => (numbersRef.current[idx] = el)}
                       className="slide-num-eyebrow"
                     >
-                      <span className="slide-num-tag">PROJECT 0{idx + 1}</span>
-                      <span className="slide-tagline">{project.tagline || project.subtitle}</span>
+                      <div className="slide-chapter-tag-wrap">
+                        <span className="slide-chapter-prefix">CHAPTER</span>
+                        <span className="slide-num-tag">0{idx + 1}</span>
+                        <span className="slide-chapter-divider">/</span>
+                        <span className="slide-total-tag">0{projects.length}</span>
+                      </div>
+                      <span className="slide-eyebrow-sep">•</span>
+                      <span className="slide-technical-domain">{project.category}</span>
                     </div>
 
                     {/* Monumental Title Layer (0.9x speed) */}
@@ -640,9 +682,35 @@ function DesktopProjectReel({
                       ref={(el) => (metasRef.current[idx] = el)}
                       className="slide-meta-wrap"
                     >
+                      {/* Editorial Tagline / Quote */}
+                      {project.tagline && (
+                        <div className="slide-tagline-bar">
+                          <span className="slide-tagline-quote">“</span>
+                          <p className="slide-tagline-text">{project.tagline}</p>
+                        </div>
+                      )}
+
+                      {/* Descriptive Body */}
                       <p className="slide-description-text">
                         {project.description}
                       </p>
+
+                      {/* Technical Micro-Telemetry Strip (Curated Layer) */}
+                      <div className="slide-micro-telemetry-strip">
+                        <div className="micro-telemetry-item">
+                          <span className="micro-telemetry-label">STAGE</span>
+                          <span className="micro-telemetry-val">
+                            {idx === 0 ? 'PROTOTYPE PROVEN' : idx === 1 ? 'APPLICATION' : idx === 2 ? 'ACTIVE ENGINEERING' : 'CONCEPT ARCHITECTURE'}
+                          </span>
+                        </div>
+                        <div className="micro-telemetry-divider">•</div>
+                        <div className="micro-telemetry-item">
+                          <span className="micro-telemetry-label">DOMAIN</span>
+                          <span className="micro-telemetry-val">
+                            {idx === 0 ? 'AI HYDRAULICS' : idx === 1 ? 'FINANCIAL AI' : idx === 2 ? 'OCR SCHEDULING' : 'LOGISTICS PLATFORM'}
+                          </span>
+                        </div>
+                      </div>
 
                       {/* Minimalist Tech Tags */}
                       <div className="slide-tech-stream">
@@ -731,13 +799,18 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
             <motion.div
               key={project.id}
               className="mobile-project-scene"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0.9, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.2 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mobile-scene-eyebrow">
-                <span className="mobile-scene-num">0{idx + 1}</span>
+                <div className="mobile-chapter-pill">
+                  <span className="mobile-chapter-txt">CHAPTER</span>
+                  <span className="mobile-scene-num">0{idx + 1}</span>
+                  <span className="mobile-chapter-sep">/</span>
+                  <span className="mobile-total-num">0{projects.length}</span>
+                </div>
                 <span className="mobile-scene-category">{project.category}</span>
               </div>
 
@@ -751,25 +824,40 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                 </h3>
               </Link>
 
-              <Link
-                to={`/projects/${projectSlug}`}
+              <div
                 className="mobile-scene-visual"
                 onClick={() => handleMobileSelect(project)}
+                role="button"
+                tabIndex={0}
                 aria-label={`View ${project.title} visual showcase`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleMobileSelect(project);
+                  }
+                }}
               >
                 <img
                   src={project.image}
                   alt={project.title}
                   className="mobile-img"
-                  loading="lazy"
+                  loading={idx < 2 ? 'eager' : 'lazy'}
                   decoding="async"
                 />
-              </Link>
+                <div className="mobile-visual-vignette" />
+                <div className="mobile-visual-film-edge" />
+                <span className="mobile-reticle reticle-tl">+</span>
+                <span className="mobile-reticle reticle-br">+</span>
+              </div>
+
+              {project.tagline && (
+                <p className="mobile-scene-tagline">“{project.tagline}”</p>
+              )}
 
               <p className="mobile-scene-desc">{project.description}</p>
 
               <div className="mobile-tech-row">
-                {project.tags.slice(0, 3).map((tag) => (
+                {project.tags.slice(0, 4).map((tag) => (
                   <span key={tag} className="mobile-tech-tag">{tag}</span>
                 ))}
               </div>
@@ -842,47 +930,47 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
       <div className="work-editorial-intro">
         <motion.div
           className="work-intro-kicker-wrap"
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0.85, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.3 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="kicker">02 — SELECTED WORK</span>
         </motion.div>
 
         <motion.h2
           className="work-monumental-heading"
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0.85, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.3 }}
-          transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.75, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
         >
           SELECTED WORK
         </motion.h2>
 
         <motion.p
           className="work-supporting-text"
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0.85, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.3 }}
-          transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.75, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
         >
           The ideas in action: four projects exploring practical applications of technology.
         </motion.p>
 
         <motion.div
           className="work-reel-cue"
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 0.75 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: false, amount: 0.3 }}
-          transition={{ duration: 0.85, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, amount: 'some' }}
+          transition={{ duration: 0.75, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="reel-cue-text">THE PROJECT REEL</span>
           <span className="reel-cue-arrow">↓</span>
         </motion.div>
       </div>
 
-      {isReducedMotion ? (
+      {(isMobile || isReducedMotion) ? (
         <MobileProjectReel
           projects={projects}
           onOpenCaseStudy={onOpenCaseStudy}

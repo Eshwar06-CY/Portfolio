@@ -11,6 +11,7 @@ import Navbar from './components/Navbar';
 import CustomCursor from './components/CustomCursor';
 import PageTransition from './components/PageTransition';
 import CinematicTransitionVeil from './components/CinematicTransitionVeil';
+import CinematicIntro from './components/CinematicIntro';
 import Home from './pages/Home';
 import ProjectDetails from './pages/ProjectDetails';
 import AboutPage from './pages/AboutPage';
@@ -21,6 +22,11 @@ function MainApp() {
   const [cursorMode, setCursorMode] = useState('default');
   const navigate = useNavigate();
   const location = useLocation();
+  const isHomeRoute = location.pathname === '/';
+  const isProjectRoute =
+    location.pathname.startsWith('/project/') || location.pathname.startsWith('/projects/');
+
+  const [hasEntered, setHasEntered] = useState(!isHomeRoute);
   const { lenis, scrollTo, resetScroll } = useLenis();
   const savedHomeScrollRef = useRef(0);
 
@@ -32,16 +38,44 @@ function MainApp() {
     restDelta: 0.001
   });
 
-  const isProjectRoute =
-    location.pathname.startsWith('/project/') || location.pathname.startsWith('/projects/');
-  const isHomeRoute = location.pathname === '/';
+  // Lock scroll while in intro environment
+  useEffect(() => {
+    if (isHomeRoute && !hasEntered) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      if (lenis) lenis.stop();
+    } else {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      if (lenis) lenis.start();
+    }
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, [hasEntered, isHomeRoute, lenis]);
 
   // Ensure scroll starts at top on fresh visit
+  // Ensure scroll starts at top on fresh visit & ensure ScrollTrigger refreshes accurately after layout settles
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
     resetScroll();
+
+    const handleWindowLoad = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener('load', handleWindowLoad);
+
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 200);
+
+    return () => {
+      window.removeEventListener('load', handleWindowLoad);
+      clearTimeout(refreshTimer);
+    };
   }, []);
 
   // Handle route changes and exact scroll restoration
@@ -108,16 +142,30 @@ function MainApp() {
       <div className="grain-overlay" />
       <div className="vignette-overlay" />
 
-      {/* Progress Line on Homepage */}
-      {isHomeRoute && (
+      {/* Anonymous Cinematic AI / Cyber / Creative Developer Entry Experience */}
+      {isHomeRoute && !hasEntered && (
+        <CinematicIntro
+          onEnter={() => {
+            setHasEntered(true);
+            if (lenis) lenis.start();
+            setTimeout(() => {
+              ScrollTrigger.refresh();
+            }, 120);
+          }}
+          onCursorChange={setCursorMode}
+        />
+      )}
+
+      {/* Progress Line on Homepage (Only visible after entering) */}
+      {isHomeRoute && hasEntered && (
         <motion.div className="scroll-progress-bar" style={{ scaleX }} />
       )}
 
       {/* Interactive Lerped Custom Cursor (Automatically disabled on touch/tablet) */}
       <CustomCursor cursorMode={cursorMode} />
 
-      {/* Navigation (Always visible on homepage) */}
-      {isHomeRoute && (
+      {/* Navigation (Only revealed after entering portfolio) */}
+      {isHomeRoute && hasEntered && (
         <Navbar
           profile={portfolioData.profile}
           onNavigate={handleNavigate}
@@ -131,12 +179,21 @@ function MainApp() {
             path="/"
             element={
               <PageTransition>
-                <Home
-                  portfolioData={portfolioData}
-                  onNavigate={handleNavigate}
-                  onOpenCaseStudy={handleOpenCaseStudy}
-                  onCursorChange={setCursorMode}
-                />
+                {hasEntered ? (
+                  <Home
+                    portfolioData={portfolioData}
+                    onNavigate={handleNavigate}
+                    onOpenCaseStudy={handleOpenCaseStudy}
+                    onCursorChange={setCursorMode}
+                    hasEntered={hasEntered}
+                  />
+                ) : (
+                  <div
+                    className="portfolio-pre-enter-placeholder"
+                    style={{ minHeight: '100vh', width: '100%', backgroundColor: 'transparent' }}
+                    aria-hidden="true"
+                  />
+                )}
               </PageTransition>
             }
           />
