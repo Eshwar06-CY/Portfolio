@@ -164,15 +164,15 @@ function AtmosphericBackdropPlane({ mouseRef, scrollRef, atmosphereMode = 'defau
     if (introPhase === 'entering') {
       enterElapsedRef.current += delta;
       const et = enterElapsedRef.current;
-      if (et > 1.2) {
-        const darkProgress = Math.min(1.0, (et - 1.2) / 1.8);
+      if (et > 0.8) {
+        const darkProgress = Math.min(1.0, (et - 0.8) / 1.4);
         const eased = darkProgress * darkProgress; // Quadratic ease-in for dramatic darkening
         const introConfig = ATMOSPHERE_MODES.intro;
-        targetGlowIntensity.current = introConfig.glowIntensity * (1 - eased * 0.95);
+        targetGlowIntensity.current = introConfig.glowIntensity * (1 - eased * 0.97);
         targetGlowColor.current.setRGB(
-          introConfig.glowColor[0] * (1 - eased * 0.9),
-          introConfig.glowColor[1] * (1 - eased * 0.9),
-          introConfig.glowColor[2] * (1 - eased * 0.9)
+          introConfig.glowColor[0] * (1 - eased * 0.92),
+          introConfig.glowColor[1] * (1 - eased * 0.92),
+          introConfig.glowColor[2] * (1 - eased * 0.92)
         );
         targetBaseColor.current.setRGB(
           introConfig.baseColor[0] * (1 - eased),
