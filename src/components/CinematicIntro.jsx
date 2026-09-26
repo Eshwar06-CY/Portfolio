@@ -20,16 +20,15 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
   const telemetryRef = useRef(null);
 
   const [phase, setPhase] = useState('initializing'); // 'initializing' | 'ready' | 'entering' | 'done'
-  const [diagnosticText, setDiagnosticText] = useState('INITIALIZING ENVIRONMENT // 0x7F3A');
+  const [diagnosticText, setDiagnosticText] = useState('INITIALIZING ENVIRONMENT');
   const [hexCycle, setHexCycle] = useState('0x7F3A');
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  // 1. Lifecycle: Setup session check, atmosphere mode, and generative timing
+  // 1. Lifecycle: Platform duration, WebGL dispatch, and phased neural status schedule
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setIsReducedMotion(motionQuery.matches);
-
-    const isSessionReload = sessionStorage.getItem('portfolio_intro_entered') === 'true';
+    const hasReducedMotion = motionQuery.matches;
+    setIsReducedMotion(hasReducedMotion);
 
     // Notify WebGL scene of intro mode
     if (typeof window !== 'undefined') {
@@ -37,43 +36,53 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
       window.dispatchEvent(new CustomEvent('intro-state', { detail: { phase: 'initializing', isHovered: false } }));
     }
 
-    // Diagnostics sequence representing AI / computational node convergence
-    const diagnostics = [
-      'INITIALIZING ENVIRONMENT // 0x7F3A',
-      'SPATIAL NODES CONVERGING [99.8%]',
-      'NEURAL LATTICE FORMING CONNECTIONS',
-      'CALIBRATING LIGHT FIELD & DEPTH',
-      'COMPUTATIONAL CORE STABILIZED'
+    // Platform-aware duration: Desktop ~7.8s, Tablet ~6.0s, Mobile ~4.8s, Reduced Motion ~1.6s
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    let totalDuration = 7800;
+    if (hasReducedMotion) {
+      totalDuration = 1600;
+    } else if (w < 768) {
+      totalDuration = 4800; // Mobile
+    } else if (w < 1024) {
+      totalDuration = 6000; // Tablet
+    } else {
+      totalDuration = 7800; // Desktop
+    }
+
+    // Phase 6D status text sequence (single primary state at a time)
+    const statusTimeline = [
+      { at: 0, text: 'INITIALIZING ENVIRONMENT' },
+      { at: Math.round(totalDuration * 0.16), text: 'MAPPING NEURAL DATA' },
+      { at: Math.round(totalDuration * 0.36), text: 'ESTABLISHING CONNECTIONS' },
+      { at: Math.round(totalDuration * 0.58), text: 'DATA STREAMS CONVERGING' },
+      { at: Math.round(totalDuration * 0.78), text: 'COMPUTATIONAL CORE ONLINE' }
     ];
 
-    let step = 0;
-    const tickerInterval = setInterval(() => {
-      step++;
-      if (step < diagnostics.length) {
-        setDiagnosticText(diagnostics[step]);
-      }
-    }, isSessionReload ? 120 : 360);
+    const timers = [];
+    statusTimeline.forEach(({ at, text }) => {
+      const tid = setTimeout(() => {
+        setDiagnosticText(text);
+      }, at);
+      timers.push(tid);
+    });
 
-    // Subtle random hex scramble for environmental telemetry
+    // Subtle random hex scramble for ambient telemetry
     const hexSamples = ['0x7F3A', '0x1C88', '0x9B02', '0x4A1F', '0xFE3D', '0x88D1'];
     const hexInterval = setInterval(() => {
       setHexCycle(hexSamples[Math.floor(Math.random() * hexSamples.length)]);
     }, 480);
-
-    // Time to complete generative emergence: 1.8s
-    const initDuration = motionQuery.matches ? 200 : (isSessionReload ? 500 : 1850);
 
     const readyTimer = setTimeout(() => {
       setPhase('ready');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('intro-state', { detail: { phase: 'ready', isHovered: false } }));
       }
-    }, initDuration);
+    }, totalDuration);
+    timers.push(readyTimer);
 
     return () => {
-      clearInterval(tickerInterval);
+      timers.forEach(clearTimeout);
       clearInterval(hexInterval);
-      clearTimeout(readyTimer);
     };
   }, []);
 
@@ -118,26 +127,26 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [phase]);
 
-  // 4. Critical ENTER -> CAMERA THROUGH CORE -> HERO Transition Handoff
+  // 4. Critical ENTER -> NEURAL CASCADE -> CAMERA TRAVEL THROUGH CORE -> HERO TRANSITION
   const handleEnter = () => {
     if (phase === 'entering' || phase === 'done') return;
     setPhase('entering');
     onCursorChange?.('default');
 
-    // 1. Notify WebGL of camera forward warp and core contraction/flare
+    // 1. Notify WebGL of entry trigger to initiate neural cascade and forward camera journey
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('intro-state', { detail: { phase: 'entering', isHovered: false } })
       );
     }
 
-    // 2. Animate DOM dissolution
+    // 2. Animate DOM dissolution synchronized with the 3.00s transition
     const root = introRootRef.current;
     if (root) {
       if (isReducedMotion) {
         gsap.to(root, {
           autoAlpha: 0,
-          duration: 0.3,
+          duration: 0.35,
           ease: 'power2.inOut',
           onComplete: () => {
             setPhase('done');
@@ -150,6 +159,11 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
           }
         });
       } else {
+        const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+        const isMobileScreen = w < 768;
+        const isTabletScreen = w >= 768 && w < 1024;
+        const totalEnterDuration = isMobileScreen ? 2.60 : (isTabletScreen ? 2.90 : 3.20);
+
         const exitTl = gsap.timeline({
           onComplete: () => {
             setPhase('done');
@@ -162,45 +176,53 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
           }
         });
 
-        // 0.00 – 0.15s: Button compresses & reticle brackets flash
+        // 0.00s: ENTER button compresses slightly with subtle glow response
         if (enterBtnRef.current) {
           exitTl.to(enterBtnRef.current, {
-            scale: 0.92,
-            boxShadow: '0 0 28px rgba(140, 210, 255, 0.55)',
-            borderColor: 'rgba(255, 255, 255, 0.95)',
-            duration: 0.15,
+            scale: 0.94,
+            borderColor: 'rgba(255, 255, 255, 0.96)',
+            boxShadow: '0 0 20px rgba(160, 220, 255, 0.60)',
+            duration: 0.08,
             ease: 'power2.in'
-          }, 0);
+          }, 0.00);
+
+          // 0.08s: Button begins fading
+          exitTl.to(enterBtnRef.current, {
+            autoAlpha: 0,
+            scale: 0.90,
+            duration: 0.25,
+            ease: 'power2.out'
+          }, 0.08);
         }
 
-        // 0.35s: Environmental telemetry fragments dissolve
+        // 0.12s: SYSTEM READY typography and state pill begin fading
+        if (lowerCenterRef.current) {
+          const heading = lowerCenterRef.current.querySelector('.intro-monumental-heading');
+          const sub = lowerCenterRef.current.querySelector('.intro-access-sub');
+          const pill = lowerCenterRef.current.querySelector('.intro-status-pill');
+          if (heading) exitTl.to(heading, { autoAlpha: 0, y: -6, duration: 0.30, ease: 'power2.out' }, 0.12);
+          if (sub) exitTl.to(sub, { autoAlpha: 0, y: -4, duration: 0.25, ease: 'power2.out' }, 0.12);
+          if (pill) exitTl.to(pill, { autoAlpha: 0, duration: 0.22, ease: 'power2.out' }, 0.12);
+        }
+
+        // 0.45s: Ambient telemetry fragments dissolve into space
         if (telemetryRef.current) {
           exitTl.to(telemetryRef.current, {
             autoAlpha: 0,
-            duration: 0.35,
+            duration: 0.40,
             ease: 'power2.out'
-          }, 0.35);
+          }, 0.45);
         }
 
-        // 0.70s: Lower-center typography blurs and dissolves as camera begins moving toward the core
-        if (lowerCenterRef.current) {
-          exitTl.to(lowerCenterRef.current, {
-            autoAlpha: 0,
-            y: -14,
-            filter: 'blur(8px)',
-            duration: 0.65,
-            ease: 'power2.in'
-          }, 0.70);
-        }
-
-        // 1.40s: Environment collapses toward viewer into brief controlled darkness at 1.80s
+        // 0.85s: Entire intro overlay dissolves completely before camera enters outer network at 1.00s
         exitTl.to(root, {
-          scale: 1.06,
-          filter: 'blur(16px)',
           autoAlpha: 0,
-          duration: 0.40,
+          duration: 0.35,
           ease: 'power2.inOut'
-        }, 1.40);
+        }, isMobileScreen ? 0.65 : (isTabletScreen ? 0.75 : 0.85));
+
+        // Hold through core pass-through (2.50s - 2.90s) and controlled darkness (2.90s - 3.20s)
+        exitTl.to({}, { duration: 0.30 }, totalEnterDuration - 0.30);
       }
     } else {
       setPhase('done');
@@ -278,26 +300,23 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
           ==================================================================== */}
       <div ref={lowerCenterRef} className="intro-lower-center">
         {phase === 'initializing' ? (
-          /* Step 1: Initializing State with Minimalist Progress Ticker */
+          /* Step 1: Initializing State with Minimalist Single-Line Status Ticker (No progress bar) */
           <div className="intro-init-block">
-            <div className="intro-diagnostic-ticker">
-              <Terminal size={11} className="diagnostic-icon" />
+            <div className="intro-diagnostic-ticker" key={diagnosticText}>
+              <span className="diagnostic-beacon" aria-hidden="true" />
               <span className="diagnostic-text">{diagnosticText}</span>
-            </div>
-            <div className="intro-progress-rail">
-              <div className="intro-progress-bar" />
             </div>
           </div>
         ) : (
-          /* Step 2: System State & Integrated Enter Experience */
+          /* Step 2: System State & Integrated Enter Experience (Unmounted during initializing) */
           <div className="intro-ready-block">
             {/* Status indicator */}
             <div className="intro-status-pill">
               <span className="status-dot" />
-              <span className="status-label">SYSTEM STATE // OPTIMAL</span>
+              <span className="status-label">SYSTEM STATE // ONLINE</span>
             </div>
 
-            {/* Editorial Heading: Refined & Elegant, NOT Dominating Viewport */}
+            {/* Editorial Heading: Refined & Understated, NOT Dominating Viewport */}
             <h1 className="intro-monumental-heading">
               SYSTEM READY
             </h1>

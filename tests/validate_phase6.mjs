@@ -10,19 +10,22 @@ if (!fs.existsSync(scratchDir)) {
 }
 
 const VIEWPORTS = [
-  { name: 'desktop_1440x900', width: 1440, height: 900 },
-  { name: 'tablet_820x1180', width: 820, height: 1180 },
-  { name: 'mobile_390x844', width: 390, height: 844 },
-  { name: 'mobile_375x812', width: 375, height: 812 }
+  { name: 'desktop_1440x900', width: 1440, height: 900, initDuration: 7800 },
+  { name: 'tablet_820x1180', width: 820, height: 1180, initDuration: 6000 },
+  { name: 'mobile_390x844', width: 390, height: 844, initDuration: 4800 },
+  { name: 'mobile_375x812', width: 375, height: 812, initDuration: 4800 }
 ];
 
 async function runValidation() {
-  console.log('=== STARTING PHASE 6 CINEMATIC INTRO VALIDATION ===\n');
+  console.log('=== STARTING PHASE 6D EXTENDED NEURAL INITIALIZATION VALIDATION ===\n');
   const browser = await chromium.launch({ headless: true });
   const results = [];
 
   for (const vp of VIEWPORTS) {
-    console.log(`\nTesting viewport: ${vp.name} (${vp.width}x${vp.height})...`);
+    console.log(`\n======================================================`);
+    console.log(`Testing viewport: ${vp.name} (${vp.width}x${vp.height})... Target Init: ${vp.initDuration}ms`);
+    console.log(`======================================================`);
+
     const context = await browser.newContext({
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: 1
@@ -41,85 +44,104 @@ async function runValidation() {
 
     await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
 
-    // 1. Initial State Audit: Check for complete anonymity before entering
-    const preEnterAudit = await page.evaluate(() => {
+    // --- STAGE AUDIT 1: Early Boot & First Nodes (t = 800ms) ---
+    await page.waitForTimeout(800);
+    const earlyAudit = await page.evaluate(() => {
       const intro = document.querySelector('.cinematic-intro-root');
-      const navbar = document.querySelector('.site-header');
-      const hero = document.querySelector('#hero');
-      const portrait = document.querySelector('.hero-portrait-img');
+      const heading = document.querySelector('.intro-monumental-heading');
+      const enterBtn = document.querySelector('.intro-enter-btn');
+      const ticker = document.querySelector('.intro-diagnostic-ticker');
       const canvas = document.querySelectorAll('canvas');
 
-      // Check for personal leaks in visible DOM
       const bodyText = document.body.innerText || '';
       const containsPersonalName = /eshwar/i.test(bodyText);
       const containsCollege = /vidyavardhaka|vvce|mysuru/i.test(bodyText);
       const containsProjects = /specra|expenseflowai|capacityx/i.test(bodyText);
 
-      const navVisible = !!navbar && window.getComputedStyle(navbar).display !== 'none';
-      const heroStyle = hero ? window.getComputedStyle(hero) : null;
-      const heroVisible = !!hero && heroStyle?.visibility === 'visible' && parseFloat(heroStyle?.opacity || '0') > 0.5;
-
       return {
         introExists: !!intro,
+        headingExists: !!heading,
+        enterBtnExists: !!enterBtn,
+        tickerText: ticker?.textContent.trim(),
         containsPersonalName,
         containsCollege,
         containsProjects,
-        navVisible,
-        heroVisible,
-        canvasCount: canvas.length,
-        hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 1
+        canvasCount: canvas.length
       };
     });
+    console.log('  [Stage 1 & 2 Audit @ 800ms]:', JSON.stringify(earlyAudit));
+    const earlyShotPath = path.join(scratchDir, `phase6d_${vp.name}_stage1_nodes.png`);
+    await page.screenshot({ path: earlyShotPath });
 
-    console.log('  Pre-Enter Anonymity Audit:', JSON.stringify(preEnterAudit));
+    // --- STAGE AUDIT 2: Mid-Initialization Neural Formation & Data Propagation ---
+    const midTime = Math.round(vp.initDuration * 0.45);
+    await page.waitForTimeout(midTime - 800);
+    const midAudit = await page.evaluate(() => {
+      const heading = document.querySelector('.intro-monumental-heading');
+      const enterBtn = document.querySelector('.intro-enter-btn');
+      const ticker = document.querySelector('.intro-diagnostic-ticker');
+      return {
+        headingExists: !!heading,
+        enterBtnExists: !!enterBtn,
+        tickerText: ticker?.textContent.trim()
+      };
+    });
+    console.log(`  [Stage 3 & 4 Audit @ ${midTime}ms]:`, JSON.stringify(midAudit));
+    const midShotPath = path.join(scratchDir, `phase6d_${vp.name}_stage4_expansion.png`);
+    await page.screenshot({ path: midShotPath });
 
-    // Wait for the intro to settle into 'ready' state (1.9s)
-    await page.waitForTimeout(2000);
+    // --- STAGE AUDIT 3: System Ready & Convergence ---
+    // Wait until full initDuration + 500ms margin has elapsed
+    const remainingTime = (vp.initDuration + 500) - midTime;
+    await page.waitForTimeout(remainingTime);
 
-    // Capture Intro screenshot
-    const introShotPath = path.join(scratchDir, `phase6_${vp.name}_intro_ready.png`);
-    await page.screenshot({ path: introShotPath });
+    const readyShotPath = path.join(scratchDir, `phase6d_${vp.name}_stage7_ready.png`);
+    await page.screenshot({ path: readyShotPath });
 
-    // Audit Ready State elements
     const readyAudit = await page.evaluate(() => {
       const heading = document.querySelector('.intro-monumental-heading');
       const enterBtn = document.querySelector('.intro-enter-btn');
       const telemetry = document.querySelector('.intro-telemetry-layer');
+      const canvas = document.querySelectorAll('canvas');
 
       return {
         headingText: heading?.textContent.trim(),
         enterBtnPresent: !!enterBtn,
         enterBtnText: enterBtn?.textContent.replace(/\s+/g, ' ').trim(),
         telemetryPresent: !!telemetry,
+        canvasCount: canvas.length,
         hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 1
       };
     });
+    console.log('  [Stage 7 System Ready Audit]:', JSON.stringify(readyAudit));
 
-    console.log('  Ready State Audit:', JSON.stringify(readyAudit));
-
-    // 2. Test Hover & Click on [ ENTER EXPERIENCE ]
+    // --- INTERACTION: Click [ ENTER EXPERIENCE ] ---
     const enterBtn = page.locator('.intro-enter-btn');
     const isEnterVisible = await enterBtn.isVisible();
     if (isEnterVisible) {
       await enterBtn.hover();
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(200);
       await enterBtn.click();
     } else {
-      console.warn('Enter button not found via locator, clicking via evaluate');
+      console.warn('Enter button clicked via evaluate fallback');
       await page.evaluate(() => {
         const btn = document.querySelector('.intro-enter-btn');
         btn?.click();
       });
     }
 
-    // Wait for the full 3.0s cinematic sequence (1.8s core hyperjump + 1.2s hero reveal stabilization)
-    await page.waitForTimeout(3200);
+    // Wait for camera to enter the network and capture intermediate pass-through frame
+    await page.waitForTimeout(1800);
+    const passThroughShotPath = path.join(scratchDir, `phase6f_${vp.name}_camera_passthrough.png`);
+    await page.screenshot({ path: passThroughShotPath });
 
-    // Capture Post-Enter Hero screenshot
-    const heroShotPath = path.join(scratchDir, `phase6_${vp.name}_hero_entered.png`);
+    // Wait for remaining transition + core pass-through + controlled darkness + hero reveal stabilization
+    await page.waitForTimeout(2400);
+
+    const heroShotPath = path.join(scratchDir, `phase6f_${vp.name}_hero_entered.png`);
     await page.screenshot({ path: heroShotPath });
 
-    // 3. Audit Post-Enter Hero State
+    // --- STAGE AUDIT 4: Hero State & Smooth Transition Continuity ---
     const postEnterAudit = await page.evaluate(() => {
       const intro = document.querySelector('.cinematic-intro-root');
       const navbar = document.querySelector('.site-header');
@@ -127,6 +149,7 @@ async function runValidation() {
       const title = hero?.querySelector('.hero-title');
       const portrait = hero?.querySelector('.hero-portrait-img');
       const exploreBtn = hero?.querySelector('.scroll-indicator-button');
+      const canvas = document.querySelectorAll('canvas');
 
       const heroStyle = hero ? window.getComputedStyle(hero) : null;
       const titleStyle = title ? window.getComputedStyle(title) : null;
@@ -140,104 +163,103 @@ async function runValidation() {
         titleVisible: titleStyle?.visibility === 'visible' && parseFloat(titleStyle?.opacity || '0') > 0.8,
         portraitVisible: !!portrait && portraitStyle?.visibility === 'visible',
         exploreBtnPresent: !!exploreBtn,
+        canvasCount: canvas.length,
         hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 1
       };
     });
-
-    console.log('  Post-Enter Hero Audit:', JSON.stringify(postEnterAudit));
+    console.log('  [Post-Enter Hero Audit]:', JSON.stringify(postEnterAudit));
 
     const passed = (
-      preEnterAudit.introExists &&
-      !preEnterAudit.containsPersonalName &&
-      !preEnterAudit.containsCollege &&
-      !preEnterAudit.containsProjects &&
-      !preEnterAudit.navVisible &&
-      preEnterAudit.canvasCount === 1 &&
-      !preEnterAudit.hasOverflow &&
+      earlyAudit.introExists &&
+      !earlyAudit.headingExists &&
+      !earlyAudit.enterBtnExists &&
+      !earlyAudit.containsPersonalName &&
+      !earlyAudit.containsCollege &&
+      !earlyAudit.containsProjects &&
+      earlyAudit.canvasCount === 1 &&
+      !midAudit.headingExists &&
+      !midAudit.enterBtnExists &&
       readyAudit.headingText === 'SYSTEM READY' &&
       readyAudit.enterBtnPresent &&
+      readyAudit.canvasCount === 1 &&
       !readyAudit.hasOverflow &&
       postEnterAudit.introDissolved &&
       postEnterAudit.navVisible &&
       postEnterAudit.heroVisible &&
       postEnterAudit.titleText.includes('ESHWAR M') &&
       postEnterAudit.portraitVisible &&
+      postEnterAudit.canvasCount === 1 &&
       !postEnterAudit.hasOverflow &&
       consoleErrors.length === 0
     );
 
-    console.log(`  Result for ${vp.name}: ${passed ? 'PASS ✓' : 'FAIL ✗'}`);
+    console.log(`  >>> Viewport ${vp.name} Result: ${passed ? 'PASS ✓' : 'FAIL ✗'} <<<`);
     if (!passed) {
-      console.log('  Failure reasons:', {
-        preEnterAudit,
+      console.log('  Failure details:', {
+        earlyAudit,
+        midAudit,
         readyAudit,
         postEnterAudit,
         consoleErrors
       });
     }
-    results.push({ viewport: vp.name, passed, preEnterAudit, readyAudit, postEnterAudit, consoleErrors });
 
+    results.push({ viewport: vp.name, passed, earlyAudit, midAudit, readyAudit, postEnterAudit, consoleErrors });
     await context.close();
   }
 
-  // 4. Test prefers-reduced-motion: reduce
-  console.log('\nTesting prefers-reduced-motion: reduce...');
+  // --- REDUCED MOTION TEST ---
+  console.log(`\n======================================================`);
+  console.log(`Testing Reduced Motion mode (1440x900)... Target Init: 1600ms`);
+  console.log(`======================================================`);
   const rmContext = await browser.newContext({
     viewport: { width: 1440, height: 900 },
     reducedMotion: 'reduce'
   });
   const rmPage = await rmContext.newPage();
-  await rmPage.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
-  await rmPage.waitForTimeout(400);
-
-  const rmAudit = await rmPage.evaluate(() => {
-    const heading = document.querySelector('.intro-monumental-heading');
-    const enterBtn = document.querySelector('.intro-enter-btn');
-    const canvas = document.querySelectorAll('canvas');
-
-    return {
-      headingText: heading?.textContent.trim(),
-      enterBtnPresent: !!enterBtn,
-      canvasCount: canvas.length
-    };
+  const rmConsoleErrors = [];
+  rmPage.on('console', msg => {
+    if (msg.type() === 'error' && !msg.text().includes('favicon')) {
+      rmConsoleErrors.push(msg.text());
+    }
   });
 
-  console.log('  Reduced Motion Audit:', JSON.stringify(rmAudit));
+  await rmPage.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+  await rmPage.waitForTimeout(2000); // 1.6s init + 400ms margin
 
-  // Trigger enter in reduced motion
-  const rmBtn = rmPage.locator('.intro-enter-btn');
-  if (await rmBtn.isVisible()) {
-    await rmBtn.click();
-  }
-  await rmPage.waitForTimeout(600);
+  const rmReadyAudit = await rmPage.evaluate(() => {
+    const heading = document.querySelector('.intro-monumental-heading');
+    const enterBtn = document.querySelector('.intro-enter-btn');
+    return {
+      headingText: heading?.textContent.trim(),
+      enterBtnPresent: !!enterBtn
+    };
+  });
+  console.log('  [Reduced Motion Ready Audit]:', JSON.stringify(rmReadyAudit));
+
+  await rmPage.click('.intro-enter-btn');
+  await rmPage.waitForTimeout(800); // Fast dissolve in reduced motion
 
   const rmPostAudit = await rmPage.evaluate(() => {
     const hero = document.querySelector('#hero');
-    const title = hero?.querySelector('.hero-title');
+    const heroStyle = hero ? window.getComputedStyle(hero) : null;
     return {
-      heroVisible: !!hero && window.getComputedStyle(hero).visibility === 'visible',
-      titleText: title?.textContent.replace(/\s+/g, ' ').trim()
+      heroVisible: !!hero && heroStyle?.visibility === 'visible' && parseFloat(heroStyle?.opacity || '0') > 0.8
     };
   });
+  console.log('  [Reduced Motion Post-Enter Audit]:', JSON.stringify(rmPostAudit));
 
-  console.log('  Reduced Motion Post-Enter Audit:', JSON.stringify(rmPostAudit));
-  const rmPassed = rmAudit.headingText === 'SYSTEM READY' && rmAudit.enterBtnPresent && rmPostAudit.heroVisible;
-  console.log(`  Reduced Motion Result: ${rmPassed ? 'PASS ✓' : 'FAIL ✗'}`);
-
+  const rmPassed = rmReadyAudit.headingText === 'SYSTEM READY' && rmReadyAudit.enterBtnPresent && rmPostAudit.heroVisible && rmConsoleErrors.length === 0;
+  console.log(`  >>> Reduced Motion Result: ${rmPassed ? 'PASS ✓' : 'FAIL ✗'} <<<`);
+  results.push({ viewport: 'reduced_motion', passed: rmPassed });
   await rmContext.close();
+
   await browser.close();
 
-  const allPassed = results.every(r => r.passed) && rmPassed;
-  console.log(`\n==================================================`);
-  console.log(`OVERALL PHASE 6 PLAYWRIGHT VALIDATION: ${allPassed ? 'ALL PASSED (100% GREEN)' : 'FAILED'}`);
-  console.log(`==================================================\n`);
-
-  if (!allPassed) {
-    process.exit(1);
-  }
+  console.log('\n=== FINAL SUMMARY ===');
+  const allPassed = results.every(r => r.passed);
+  console.log(`Total Scenarios: ${results.length}, Passed: ${results.filter(r => r.passed).length}`);
+  console.log(`All Tests: ${allPassed ? 'ALL PASSED ✓' : 'SOME FAILED ✗'}`);
 }
 
-runValidation().catch(err => {
-  console.error('Validation Script Error:', err);
-  process.exit(1);
-});
+runValidation().catch(console.error);

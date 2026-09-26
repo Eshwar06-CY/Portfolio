@@ -179,7 +179,16 @@ function MainApp() {
             path="/"
             element={
               <PageTransition>
-                {hasEntered ? (
+                <div
+                  className="home-route-stage"
+                  aria-hidden={!hasEntered}
+                  style={{
+                    visibility: hasEntered ? 'visible' : 'hidden',
+                    pointerEvents: hasEntered ? 'auto' : 'none',
+                    minHeight: '100vh',
+                    width: '100%'
+                  }}
+                >
                   <Home
                     portfolioData={portfolioData}
                     onNavigate={handleNavigate}
@@ -187,13 +196,7 @@ function MainApp() {
                     onCursorChange={setCursorMode}
                     hasEntered={hasEntered}
                   />
-                ) : (
-                  <div
-                    className="portfolio-pre-enter-placeholder"
-                    style={{ minHeight: '100vh', width: '100%', backgroundColor: 'transparent' }}
-                    aria-hidden="true"
-                  />
-                )}
+                </div>
               </PageTransition>
             }
           />

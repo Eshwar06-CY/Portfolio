@@ -2577,39 +2577,32 @@ canvas {
 .intro-diagnostic-ticker {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+  font-size: 10px;
+  letter-spacing: 0.22em;
   color: #7d9cb8;
   text-transform: uppercase;
+  animation: tickerFadeIn 0.4s ease-out;
 }
 
-.diagnostic-icon {
-  color: #64b5f6;
-  animation: pulseDot 1.8s infinite ease-in-out;
+@keyframes tickerFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.intro-progress-rail {
-  width: 110px;
-  height: 1.5px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 1px;
-  overflow: hidden;
-  position: relative;
+.diagnostic-beacon {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #64b5f6;
+  box-shadow: 0 0 7px rgba(100, 181, 246, 0.85);
+  animation: beaconPulse 2s infinite ease-in-out;
 }
 
-.intro-progress-bar {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, #64b5f6, #d9efff);
-  animation: progressFill 1.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: left;
-}
-
-@keyframes progressFill {
-  0% { transform: scaleX(0); }
-  100% { transform: scaleX(1); }
+@keyframes beaconPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.75); }
 }
 
 .intro-ready-block {
@@ -2623,7 +2616,7 @@ canvas {
   align-items: center;
   gap: 7px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 8.5px;
   letter-spacing: 0.22em;
   color: #6e6e84;
   text-transform: uppercase;
@@ -2639,14 +2632,14 @@ canvas {
 }
 
 .intro-monumental-heading {
-  font-family: var(--font-display);
-  font-size: clamp(17px, 2.0vw, 24px);
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  line-height: 1.15;
-  color: #eaeff5;
+  font-family: var(--font-mono);
+  font-size: clamp(12.5px, 1.1vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  line-height: 1.2;
+  color: #c4dcf5;
   text-transform: uppercase;
-  margin: 0 0 6px;
+  margin: 0 0 5px;
 }
 
 .intro-access-sub {

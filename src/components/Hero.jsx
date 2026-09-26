@@ -78,21 +78,21 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         defaults: { ease: 'power3.out' }
       });
 
-      // Beat 1: Controlled darkness veil dissolves as soft cinematic light emerges (0.20s – 0.65s)
+      // Beat 1: Controlled darkness veil dissolves as soft cinematic light emerges (0.05s – 0.50s)
       if (veilRef.current) {
         entryTl.to(veilRef.current, {
           autoAlpha: 0,
           duration: 0.45,
           ease: 'power2.inOut'
-        }, 0.20);
+        }, 0.05);
       }
 
-      // Ambient light blooms in behind subject (0.20s - 0.95s)
+      // Ambient light blooms in behind subject (0.05s - 0.90s)
       if (ambientRef.current) {
         entryTl.fromTo(ambientRef.current,
           { scale: 0.88, autoAlpha: 0 },
           { scale: 1.0, autoAlpha: 1, duration: 0.85, ease: 'power2.out' },
-          0.20
+          0.05
         );
       }
 
@@ -114,25 +114,33 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         );
       }
 
-      // Beat 4: Portrait begins revealing with soft contrast & brightness bloom (0.60s – 1.30s)
+      // Beat 4: Portrait emerges: dark silhouette -> soft edge light -> portrait detail -> full portrait (0.45s – 1.35s)
       if (portraitFloatRef.current) {
         entryTl.fromTo(portraitFloatRef.current,
           {
-            scale: 1.035,
-            y: 14,
+            scale: 1.03,
+            y: 12,
             autoAlpha: 0,
-            filter: 'contrast(1.10) brightness(0.35)'
+            filter: 'contrast(1.22) brightness(0.18)'
           },
           {
-            scale: 1.0,
-            y: 0,
-            autoAlpha: 1,
-            filter: 'contrast(1.04) brightness(0.98)',
-            duration: 0.82,
+            scale: 1.015,
+            y: 6,
+            autoAlpha: 0.72,
+            filter: 'contrast(1.15) brightness(0.55)',
+            duration: 0.40,
             ease: 'power2.out'
           },
-          0.60
+          0.45
         );
+        entryTl.to(portraitFloatRef.current, {
+          scale: 1.0,
+          y: 0,
+          autoAlpha: 1,
+          filter: 'contrast(1.04) brightness(0.98)',
+          duration: 0.50,
+          ease: 'power2.out'
+        }, 0.85);
       }
 
       // Beat 5: ESHWAR M typography resolves through line mask (0.80s – 1.45s)

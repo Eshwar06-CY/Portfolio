@@ -123,8 +123,9 @@ class WebGLErrorBoundary extends Component {
  * Renders a smooth dark studio illumination falloff that tracks the smoothed key light.
  * Includes subtle filmic dithering to prevent 8-bit banding on dark gradients.
  */
-function AtmosphericBackdropPlane({ mouseRef, scrollRef, atmosphereMode = 'default', isReducedMotion }) {
+function AtmosphericBackdropPlane({ mouseRef, scrollRef, atmosphereMode = 'default', introPhase = 'done', isReducedMotion }) {
   const meshRef = useRef();
+  const enterElapsedRef = useRef(0);
   const { viewport } = useThree();
 
   // Lerped state containers to avoid re-renders
@@ -157,6 +158,31 @@ function AtmosphericBackdropPlane({ mouseRef, scrollRef, atmosphereMode = 'defau
 
     // Damping factor for smooth 60 FPS transitions
     const dampFactor = isReducedMotion ? 1.0 : Math.min(1.0, delta * 3.2);
+
+    // Progressive backdrop darkening during ENTER camera journey
+    // Prevents over-exposed gray-blue as camera approaches the backdrop plane
+    if (introPhase === 'entering') {
+      enterElapsedRef.current += delta;
+      const et = enterElapsedRef.current;
+      if (et > 1.2) {
+        const darkProgress = Math.min(1.0, (et - 1.2) / 1.8);
+        const eased = darkProgress * darkProgress; // Quadratic ease-in for dramatic darkening
+        const introConfig = ATMOSPHERE_MODES.intro;
+        targetGlowIntensity.current = introConfig.glowIntensity * (1 - eased * 0.95);
+        targetGlowColor.current.setRGB(
+          introConfig.glowColor[0] * (1 - eased * 0.9),
+          introConfig.glowColor[1] * (1 - eased * 0.9),
+          introConfig.glowColor[2] * (1 - eased * 0.9)
+        );
+        targetBaseColor.current.setRGB(
+          introConfig.baseColor[0] * (1 - eased),
+          introConfig.baseColor[1] * (1 - eased),
+          introConfig.baseColor[2] * (1 - eased)
+        );
+      }
+    } else {
+      enterElapsedRef.current = 0;
+    }
 
     currentBaseColor.current.lerp(targetBaseColor.current, dampFactor);
     currentGlowColor.current.lerp(targetGlowColor.current, dampFactor);
@@ -396,7 +422,7 @@ function StratifiedAtmosphericParticles({
  * Provides restrained cinematic dolly, elevation descent, subtle architectural lateral wave,
  * and smoothed mouse rotational tilt.
  */
-function SpatialCameraController({ mouseRef, scrollRef, cameraShiftRef, introPhase = 'done', isReducedMotion, isMobile }) {
+function SpatialCameraController({ mouseRef, scrollRef, cameraShiftRef, introPhase = 'done', isReducedMotion, isMobile, isTablet }) {
   const enterDollyRef = useRef(0);
   const targetFovRef = useRef(46);
   const enterTimeRef = useRef(0);
@@ -408,28 +434,65 @@ function SpatialCameraController({ mouseRef, scrollRef, cameraShiftRef, introPha
       enterTimeRef.current += delta;
       const et = enterTimeRef.current;
 
-      // 0.00 – 0.70s: Anticipation holding, subtle preparation
-      if (et < 0.70) {
-        enterDollyRef.current += delta * 0.35;
+      // Phase 6G Cinematic Camera Movement with Mass & Acceleration/Deceleration Easing:
+      const timingScale = isMobile ? 0.80 : (isTablet ? 0.90 : 1.0);
+      const travelScale = isMobile ? 0.78 : (isTablet ? 0.88 : 1.0);
+
+      // Smooth Hermite easing utilities:
+      const easeInOut = (p) => p * p * (3 - 2 * p);
+      const easeOut = (p) => p * (2 - p);
+
+      // 0.00 – 0.50s: System responds, neural cascade begins (camera still with mass inertia at Z = 5.0)
+      if (et < 0.50 * timingScale) {
+        enterDollyRef.current = 0;
         targetFovRef.current = 46;
       }
-      // 0.70 – 1.00s: Camera begins moving toward the core
-      else if (et < 1.00) {
-        enterDollyRef.current += delta * 4.5;
-        targetFovRef.current = 49;
+      // 0.50 – 1.00s: Camera begins moving toward core (smooth acceleration from rest, Z: 5.0 -> 4.0)
+      else if (et < 1.00 * timingScale) {
+        const prog = (et - 0.50 * timingScale) / (0.50 * timingScale);
+        const eased = easeInOut(prog);
+        enterDollyRef.current = (eased * 1.0) * travelScale;
+        targetFovRef.current = 46 + eased * 1.0;
       }
-      // 1.00 – 1.60s: Camera enters & passes THROUGH the computational core
-      else if (et < 1.60) {
-        enterDollyRef.current += delta * (isMobile ? 6.0 : 8.5);
-        targetFovRef.current = isMobile ? 50 : 54;
+      // 1.00 – 1.50s: Camera enters outer neural network (sustained cruise, Z: 4.0 -> 2.6)
+      else if (et < 1.50 * timingScale) {
+        const prog = (et - 1.00 * timingScale) / (0.50 * timingScale);
+        enterDollyRef.current = (1.0 + prog * 1.4) * travelScale;
+        targetFovRef.current = 47 + prog * 2.0;
       }
-      // 1.60 – 1.80s: Beyond the core into controlled darkness
+      // 1.50 – 2.00s: Camera passes between nodes and connections (depth parallax, Z: 2.6 -> 1.4)
+      else if (et < 2.00 * timingScale) {
+        const prog = (et - 1.50 * timingScale) / (0.50 * timingScale);
+        enterDollyRef.current = (2.4 + prog * 1.2) * travelScale;
+        targetFovRef.current = 49 + prog * 2.0;
+      }
+      // 2.00 – 2.50s: Camera approaches central core (brief acceleration surge into aperture bloom, Z: 1.4 -> 0.35)
+      else if (et < 2.50 * timingScale) {
+        const prog = (et - 2.00 * timingScale) / (0.50 * timingScale);
+        const surge = prog * prog * 0.35 + prog * 0.65;
+        enterDollyRef.current = (3.6 + surge * 1.05) * travelScale;
+        targetFovRef.current = isMobile ? (49 + prog * 2.0) : (51 + prog * 2.0);
+      }
+      // 2.50 – 2.90s: Camera passes THROUGH the core crystal at Z = 0 (Z: 0.35 -> -0.65)
+      else if (et < 2.90 * timingScale) {
+        const prog = (et - 2.50 * timingScale) / (0.40 * timingScale);
+        enterDollyRef.current = (4.65 + prog * 1.0) * travelScale;
+        targetFovRef.current = (isMobile ? 51 : 53) - prog * 5.0;
+      }
+      // 2.90 – 3.20s: Controlled darkness punctuation (smooth deceleration to rest, Z: -0.65 -> -1.10)
+      else if (et < 3.20 * timingScale) {
+        const prog = (et - 2.90 * timingScale) / (0.30 * timingScale);
+        const decel = easeOut(prog);
+        enterDollyRef.current = (5.65 + decel * 0.45) * travelScale;
+        targetFovRef.current = 48 - decel * 2.0;
+      }
+      // 3.20s+: Controlled darkness complete, handoff to Hero
       else {
-        enterDollyRef.current += delta * 2.5;
+        enterDollyRef.current = 6.10 * travelScale;
         targetFovRef.current = 46;
       }
     } else if (introPhase === 'done') {
-      enterDollyRef.current = Math.max(0, enterDollyRef.current - delta * 4.5);
+      enterDollyRef.current = Math.max(0, enterDollyRef.current - delta * 5.0);
       targetFovRef.current = 46;
       enterTimeRef.current = 0;
     } else {
@@ -440,31 +503,51 @@ function SpatialCameraController({ mouseRef, scrollRef, cameraShiftRef, introPha
 
     // Dynamic FOV distortion during camera push-through
     if (Math.abs(state.camera.fov - targetFovRef.current) > 0.05) {
-      state.camera.fov += (targetFovRef.current - state.camera.fov) * Math.min(1.0, delta * 3.5);
+      state.camera.fov += (targetFovRef.current - state.camera.fov) * Math.min(1.0, delta * 4.0);
       state.camera.updateProjectionMatrix();
     }
 
     const scrollProgress = scrollRef.current || 0;
-    const damp = Math.min(1.0, delta * 3.5);
+    // Fast responsive damp during entry flight so camera physically reaches Z = 0 and passes through
+    const damp = introPhase === 'entering' ? Math.min(1.0, delta * 14.0) : Math.min(1.0, delta * 3.5);
+
+    // Cinematic camera drift and subtle depth progression during neural initialization (Requirement 10 & 14)
+    const t = state.clock.elapsedTime;
+    const isIntro = introPhase === 'initializing' || introPhase === 'ready';
+    const isEntering = introPhase === 'entering';
+    const introDriftX = isIntro && !isMobile ? Math.sin(t * 0.28) * 0.18 : 0;
+    const introDriftY = isIntro && !isMobile ? Math.cos(t * 0.22) * 0.12 : 0;
+    const introDriftZ = isIntro && !isMobile ? Math.sin(t * 0.16) * 0.14 : 0;
+
+    // Early: camera starts slightly farther away (+0.25), smoothly approaches as network clusters form
+    let initDepth = 0;
+    if (introPhase === 'initializing' && !isReducedMotion) {
+      const initDur = isMobile ? 4.8 : 7.8;
+      const u = Math.min(1.0, t / initDur);
+      initDepth = (1.0 - u) * 0.25;
+    }
+
+    // Camera elevates to optical center of core crystal (Y = 0.25 desktop / 0.45 mobile) during pass-through
+    const enterElevation = isEntering ? (isMobile ? 0.45 : 0.25) : 0;
 
     // 1. Forward depth dolly: passes through the core on enter, settling gracefully on hero
-    const targetZ = 5.0 - scrollProgress * 0.75 - enterDollyRef.current;
+    const targetZ = 5.0 + initDepth - scrollProgress * 0.75 - enterDollyRef.current + (isEntering ? 0 : introDriftZ);
 
-    // 2. Vertical elevation tracking: gradual descent with scroll
-    const targetY = -scrollProgress * 1.35 + (cameraShiftRef.current?.y || 0);
+    // 2. Vertical elevation tracking: gradual descent with scroll + optical core alignment
+    const targetY = isEntering ? enterElevation : (-scrollProgress * 1.35 + (cameraShiftRef.current?.y || 0) + introDriftY);
 
     // 3. Lateral architectural wave: subtle breathing wave through section transitions
     const lateralArchitecturalWave = Math.sin(scrollProgress * Math.PI * 3.0) * 0.20;
-    const targetX = lateralArchitecturalWave + (cameraShiftRef.current?.x || 0);
+    const targetX = isEntering ? 0 : (lateralArchitecturalWave + (cameraShiftRef.current?.x || 0) + introDriftX);
 
     state.camera.position.x += (targetX - state.camera.position.x) * damp;
     state.camera.position.y += (targetY - state.camera.position.y) * damp;
     state.camera.position.z += (targetZ - state.camera.position.z) * damp;
 
-    // 4. Subtle camera rotational tilt reacting to mouse position (disabled on mobile)
+    // 4. Subtle camera rotational tilt reacting to mouse position & slow intro movement (centered during entry flight)
     if (!isMobile) {
-      const rotX = -mouseRef.current.y * 0.018;
-      const rotY = mouseRef.current.x * 0.024;
+      const rotX = isEntering ? 0 : (-mouseRef.current.y * 0.018 + (isIntro ? Math.sin(t * 0.18) * 0.008 : 0));
+      const rotY = isEntering ? 0 : (mouseRef.current.x * 0.024 + (isIntro ? Math.cos(t * 0.22) * 0.012 : 0));
       state.camera.rotation.x += (rotX - state.camera.rotation.x) * damp;
       state.camera.rotation.y += (rotY - state.camera.rotation.y) * damp;
     }
@@ -486,6 +569,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
   const [isCoreHovered, setIsCoreHovered] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -493,11 +577,13 @@ export default function GlobalCinematicScene({ isProject = false }) {
     const handleMotionChange = (e) => setIsReducedMotion(e.matches);
     motionQuery.addEventListener('change', handleMotionChange);
 
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkDevice = () => {
+      const w = window.innerWidth;
+      setIsMobile(w < 768);
+      setIsTablet(w >= 768 && w < 1024);
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
 
     const handleMouseMove = (e) => {
       mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -541,7 +627,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
 
     return () => {
       motionQuery.removeEventListener('change', handleMotionChange);
-      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('resize', checkDevice);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('atmosphere-mode', handleAtmosphereEvent);
@@ -583,11 +669,13 @@ export default function GlobalCinematicScene({ isProject = false }) {
             introPhase={introPhase}
             isReducedMotion={isReducedMotion}
             isMobile={isMobile}
+            isTablet={isTablet}
           />
           <AtmosphericBackdropPlane
             mouseRef={mouseRef}
             scrollRef={scrollRef}
             atmosphereMode={atmosphereMode}
+            introPhase={introPhase}
             isReducedMotion={isReducedMotion}
           />
           <StratifiedAtmosphericParticles
@@ -607,6 +695,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
               mouseRef={mouseRef}
               isReducedMotion={isReducedMotion}
               isMobile={isMobile}
+              isTablet={isTablet}
             />
           )}
         </Canvas>

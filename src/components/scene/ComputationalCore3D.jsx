@@ -1,54 +1,57 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
- * PHASE 6C: Cinematic Computational Core & Transition
+ * APPROVED COMPUTATIONAL INTELLIGENCE CORE
  * 
- * Aesthetic: AI Neural Computation × Particle Intelligence × Procedural Geometry
- * 
- * Architecture:
- * - 3 Real Depth Layers:
- *   1. FOREGROUND (z in [+1.4, +3.2]): large luminous particles & drifting data crosshairs close to camera
- *   2. MIDGROUND (z in [-1.5, +1.5]): living neural lattice, flocking nodes, dynamic proximity synapse links,
- *      nested counter-rotating polyhedra (dodecahedron, icosahedron, octahedron) & volumetric breathing light core
- *   3. BACKGROUND (z in [-3.2, -8.0]): faint distant space particles & faint orbital coordinate guide
- * 
- * Continuous Alive Motion:
- * - Slow orbital rotation & internal particle drift
- * - Dynamic proximity connections that attach & detach organically
- * - Breathing light pulse with micro-harmonic flickers
- * - Subtle mouse parallax & internal light shifting
- * 
- * Cinematic ENTER Sequence (0.0s – 1.8s):
- * - 0.00 – 0.20s: Button compresses, core micro-anticipation
- * - 0.20 – 0.35s: Core contracts, rotation accelerates
- * - 0.35 – 0.70s: Central light intensifies & blooms
- * - 0.70 – 1.20s: Particles accelerate toward viewer
- * - 1.20 – 1.60s: Camera passes through; particles streak past; neural lines stretch
- * - 1.60 – 1.80s: Environment collapses into controlled darkness -> Hero emerges
+ * Matches the approved reference screenshot (localhost:5173 at SYSTEM READY):
+ * - Radiant central point light & volumetric inner bloom sprite
+ * - Nested geometric polyhedral wireframes:
+ *     1. Outer Dodecahedron (r = 1.20, wireframe, #72a8d2, opacity 0.38)
+ *     2. Middle Subdivided Icosahedron (r = 1.10, detail = 1, scale 0.82, #5b90be, opacity 0.28)
+ *     3. Inner High-Density Octahedron (r = 1.0, scale 0.52, #a8d6f5, opacity 0.45)
+ * - 2 Large Sweeping Orbital Coordinate Rings + Distant Atmospheric Ring:
+ *     1. Ring 1: r = 2.05, rotation [0.68, 0.22, 0.45], #72a8d2, opacity 0.35
+ *     2. Ring 2: r = 2.50, rotation [-0.62, -0.35, -0.58], #72a8d2, opacity 0.25
+ *     3. Distant Ring: r = 4.20, pos [0.4, -0.2, -2.8], rot [0.3, 0.4, 0.15], #3a6282, opacity 0.16
+ * - Living Synapse Neural Network:
+ *     - 50 golden-spiral nodes flocking in 3D ellipsoidal depth
+ *     - Dynamic proximity connection lines (connectDistSq = 1.05 * 1.05) calculated every frame
+ *     - Near-field luminous floating dust & spatial crosshair reticles
+ * - Staged Emergence during initialization (0.0s – 7.8s) -> SYSTEM READY
+ * - 14-beat cinematic camera pass-through transition on ENTER -> controlled darkness -> Hero reveal
  */
 export default function ComputationalCore3D({
   phase = 'initializing',
   isHovered = false,
   mouseRef,
   isReducedMotion = false,
-  isMobile = false
+  isMobile = false,
+  isTablet = false
 }) {
   const rootGroupRef = useRef();
-  const corePolyRef1 = useRef();
-  const corePolyRef2 = useRef();
-  const corePolyRef3 = useRef();
+
+  // Nested geometric wireframe shells
+  const corePolyRef1 = useRef(); // Outer Dodecahedron
+  const corePolyRef2 = useRef(); // Middle Subdivided Icosahedron (detail 1)
+  const corePolyRef3 = useRef(); // Inner High-Density Octahedron
+
+  // Large orbital coordinate structures
   const ring1Ref = useRef();
   const ring2Ref = useRef();
   const distantRingRef = useRef();
+
+  // Illumination & volumetric core bloom
   const glowSpriteRef = useRef();
   const pointLightRef = useRef();
+
+  // Particle layers & dynamic proximity network
   const nearPointsRef = useRef();
   const midPointsRef = useRef();
   const farPointsRef = useRef();
-  const linesRef = useRef();
   const fgCrosshairsRef = useRef();
+  const linesRef = useRef();
 
   // Internal animation state container
   const sim = useRef({
@@ -58,13 +61,23 @@ export default function ComputationalCore3D({
     burstZ: 0,
     lightIntensity: 0.1,
     latticeAlpha: 0,
+    ringAlpha: 0,
     lineAlpha: 0,
+    glowAlpha: 0,
     hoverLerp: 0,
     enterTime: 0
   });
 
+  // Calculate platform-adjusted initialization duration
+  const initDuration = useMemo(() => {
+    if (isReducedMotion) return 1.6;
+    if (isMobile) return 4.8;
+    if (isTablet) return 6.0;
+    return 7.8;
+  }, [isMobile, isTablet, isReducedMotion]);
+
   // -------------------------------------------------------------
-  // 1. PROCEDURAL SOFT LUMINOUS PARTICLE TEXTURES
+  // 1. PROCEDURAL SOFT LUMINOUS TEXTURES
   // -------------------------------------------------------------
   const particleTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
@@ -105,107 +118,7 @@ export default function ComputationalCore3D({
   }, []);
 
   // -------------------------------------------------------------
-  // 2. DATA BUFFERS: Foreground, Core Synapses, Deep Field & FG Reticles
-  // -------------------------------------------------------------
-  const nearCount = isMobile ? 8 : 18;
-  const midCount = isMobile ? 24 : 50;
-  const farCount = isMobile ? 14 : 32;
-
-  // Foreground particles (close to camera: z in [+1.4, +3.2])
-  const [nearPositions, nearVelocities] = useMemo(() => {
-    const pos = new Float32Array(nearCount * 3);
-    const vel = new Float32Array(nearCount * 3);
-    for (let i = 0; i < nearCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 5.2;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 4.2;
-      pos[i * 3 + 2] = 1.4 + Math.random() * 1.8;
-      vel[i * 3] = (Math.random() - 0.5) * 0.0035;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.0035;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.0025;
-    }
-    return [pos, vel];
-  }, [nearCount]);
-
-  // Foreground Data Reticle crosshairs (subtle drifting spatial coordinate markers)
-  const fgReticlePositions = useMemo(() => {
-    // 3 small spatial crosshairs in foreground
-    const pts = [
-      // Crosshair 1 (upper-left foreground)
-      -1.8, 1.4, 1.8,
-      -1.6, 1.4, 1.8,
-      -1.7, 1.3, 1.8,
-      -1.7, 1.5, 1.8,
-
-      // Crosshair 2 (lower-right foreground)
-      1.9, -1.2, 2.2,
-      2.1, -1.2, 2.2,
-      2.0, -1.3, 2.2,
-      2.0, -1.1, 2.2,
-
-      // Crosshair 3 (mid-right foreground)
-      2.2, 0.8, 1.6,
-      2.35, 0.8, 1.6,
-      2.27, 0.72, 1.6,
-      2.27, 0.88, 1.6
-    ];
-    return new Float32Array(pts);
-  }, []);
-
-  // Central living synapse nodes (midfield: z in [-1.4, +1.4])
-  const [midPositions, midVelocities, targetPositions, linePositions] = useMemo(() => {
-    const pos = new Float32Array(midCount * 3);
-    const vel = new Float32Array(midCount * 3);
-    const target = new Float32Array(midCount * 3);
-
-    for (let i = 0; i < midCount; i++) {
-      // Golden spiral distribution with 3D ellipsoidal depth
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / midCount);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
-      const r = 1.15 + (i % 3) * 0.32 + Math.random() * 0.28;
-
-      const tx = r * Math.sin(phi) * Math.cos(theta);
-      const ty = r * Math.sin(phi) * Math.sin(theta);
-      // Give expanded Z depth for real 3D volume
-      const tz = r * Math.cos(phi) * 1.25;
-
-      target[i * 3] = tx;
-      target[i * 3 + 1] = ty;
-      target[i * 3 + 2] = tz;
-
-      // Dispersed start during initialization
-      const disperseDist = 3.8 + Math.random() * 2.4;
-      pos[i * 3] = tx * (disperseDist / r);
-      pos[i * 3 + 1] = ty * (disperseDist / r);
-      pos[i * 3 + 2] = tz * (disperseDist / r);
-
-      vel[i * 3] = (Math.random() - 0.5) * 0.004;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.004;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.004;
-    }
-
-    const maxLines = midCount * 4;
-    const lPos = new Float32Array(maxLines * 6);
-
-    return [pos, vel, target, lPos];
-  }, [midCount]);
-
-  // Deep field particles (background: z in [-3.0, -8.0])
-  const [farPositions, farVelocities] = useMemo(() => {
-    const pos = new Float32Array(farCount * 3);
-    const vel = new Float32Array(farCount * 3);
-    for (let i = 0; i < farCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 14.0;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 11.0;
-      pos[i * 3 + 2] = -3.0 - Math.random() * 4.8;
-      vel[i * 3] = (Math.random() - 0.5) * 0.002;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.002;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.002;
-    }
-    return [pos, vel];
-  }, [farCount]);
-
-  // -------------------------------------------------------------
-  // 3. PROCEDURAL ORBITAL COORDINATE RINGS
+  // 2. PROCEDURAL ORBITAL COORDINATE RINGS
   // -------------------------------------------------------------
   const ring1Geo = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -237,14 +150,166 @@ export default function ComputationalCore3D({
     const pts = [];
     for (let i = 0; i <= segs; i++) {
       const a = (i / segs) * Math.PI * 2;
-      pts.push(Math.cos(a) * 4.2, Math.sin(a) * 4.2, 0);
+      pts.push(Math.cos(a) * 4.20, Math.sin(a) * 4.20, 0);
     }
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     return geo;
   }, []);
 
   // -------------------------------------------------------------
-  // 4. FRAME LOOP & GENERATIVE EMERGENCE
+  // 3. DATA BUFFERS: Foreground, Core Synapses, Deep Field & FG Reticles
+  // -------------------------------------------------------------
+  const nearCount = isMobile ? 8 : 18;
+  const midCount = isMobile ? 24 : 50;
+  const farCount = isMobile ? 14 : 32;
+
+  // Foreground particles (close to camera: z in [+1.4, +3.2])
+  const [nearPositions, nearVelocities] = useMemo(() => {
+    const pos = new Float32Array(nearCount * 3);
+    const vel = new Float32Array(nearCount * 3);
+    for (let i = 0; i < nearCount; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 5.2;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 4.2;
+      pos[i * 3 + 2] = 1.4 + Math.random() * 1.8;
+      vel[i * 3] = (Math.random() - 0.5) * 0.0035;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.0035;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.0025;
+    }
+    return [pos, vel];
+  }, [nearCount]);
+
+  // Foreground Data Reticle crosshairs (subtle drifting spatial coordinate markers)
+  const fgReticlePositions = useMemo(() => {
+    const pts = [
+      // Crosshair 1 (upper-left foreground)
+      -1.8, 1.4, 1.8,
+      -1.6, 1.4, 1.8,
+      -1.7, 1.3, 1.8,
+      -1.7, 1.5, 1.8,
+
+      // Crosshair 2 (lower-right foreground)
+      1.9, -1.2, 2.2,
+      2.1, -1.2, 2.2,
+      2.0, -1.3, 2.2,
+      2.0, -1.1, 2.2,
+
+      // Crosshair 3 (mid-right foreground)
+      2.2, 0.8, 1.6,
+      2.35, 0.8, 1.6,
+      2.27, 0.72, 1.6,
+      2.27, 0.88, 1.6
+    ];
+    return new Float32Array(pts);
+  }, []);
+
+  // Central living synapse nodes (midfield: z in [-1.4, +1.4])
+  const [midPositions, midVelocities, targetPositions, linePositions] = useMemo(() => {
+    const pos = new Float32Array(midCount * 3);
+    const vel = new Float32Array(midCount * 3);
+    const target = new Float32Array(midCount * 3);
+
+    for (let i = 0; i < midCount; i++) {
+      // Golden spiral distribution with 3D ellipsoidal depth matching approved reference
+      const phi = Math.acos(1 - (2 * (i + 0.5)) / midCount);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+      const r = 1.15 + (i % 3) * 0.32 + Math.random() * 0.28;
+
+      const tx = r * Math.sin(phi) * Math.cos(theta);
+      const ty = r * Math.sin(phi) * Math.sin(theta);
+      const tz = r * Math.cos(phi) * 1.25;
+
+      target[i * 3] = tx;
+      target[i * 3 + 1] = ty;
+      target[i * 3 + 2] = tz;
+
+      // Dispersed start during initialization
+      const disperseDist = 3.8 + Math.random() * 2.4;
+      pos[i * 3] = tx * (disperseDist / r);
+      pos[i * 3 + 1] = ty * (disperseDist / r);
+      pos[i * 3 + 2] = tz * (disperseDist / r);
+
+      vel[i * 3] = (Math.random() - 0.5) * 0.004;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.004;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.004;
+    }
+
+    const maxLines = midCount * 4;
+    const lPos = new Float32Array(maxLines * 6);
+
+    return [pos, vel, target, lPos];
+  }, [midCount]);
+
+  // Precompute distance from origin and activation timing for inside-out cascade (Requirement 4)
+  const nodeCascadeData = useMemo(() => {
+    const cascadeTimes = new Float32Array(midCount);
+    for (let i = 0; i < midCount; i++) {
+      const tx = targetPositions[i * 3];
+      const ty = targetPositions[i * 3 + 1];
+      const tz = targetPositions[i * 3 + 2];
+      const dist = Math.sqrt(tx * tx + ty * ty + tz * tz);
+
+      // Section 4 Cascade:
+      // Central Core: dist < 1.35 (0.15 - 0.30s)
+      // Inner Neural Structure: 1.35 <= dist < 1.65 (0.30 - 0.50s)
+      // Left Cluster: 1.65 <= dist < 1.95, tx <= 0 (0.50 - 0.65s)
+      // Right Cluster: 1.65 <= dist < 1.95, tx > 0 (0.65 - 0.80s)
+      // Outer Network: dist >= 1.95 (0.80 - 1.05s)
+      if (dist < 1.35) {
+        cascadeTimes[i] = 0.15 + (dist / 1.35) * 0.15;
+      } else if (dist < 1.65) {
+        cascadeTimes[i] = 0.30 + ((dist - 1.35) / 0.30) * 0.20;
+      } else if (dist < 1.95) {
+        if (tx <= 0) {
+          cascadeTimes[i] = 0.50 + ((dist - 1.65) / 0.30) * 0.15;
+        } else {
+          cascadeTimes[i] = 0.65 + ((dist - 1.65) / 0.30) * 0.15;
+        }
+      } else {
+        cascadeTimes[i] = 0.80 + Math.min(0.25, ((dist - 1.95) / 0.50) * 0.25);
+      }
+    }
+    return cascadeTimes;
+  }, [midCount, targetPositions]);
+
+  // Vertex color buffers for dynamic neural signal propagation & locked visual fidelity
+  const midColors = useMemo(() => {
+    const colors = new Float32Array(midCount * 3);
+    for (let i = 0; i < midCount; i++) {
+      colors[i * 3] = 0.75;
+      colors[i * 3 + 1] = 0.88;
+      colors[i * 3 + 2] = 0.98;
+    }
+    return colors;
+  }, [midCount]);
+
+  const maxLines = midCount * 4;
+  const lineColors = useMemo(() => {
+    const colors = new Float32Array(maxLines * 6);
+    for (let k = 0; k < colors.length; k += 3) {
+      colors[k] = 0.45;
+      colors[k + 1] = 0.66;
+      colors[k + 2] = 0.82;
+    }
+    return colors;
+  }, [maxLines]);
+
+  // Deep field particles (background: z in [-3.0, -8.0])
+  const [farPositions, farVelocities] = useMemo(() => {
+    const pos = new Float32Array(farCount * 3);
+    const vel = new Float32Array(farCount * 3);
+    for (let i = 0; i < farCount; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 14.0;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 11.0;
+      pos[i * 3 + 2] = -3.0 - Math.random() * 4.8;
+      vel[i * 3] = (Math.random() - 0.5) * 0.002;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.002;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.002;
+    }
+    return [pos, vel];
+  }, [farCount]);
+
+  // -------------------------------------------------------------
+  // 4. ANIMATION FRAME LOOP
   // -------------------------------------------------------------
   useFrame((state, delta) => {
     if (!rootGroupRef.current) return;
@@ -256,24 +321,83 @@ export default function ComputationalCore3D({
     const targetHover = isHovered ? 1.0 : 0.0;
     s.hoverLerp += (targetHover - s.hoverLerp) * Math.min(1.0, delta * 4.0);
 
-    const basePlatformScale = isMobile ? 0.72 : 0.92;
+    const basePlatformScale = isMobile ? 0.72 : (isTablet ? 0.82 : 0.92);
 
-    // --- PHASE 1: GENERATIVE ASSEMBLY (during 'initializing') ---
+    let initGrav = 1.0;
+
+    // =========================================================
+    // 7-STAGE INITIALIZATION TIMELINE (0.0s to 7.8s+)
+    // =========================================================
     if (phase === 'initializing') {
-      s.initProgress = Math.min(1.0, s.initProgress + delta * 0.65);
-      const p = s.initProgress;
-      const easeP = p * p * (3 - 2 * p);
+      const dur = initDuration;
+      const u = Math.min(1.0, s.elapsed / dur);
+      s.initProgress = u;
 
-      s.scale = (0.2 + easeP * 0.8) * basePlatformScale;
-      s.latticeAlpha = Math.max(0, (p - 0.35) * 1.54);
-      s.lineAlpha = Math.max(0, (p - 0.42) * 1.7);
-      s.lightIntensity = 0.2 + easeP * 0.9;
+      // Stage 1 (0.0 – 1.2s, u: 0.00 – 0.15): Boot / Darkness
+      if (u < 0.15) {
+        s.scale = 0.20 * basePlatformScale;
+        s.lightIntensity = 0.05 + u * 0.40;
+        s.latticeAlpha = 0;
+        s.ringAlpha = 0;
+        s.lineAlpha = 0;
+        s.glowAlpha = 0.10 + u * 0.50;
+        initGrav = 0.05;
+      }
+      // Stage 2 (1.2 – 2.8s, u: 0.15 – 0.36): First Nodes & Inner Nucleus Coalescence
+      else if (u < 0.36) {
+        const prog = (u - 0.15) / 0.21;
+        s.scale = (0.20 + prog * 0.25) * basePlatformScale;
+        s.lightIntensity = 0.15 + prog * 0.40;
+        s.latticeAlpha = prog * 0.35;
+        s.ringAlpha = 0;
+        s.lineAlpha = prog * 0.15;
+        s.glowAlpha = 0.20 + prog * 0.40;
+        initGrav = prog * 0.50;
+      }
+      // Stage 3 (2.8 – 4.5s, u: 0.36 – 0.58): Connection Formation & Inner Octahedron
+      else if (u < 0.58) {
+        const prog = (u - 0.36) / 0.22;
+        s.scale = (0.45 + prog * 0.25) * basePlatformScale;
+        s.lightIntensity = 0.55 + prog * 0.25;
+        s.latticeAlpha = 0.35 + prog * 0.35;
+        s.ringAlpha = prog * 0.40;
+        s.lineAlpha = 0.15 + prog * 0.45;
+        s.glowAlpha = 0.60 + prog * 0.25;
+        initGrav = 0.50 + prog * 0.50;
+      }
+      // Stage 4 (4.5 – 6.1s, u: 0.58 – 0.78): Network Expansion, Icosahedron & Orbital Rings
+      else if (u < 0.78) {
+        const prog = (u - 0.58) / 0.20;
+        s.scale = (0.70 + prog * 0.20) * basePlatformScale;
+        s.lightIntensity = 0.80 + prog * 0.15;
+        s.latticeAlpha = 0.70 + prog * 0.22;
+        s.ringAlpha = 0.40 + prog * 0.45;
+        s.lineAlpha = 0.60 + prog * 0.30;
+        s.glowAlpha = 0.85 + prog * 0.10;
+        initGrav = 1.0;
+      }
+      // Stage 5 & 6 (6.1 – 7.8s, u: 0.78 – 1.00): Data Propagation, Outer Dodecahedron & Stabilization
+      else {
+        const prog = (u - 0.78) / 0.22;
+        s.scale = (0.90 + prog * 0.10) * basePlatformScale;
+        s.lightIntensity = 0.95 + prog * 0.05;
+        s.latticeAlpha = 0.92 + prog * 0.08;
+        s.ringAlpha = 0.85 + prog * 0.15;
+        s.lineAlpha = 0.90 + prog * 0.10;
+        s.glowAlpha = 0.95 + prog * 0.05;
+        initGrav = 1.0;
+      }
     }
-    // --- PHASE 2: SYSTEM READY (STABILIZED & LIVING) ---
+    // =========================================================
+    // SYSTEM READY: STABILIZED APPROVED COMPUTATIONAL ENVIRONMENT
+    // =========================================================
     else if (phase === 'ready') {
       s.initProgress = 1.0;
-      s.latticeAlpha += (0.55 - s.latticeAlpha) * damp;
-      s.lineAlpha += (0.32 - s.lineAlpha) * damp;
+      initGrav = 1.0;
+      s.latticeAlpha += (1.0 - s.latticeAlpha) * damp;
+      s.ringAlpha += (1.0 - s.ringAlpha) * damp;
+      s.lineAlpha += (1.0 - s.lineAlpha) * damp;
+      s.glowAlpha += (1.0 - s.glowAlpha) * damp;
 
       // Alive breathing oscillation with micro-pulses
       const primaryBreath = Math.sin(t * 1.7) * (0.02 + s.hoverLerp * 0.03);
@@ -283,43 +407,75 @@ export default function ComputationalCore3D({
 
       s.lightIntensity = 1.0 + s.hoverLerp * 0.6 + Math.sin(t * 3.2) * 0.15;
     }
-    // --- PHASE 3: CINEMATIC ENTER CHOREOGRAPHY (0.0s – 1.8s) ---
+    // =========================================================
+    // 14-BEAT CINEMATIC ENTER CASCADE & TRANSITION (0.0s – 2.8s)
+    // =========================================================
     else if (phase === 'entering') {
       if (!isReducedMotion) {
         s.enterTime += delta;
         const et = s.enterTime;
 
-        // 0.00 – 0.20s: Initial compression & micro-anticipation
-        if (et < 0.20) {
-          s.scale += (0.88 * basePlatformScale - s.scale) * Math.min(1.0, delta * 6.0);
-          s.lightIntensity = 1.2;
+        // 0.00 – 0.15s: Micro-anticipation / click compression
+        if (et < 0.15) {
+          s.scale += (0.95 * basePlatformScale - s.scale) * Math.min(1.0, delta * 8.0);
+          s.lightIntensity = 1.25;
         }
-        // 0.20 – 0.35s: Central light flares
-        else if (et < 0.35) {
-          s.scale += (0.86 * basePlatformScale - s.scale) * Math.min(1.0, delta * 5.0);
-          s.lightIntensity += (2.6 - s.lightIntensity) * Math.min(1.0, delta * 8.0);
+        // 0.15 – 0.50s: Central computational light increases, core nodes & inner structure activate
+        else if (et < 0.50) {
+          s.scale += (1.00 * basePlatformScale - s.scale) * Math.min(1.0, delta * 5.0);
+          s.lightIntensity += (2.20 - s.lightIntensity) * Math.min(1.0, delta * 8.0);
+          s.latticeAlpha = 1.0;
+          s.lineAlpha = 1.0;
+          s.ringAlpha = 1.0;
         }
-        // 0.35 – 0.70s: Expansion begins, particles accelerate
-        else if (et < 0.70) {
-          s.scale += (1.6 * basePlatformScale - s.scale) * Math.min(1.0, delta * 3.0);
-          s.burstZ += delta * 3.5;
+        // 0.50 – 1.05s: Left/right clusters & outer network ignite, data pulses accelerate
+        else if (et < 1.05) {
+          s.scale += (1.00 * basePlatformScale - s.scale) * Math.min(1.0, delta * 4.0);
+          s.lightIntensity = 2.20;
+          s.latticeAlpha = 1.0;
+          s.lineAlpha = 1.0;
+          s.ringAlpha = 1.0;
         }
-        // 0.70 – 1.60s: Hyperjump camera enters & pierces core
-        else if (et < 1.60) {
-          s.scale += (7.5 * basePlatformScale - s.scale) * Math.min(1.0, delta * 3.8);
-          s.burstZ += delta * 11.5;
-          s.latticeAlpha = Math.max(0, 0.55 - (et - 0.70) * 0.65);
-          s.lineAlpha = Math.max(0, 0.35 - (et - 0.70) * 0.75);
+        // 1.05 – 2.00s: Camera travels forward into outer neural network; nodes & connections resonate
+        else if (et < 2.00) {
+          s.scale += (1.00 * basePlatformScale - s.scale) * Math.min(1.0, delta * 3.0);
+          s.lightIntensity = 2.20;
+          s.latticeAlpha = 1.0;
+          s.lineAlpha = 1.0;
+          s.ringAlpha = 1.0;
         }
-        // 1.60 – 1.80s: Controlled darkness handoff
+        // 2.00 – 2.50s: Camera approaches core crystal; core bloom expands into luminous threshold
+        else if (et < 2.50) {
+          const ap = (et - 2.00) / 0.50;
+          s.lightIntensity = 2.20 + ap * 1.0; // reaches 3.20 at core threshold
+          s.latticeAlpha = 1.0;
+          s.lineAlpha = Math.max(0, 1.0 - ap * 0.40);
+          s.ringAlpha = Math.max(0, 1.0 - ap * 0.50);
+        }
+        // 2.50 – 2.90s: Camera passes THROUGH the core crystal at Z = 0
+        else if (et < 2.90) {
+          const pass = (et - 2.50) / 0.40;
+          s.lightIntensity = Math.max(0, 3.20 * (1.0 - pass * 0.85));
+          s.latticeAlpha = Math.max(0, 1.0 - pass);
+          s.lineAlpha = Math.max(0, 0.60 * (1.0 - pass));
+          s.ringAlpha = Math.max(0, 0.50 * (1.0 - pass));
+          s.glowAlpha = Math.max(0, 1.0 - pass * 0.85);
+        }
+        // 2.90 – 3.20s: Controlled darkness punctuation before Hero emerges at 3.20s
         else {
-          s.latticeAlpha = Math.max(0, s.latticeAlpha - delta * 4.0);
+          s.latticeAlpha = Math.max(0, s.latticeAlpha - delta * 6.0);
           s.lineAlpha = 0;
-          s.lightIntensity = Math.max(0, s.lightIntensity - delta * 5.0);
+          s.ringAlpha = 0;
+          s.lightIntensity = Math.max(0, s.lightIntensity - delta * 6.0);
+          s.glowAlpha = Math.max(0, s.glowAlpha - delta * 6.0);
         }
       } else {
+        // Reduced motion: graceful fade
         s.latticeAlpha = Math.max(0, s.latticeAlpha - delta * 3.0);
         s.lineAlpha = 0;
+        s.ringAlpha = 0;
+        s.lightIntensity = Math.max(0, s.lightIntensity - delta * 3.0);
+        s.glowAlpha = Math.max(0, s.glowAlpha - delta * 3.0);
       }
     }
 
@@ -327,11 +483,12 @@ export default function ComputationalCore3D({
     rootGroupRef.current.scale.set(s.scale, s.scale, s.scale);
     rootGroupRef.current.position.z = s.burstZ;
 
-    // Center offset: elevated on desktop (y = 0.25), higher on mobile (y = 0.45)
+    // Optical elevation: 0.25 on desktop, 0.45 on mobile
     const basePosY = isMobile ? 0.45 : 0.25;
 
     // --- INTERACTIVE MOUSE PARALLAX & TILT (DESKTOP) ---
-    if (!isMobile && !isReducedMotion && mouseRef?.current) {
+    // Smoothly centered during entry flight so camera travels straight down optical core axis
+    if (!isMobile && !isReducedMotion && mouseRef?.current && phase !== 'entering') {
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
 
@@ -345,49 +502,84 @@ export default function ComputationalCore3D({
       rootGroupRef.current.position.x += (targetPosX - rootGroupRef.current.position.x) * damp;
       rootGroupRef.current.position.y += (targetPosY - rootGroupRef.current.position.y) * damp;
     } else {
-      rootGroupRef.current.position.y = basePosY;
+      rootGroupRef.current.position.x += (0 - rootGroupRef.current.position.x) * damp;
+      rootGroupRef.current.position.y += (basePosY - rootGroupRef.current.position.y) * damp;
+      rootGroupRef.current.rotation.x += (0 - rootGroupRef.current.rotation.x) * damp;
+      rootGroupRef.current.rotation.y += (0 - rootGroupRef.current.rotation.y) * damp;
     }
 
     // --- PROCEDURAL POLYHEDRAL ROTATIONS (ALIVE) ---
     const enterSpeedMult = phase === 'entering' ? (sim.current.enterTime > 0.35 ? 2.5 : 1.5) : 1.0;
     const baseSpeed = (0.24 + s.hoverLerp * 0.35) * enterSpeedMult;
 
+    // 1. Outer Dodecahedron
     if (corePolyRef1.current) {
       corePolyRef1.current.rotation.y += delta * baseSpeed;
       corePolyRef1.current.rotation.x += delta * (baseSpeed * 0.55);
+      if (corePolyRef1.current.material) {
+        corePolyRef1.current.material.opacity = 0.38 * s.latticeAlpha;
+      }
     }
+
+    // 2. Middle Subdivided Icosahedron (Geodesic triangular facets)
     if (corePolyRef2.current) {
       corePolyRef2.current.rotation.y -= delta * (baseSpeed * 0.72);
       corePolyRef2.current.rotation.z += delta * (baseSpeed * 0.40);
+      if (corePolyRef2.current.material) {
+        corePolyRef2.current.material.opacity = 0.28 * s.latticeAlpha;
+      }
     }
+
+    // 3. Inner High-Density Octahedron
     if (corePolyRef3.current) {
-      corePolyRef3.current.rotation.x -= delta * (baseSpeed * 0.6);
+      corePolyRef3.current.rotation.x -= delta * (baseSpeed * 0.60);
       corePolyRef3.current.rotation.y += delta * (baseSpeed * 0.45);
+      if (corePolyRef3.current.material) {
+        corePolyRef3.current.material.opacity = 0.45 * s.latticeAlpha;
+      }
     }
 
     // --- CONCENTRIC ORBITAL DATA RINGS ---
     if (ring1Ref.current) {
-      ring1Ref.current.rotation.z += delta * (0.22 + s.hoverLerp * 0.2) * enterSpeedMult;
+      ring1Ref.current.rotation.z += delta * (0.22 + s.hoverLerp * 0.20) * enterSpeedMult;
+      if (ring1Ref.current.material) {
+        ring1Ref.current.material.opacity = 0.35 * s.ringAlpha;
+      }
     }
     if (ring2Ref.current) {
       ring2Ref.current.rotation.z -= delta * (0.16 + s.hoverLerp * 0.15) * enterSpeedMult;
+      if (ring2Ref.current.material) {
+        ring2Ref.current.material.opacity = 0.25 * s.ringAlpha;
+      }
     }
     if (distantRingRef.current) {
       distantRingRef.current.rotation.z += delta * 0.08;
+      if (distantRingRef.current.material) {
+        distantRingRef.current.material.opacity = 0.16 * s.ringAlpha;
+      }
     }
 
-    // --- VOLUMETRIC GLOW SPRITE & LIGHT ---
+    // --- VOLUMETRIC GLOW SPRITE & POINT LIGHT ---
     if (glowSpriteRef.current) {
-      const glowScale = (1.45 + Math.sin(t * 2.4) * 0.12) * (1.0 + s.hoverLerp * 0.25);
+      let glowScale = (1.45 + Math.sin(t * 2.4) * 0.12) * (1.0 + s.hoverLerp * 0.25);
+      if (phase === 'entering' && !isReducedMotion) {
+        const et = sim.current.enterTime;
+        if (et >= 2.00 && et < 2.90) {
+          const ap = (et - 2.00) / 0.90;
+          glowScale = 1.45 + ap * 2.2; // expands into soft core aperture bloom
+        }
+      }
       glowSpriteRef.current.scale.set(glowScale, glowScale, 1);
-      glowSpriteRef.current.material.opacity = (0.55 * s.initProgress) * (phase === 'entering' ? Math.max(0, 1.0 - (sim.current.enterTime / 1.7)) : 1.0);
+      glowSpriteRef.current.material.opacity = 0.55 * s.glowAlpha;
     }
+
     if (pointLightRef.current) {
       pointLightRef.current.intensity = s.lightIntensity;
-      // Mouse moves the light inside the core for dynamic real-time specular highlights
-      if (!isMobile && mouseRef?.current) {
-        pointLightRef.current.position.x = mouseRef.current.x * 0.6;
-        pointLightRef.current.position.y = mouseRef.current.y * 0.4;
+      if (!isMobile && mouseRef?.current && phase !== 'entering') {
+        pointLightRef.current.position.x = mouseRef.current.x * 0.60;
+        pointLightRef.current.position.y = mouseRef.current.y * 0.40;
+      } else {
+        pointLightRef.current.position.set(0, 0, 0);
       }
     }
 
@@ -401,8 +593,8 @@ export default function ComputationalCore3D({
         nArr[i * 3 + 2] += nearVelocities[i * 3 + 2];
 
         // Accelerate past camera during enter (from t = 0.5s onward)
-        if (phase === 'entering' && sim.current.enterTime > 0.5) {
-          nArr[i * 3 + 2] += delta * 18.0;
+        if (phase === 'entering' && sim.current.enterTime > 0.50) {
+          nArr[i * 3 + 2] += delta * 3.5;
         }
 
         if (Math.abs(nArr[i * 3]) > 3.2) nearVelocities[i * 3] *= -1;
@@ -415,18 +607,21 @@ export default function ComputationalCore3D({
     // --- FOREGROUND DATA CROSSHAIRS DRIFT ---
     if (fgCrosshairsRef.current && !isReducedMotion) {
       fgCrosshairsRef.current.position.y = Math.sin(t * 0.8) * 0.08;
-      if (phase === 'entering' && sim.current.enterTime > 0.5) {
-        fgCrosshairsRef.current.position.z += delta * 14.0;
+      if (phase === 'entering' && sim.current.enterTime > 0.50) {
+        fgCrosshairsRef.current.position.z += delta * 3.0;
+      }
+      if (fgCrosshairsRef.current.material) {
+        const enterFade = phase === 'entering' ? Math.max(0, 1.0 - (sim.current.enterTime / 1.6)) : 1.0;
+        fgCrosshairsRef.current.material.opacity = 0.32 * s.latticeAlpha * enterFade;
       }
     }
 
-    // --- LAYER B: LIVING SYNAPSE FLOCKING & PROXIMITY LATTICE ---
+    // --- LAYER B: LIVING SYNAPSE FLOCKING, PROXIMITY LATTICE & NEURAL CASCADE ---
     if (midPointsRef.current && !isReducedMotion) {
       const mPosAttr = midPointsRef.current.geometry.attributes.position;
       const mArr = mPosAttr.array;
 
       for (let i = 0; i < midCount; i++) {
-        const initGrav = Math.min(1.0, s.initProgress * 1.4);
         const tx = targetPositions[i * 3];
         const ty = targetPositions[i * 3 + 1];
         const tz = targetPositions[i * 3 + 2];
@@ -447,18 +642,82 @@ export default function ComputationalCore3D({
         mArr[i * 3 + 1] += midVelocities[i * 3 + 1];
         mArr[i * 3 + 2] += midVelocities[i * 3 + 2];
 
-        // Accelerate forward during enter
-        if (phase === 'entering' && sim.current.enterTime > 0.7) {
-          mArr[i * 3 + 2] += delta * 15.0;
+        // Moderate forward pass-through translation during entry
+        if (phase === 'entering' && sim.current.enterTime > 0.80) {
+          mArr[i * 3 + 2] += delta * 1.6;
         }
       }
       mPosAttr.needsUpdate = true;
 
-      // Dynamic proximity connection lines
+      // Dynamic cascade coloring for midPoint nodes (Requirements 3 & 4)
+      const cAttr = midPointsRef.current.geometry.attributes.color;
+      const cArr = cAttr?.array;
+      if (cArr) {
+        if (phase === 'entering' && !isReducedMotion) {
+          const et = sim.current.enterTime;
+          for (let i = 0; i < midCount; i++) {
+            const actTime = nodeCascadeData[i];
+            if (et < actTime) {
+              // Pre-activation calm state (locked visual target color)
+              cArr[i * 3] = 0.75;
+              cArr[i * 3 + 1] = 0.88;
+              cArr[i * 3 + 2] = 0.98;
+            } else {
+              // Signal reached this node: brief brightening flash followed by high-activity state
+              const timeSinceAct = et - actTime;
+              if (timeSinceAct < 0.22) {
+                const flash = 1.0 - (timeSinceAct / 0.22);
+                cArr[i * 3] = THREE.MathUtils.lerp(0.85, 1.0, flash);
+                cArr[i * 3 + 1] = THREE.MathUtils.lerp(0.95, 1.0, flash);
+                cArr[i * 3 + 2] = 1.0;
+              } else {
+                const pulseRate = 4.0 + Math.min(14.0, (et - 0.3) * 8.0);
+                const pulse = Math.sin(t * pulseRate + i) * 0.15;
+                cArr[i * 3] = Math.min(1.0, 0.82 + pulse);
+                cArr[i * 3 + 1] = Math.min(1.0, 0.92 + pulse);
+                cArr[i * 3 + 2] = 1.0;
+              }
+            }
+          }
+          cAttr.needsUpdate = true;
+        } else if (phase === 'ready' && !isReducedMotion) {
+          // Section 3: Ready state breathes with subtle cognitive activity
+          for (let i = 0; i < midCount; i++) {
+            const breath = Math.sin(t * 1.5 + i * 0.9) * 0.04;
+            const microPulse = Math.sin(t * 3.4 + i * 2.3) > 0.94 ? 0.08 : 0;
+            const boost = (breath + microPulse) * (1.0 + s.hoverLerp * 0.6);
+            cArr[i * 3] = THREE.MathUtils.clamp(0.75 + boost, 0, 1);
+            cArr[i * 3 + 1] = THREE.MathUtils.clamp(0.88 + boost, 0, 1);
+            cArr[i * 3 + 2] = THREE.MathUtils.clamp(0.98 + boost * 0.5, 0, 1);
+          }
+          cAttr.needsUpdate = true;
+        } else {
+          let needsReset = false;
+          if (cArr[0] !== 0.75) {
+            for (let i = 0; i < midCount; i++) {
+              cArr[i * 3] = 0.75;
+              cArr[i * 3 + 1] = 0.88;
+              cArr[i * 3 + 2] = 0.98;
+            }
+            needsReset = true;
+          }
+          if (needsReset) cAttr.needsUpdate = true;
+        }
+      }
+
+      // Dynamic proximity connection lines (connectDistSq = 1.05 * 1.05)
+      // Generates the intricate, organic/geometric neural network seen in reference screenshot
       if (linesRef.current && s.lineAlpha > 0.02) {
         let lineIdx = 0;
         const maxLines = midCount * 4;
         const connectDistSq = 1.05 * 1.05;
+        const lcAttr = linesRef.current.geometry.attributes.color;
+        const lcArr = lcAttr?.array;
+
+        // Data acceleration factor (Requirement 5: slow cognitive activity -> progressively faster activity)
+        const pulseSpeed = phase === 'entering' && !isReducedMotion
+          ? 2.5 + Math.min(18.0, Math.max(0, sim.current.enterTime - 0.3) * 12.0)
+          : (2.0 + s.hoverLerp * 1.5);
 
         for (let i = 0; i < midCount && lineIdx < maxLines; i++) {
           for (let j = i + 1; j < midCount && lineIdx < maxLines; j++) {
@@ -468,12 +727,61 @@ export default function ComputationalCore3D({
             const distSq = dx * dx + dy * dy + dz * dz;
 
             if (distSq < connectDistSq) {
-              linePositions[lineIdx * 6] = mArr[i * 3];
-              linePositions[lineIdx * 6 + 1] = mArr[i * 3 + 1];
-              linePositions[lineIdx * 6 + 2] = mArr[i * 3 + 2];
-              linePositions[lineIdx * 6 + 3] = mArr[j * 3];
-              linePositions[lineIdx * 6 + 4] = mArr[j * 3 + 1];
-              linePositions[lineIdx * 6 + 5] = mArr[j * 3 + 2];
+              const baseIdx = lineIdx * 6;
+              linePositions[baseIdx] = mArr[i * 3];
+              linePositions[baseIdx + 1] = mArr[i * 3 + 1];
+              linePositions[baseIdx + 2] = mArr[i * 3 + 2];
+              linePositions[baseIdx + 3] = mArr[j * 3];
+              linePositions[baseIdx + 4] = mArr[j * 3 + 1];
+              linePositions[baseIdx + 5] = mArr[j * 3 + 2];
+
+              // Staged neural connection illumination (Requirements 4 & 5)
+              if (lcArr) {
+                if (phase === 'entering' && !isReducedMotion) {
+                  const et = sim.current.enterTime;
+                  const tStart = Math.min(nodeCascadeData[i], nodeCascadeData[j]);
+                  const tEnd = Math.max(nodeCascadeData[i], nodeCascadeData[j]);
+                  const wave = Math.sin(t * pulseSpeed - (i + j) * 0.45) * 0.5 + 0.5;
+
+                  if (et < tStart) {
+                    lcArr[baseIdx] = 0.45;
+                    lcArr[baseIdx + 1] = 0.66;
+                    lcArr[baseIdx + 2] = 0.82;
+                    lcArr[baseIdx + 3] = 0.45;
+                    lcArr[baseIdx + 4] = 0.66;
+                    lcArr[baseIdx + 5] = 0.82;
+                  } else if (et < tEnd) {
+                    const pathProg = (et - tStart) / Math.max(0.08, tEnd - tStart);
+                    const bright = 0.55 + pathProg * 0.45 + wave * 0.25;
+                    lcArr[baseIdx] = Math.min(1.0, 0.55 * bright);
+                    lcArr[baseIdx + 1] = Math.min(1.0, 0.78 * bright);
+                    lcArr[baseIdx + 2] = Math.min(1.0, 0.95 * bright);
+                    lcArr[baseIdx + 3] = Math.min(1.0, 0.45 + pathProg * 0.40);
+                    lcArr[baseIdx + 4] = Math.min(1.0, 0.66 + pathProg * 0.25);
+                    lcArr[baseIdx + 5] = Math.min(1.0, 0.82 + pathProg * 0.18);
+                  } else {
+                    const bright = 0.80 + wave * 0.35;
+                    lcArr[baseIdx] = Math.min(1.0, 0.60 * bright);
+                    lcArr[baseIdx + 1] = Math.min(1.0, 0.82 * bright);
+                    lcArr[baseIdx + 2] = Math.min(1.0, 1.00 * bright);
+                    lcArr[baseIdx + 3] = Math.min(1.0, 0.60 * bright);
+                    lcArr[baseIdx + 4] = Math.min(1.0, 0.82 * bright);
+                    lcArr[baseIdx + 5] = Math.min(1.0, 1.00 * bright);
+                  }
+                } else {
+                  const baseR = isHovered ? 0.74 : 0.45;
+                  const baseG = isHovered ? 0.90 : 0.66;
+                  const baseB = isHovered ? 0.97 : 0.82;
+                  const wave = Math.sin(t * pulseSpeed + (i + j) * 0.3) * 0.08;
+                  lcArr[baseIdx] = THREE.MathUtils.clamp(baseR + wave, 0, 1);
+                  lcArr[baseIdx + 1] = THREE.MathUtils.clamp(baseG + wave, 0, 1);
+                  lcArr[baseIdx + 2] = THREE.MathUtils.clamp(baseB + wave, 0, 1);
+                  lcArr[baseIdx + 3] = THREE.MathUtils.clamp(baseR + wave, 0, 1);
+                  lcArr[baseIdx + 4] = THREE.MathUtils.clamp(baseG + wave, 0, 1);
+                  lcArr[baseIdx + 5] = THREE.MathUtils.clamp(baseB + wave, 0, 1);
+                }
+              }
+
               lineIdx++;
             }
           }
@@ -485,9 +793,17 @@ export default function ComputationalCore3D({
 
         const lineAttr = linesRef.current.geometry.attributes.position;
         lineAttr.needsUpdate = true;
+        if (lcAttr) lcAttr.needsUpdate = true;
         if (linesRef.current.material) {
-          linesRef.current.material.opacity = s.lineAlpha;
+          linesRef.current.material.opacity = 0.26 * s.lineAlpha;
         }
+      }
+
+      if (midPointsRef.current.material) {
+        const enterFade = phase === 'entering' && sim.current.enterTime > 2.90
+          ? Math.max(0, 1.0 - (sim.current.enterTime - 2.90) * 6.0)
+          : 1.0;
+        midPointsRef.current.material.opacity = 0.85 * (phase === 'initializing' ? Math.min(1.0, s.initProgress * 1.5) : 1.0) * enterFade;
       }
     }
 
@@ -500,8 +816,8 @@ export default function ComputationalCore3D({
         fArr[i * 3 + 1] += farVelocities[i * 3 + 1];
         fArr[i * 3 + 2] += farVelocities[i * 3 + 2];
 
-        if (phase === 'entering' && sim.current.enterTime > 0.7) {
-          fArr[i * 3 + 2] += delta * 10.0;
+        if (phase === 'entering' && sim.current.enterTime > 0.70) {
+          fArr[i * 3 + 2] += delta * 1.5;
         }
       }
       fPosAttr.needsUpdate = true;
@@ -534,7 +850,11 @@ export default function ComputationalCore3D({
         />
       </sprite>
 
-      {/* Procedural Algorithmic Lattice: Outer Dodecahedron */}
+      {/* ==============================================================
+          LAYERED NESTED WIREFRAME COMPUTATIONAL CORE
+          ============================================================== */}
+
+      {/* 1. Procedural Algorithmic Lattice: Outer Dodecahedron */}
       <mesh ref={corePolyRef1}>
         <dodecahedronGeometry args={[1.20, 0]} />
         <meshBasicMaterial
@@ -545,7 +865,7 @@ export default function ComputationalCore3D({
         />
       </mesh>
 
-      {/* Procedural Algorithmic Lattice: Middle Icosahedron */}
+      {/* 2. Procedural Algorithmic Lattice: Middle Subdivided Icosahedron */}
       <mesh ref={corePolyRef2} scale={[0.82, 0.82, 0.82]}>
         <icosahedronGeometry args={[1.10, 1]} />
         <meshBasicMaterial
@@ -556,7 +876,7 @@ export default function ComputationalCore3D({
         />
       </mesh>
 
-      {/* Procedural Algorithmic Lattice: Inner High-Density Octahedron */}
+      {/* 3. Procedural Algorithmic Lattice: Inner High-Density Octahedron */}
       <mesh ref={corePolyRef3} scale={[0.52, 0.52, 0.52]}>
         <octahedronGeometry args={[1.0, 0]} />
         <meshBasicMaterial
@@ -566,6 +886,10 @@ export default function ComputationalCore3D({
           opacity={0.45}
         />
       </mesh>
+
+      {/* ==============================================================
+          LARGE ORBITAL COORDINATE STRUCTURES & TRAJECTORIES
+          ============================================================== */}
 
       {/* Orbital Spatial Ring 1 (Inclined plane) */}
       <group rotation={[0.68, 0.22, 0.45]}>
@@ -602,6 +926,10 @@ export default function ComputationalCore3D({
           />
         </lineLoop>
       </group>
+
+      {/* ==============================================================
+          PARTICLE LAYERS, RETICLES & SYNAPSE NETWORKS
+          ============================================================== */}
 
       {/* LAYER A: Near-Camera Floating Particles (Luminous circular sprites with size attenuation) */}
       <points ref={nearPointsRef}>
@@ -643,7 +971,7 @@ export default function ComputationalCore3D({
         />
       </lineSegments>
 
-      {/* LAYER B: Living Synapse Data Nodes (Luminous circular sprites) */}
+      {/* LAYER B: Living Synapse Data Nodes (Luminous circular sprites with vertex-colored cascade) */}
       <points ref={midPointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -652,11 +980,18 @@ export default function ComputationalCore3D({
             array={midPositions}
             itemSize={3}
           />
+          <bufferAttribute
+            attach="attributes-color"
+            count={midColors.length / 3}
+            array={midColors}
+            itemSize={3}
+          />
         </bufferGeometry>
         <pointsMaterial
           size={isMobile ? 0.075 : 0.095}
           map={particleTexture}
-          color="#bfe1fa"
+          vertexColors={true}
+          color="#ffffff"
           transparent={true}
           opacity={0.85}
           blending={THREE.AdditiveBlending}
@@ -665,7 +1000,7 @@ export default function ComputationalCore3D({
         />
       </points>
 
-      {/* Proximity Synapse Lines connecting flocking nodes */}
+      {/* Proximity Synapse Lines connecting flocking nodes with vertex-colored signal propagation */}
       <lineSegments ref={linesRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -674,9 +1009,16 @@ export default function ComputationalCore3D({
             array={linePositions}
             itemSize={3}
           />
+          <bufferAttribute
+            attach="attributes-color"
+            count={lineColors.length / 3}
+            array={lineColors}
+            itemSize={3}
+          />
         </bufferGeometry>
         <lineBasicMaterial
-          color={coreCyan}
+          vertexColors={true}
+          color="#ffffff"
           transparent={true}
           opacity={0.26}
           blending={THREE.AdditiveBlending}
@@ -707,3 +1049,4 @@ export default function ComputationalCore3D({
     </group>
   );
 }
+
