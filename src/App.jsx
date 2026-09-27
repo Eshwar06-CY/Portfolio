@@ -38,21 +38,97 @@ function MainApp() {
     restDelta: 0.001
   });
 
-  // Lock scroll while in intro environment
+  // ============================================================================
+  // COMPREHENSIVE SCROLL LOCK DURING INITIALIZATION & ENTER TRANSITION
+  // Prevents ALL scroll methods: wheel, touch, keyboard, scrollbar, Lenis, GSAP
+  // Unlocks only after ENTER transition completes and Hero has stabilized
+  // ============================================================================
   useEffect(() => {
     if (isHomeRoute && !hasEntered) {
+      // 1. CSS overflow lock + height constraint to eliminate scrollable area
       document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.height = '100vh';
+      document.body.style.height = '100vh';
+
+      // 2. Force scroll to top immediately
+      window.scrollTo(0, 0);
+
+      // 3. Stop Lenis via window.lenis (ref may be null on first render)
       if (lenis) lenis.stop();
+      if (window.lenis) window.lenis.stop();
+
+      // 4. Wheel event prevention (passive: false required for preventDefault)
+      const preventWheel = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      // 5. Touch scroll prevention (passive: false required for preventDefault)
+      const preventTouchMove = (e) => {
+        // Allow touch on interactive intro elements (ENTER button, etc.)
+        const target = e.target;
+        if (target && (
+          target.closest('.intro-enter-btn') ||
+          target.closest('.intro-enter-wrap')
+        )) {
+          return;
+        }
+        e.preventDefault();
+      };
+
+      // 6. Keyboard scroll prevention
+      const SCROLL_KEYS = new Set([
+        'Space', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'
+      ]);
+      const preventKeyScroll = (e) => {
+        if (SCROLL_KEYS.has(e.code)) {
+          e.preventDefault();
+        }
+      };
+
+      // 7. Safety net: if scroll somehow occurs, force back to 0
+      const forceScrollTop = () => {
+        if (window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
+      };
+
+      // Attach all prevention listeners
+      window.addEventListener('wheel', preventWheel, { passive: false });
+      window.addEventListener('touchmove', preventTouchMove, { passive: false });
+      window.addEventListener('keydown', preventKeyScroll, { passive: false });
+      window.addEventListener('scroll', forceScrollTop, { passive: true });
+
+      return () => {
+        // Clean removal of all prevention listeners
+        window.removeEventListener('wheel', preventWheel);
+        window.removeEventListener('touchmove', preventTouchMove);
+        window.removeEventListener('keydown', preventKeyScroll);
+        window.removeEventListener('scroll', forceScrollTop);
+
+        // Restore CSS
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+        document.documentElement.style.height = '';
+        document.body.style.height = '';
+      };
     } else {
+      // UNLOCK: Restore normal scrolling
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
+      document.documentElement.style.height = '';
+      document.body.style.height = '';
+
+      // Ensure scroll is at 0 when transitioning from locked to unlocked
+      if (isHomeRoute) {
+        window.scrollTo(0, 0);
+      }
+
+      // Start Lenis
       if (lenis) lenis.start();
+      if (window.lenis) window.lenis.start();
     }
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    };
   }, [hasEntered, isHomeRoute, lenis]);
 
   // Ensure scroll starts at top on fresh visit
