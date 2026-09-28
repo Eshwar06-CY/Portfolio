@@ -232,10 +232,10 @@ export default function PrologueStage({
           >
             <div className="hero-portrait-mask-layer">
               <img
-                src="/portrait.png"
+                src="/portrait_tb.png"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/assets/images/portrait.png";
+                  e.currentTarget.src = "/portrait.png";
                 }}
                 alt={`${profile.name} — Editorial Portrait`}
                 className="hero-portrait-img"

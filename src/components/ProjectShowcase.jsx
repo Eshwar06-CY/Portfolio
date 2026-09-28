@@ -151,10 +151,18 @@ function InteractiveProjectVisual({
     };
   }, [titleEl, onCursorChange]);
 
+  const artifactClasses = [
+    'artifact-specra',
+    'artifact-expenseflow',
+    'artifact-planner',
+    'artifact-capacityx'
+  ];
+  const artifactClass = artifactClasses[idx] || 'artifact-specra';
+
   return (
     <div
       ref={frameRef}
-      className="slide-visual-frame"
+      className={`slide-visual-frame ${artifactClass}`}
       onClick={() => onSelect?.(project, idx)}
       tabIndex={0}
       role="button"
@@ -178,6 +186,8 @@ function InteractiveProjectVisual({
         <div ref={glareRef} className="slide-visual-glare" />
         <div className="slide-visual-vignette" />
         <div className="slide-visual-film-edge" />
+        <div className="slide-visual-artifact-glow" />
+        <div className="slide-visual-trace-beam" />
         {/* Optical corner reticle micro-marks */}
         <span className="slide-visual-reticle reticle-tl" aria-hidden="true">+</span>
         <span className="slide-visual-reticle reticle-tr" aria-hidden="true">+</span>
@@ -185,7 +195,12 @@ function InteractiveProjectVisual({
         <span className="slide-visual-reticle reticle-br" aria-hidden="true">+</span>
         <div className="slide-visual-telemetry-badge" aria-hidden="true">
           <span className="telemetry-badge-dot" />
-          <span className="telemetry-badge-code">16:10 ANAMORPHIC // OPTICAL FRAME</span>
+          <span className="telemetry-badge-code">
+            {idx === 0 ? 'ARCHIVE ARTIFACT 01 // PRECISION CORE' :
+             idx === 1 ? 'ARCHIVE ARTIFACT 02 // DYNAMIC FLOW' :
+             idx === 2 ? 'ARCHIVE ARTIFACT 03 // STRUCTURED NAVE' :
+             'ARCHIVE ARTIFACT 04 // MONOLITHIC HALL'}
+          </span>
         </div>
       </div>
     </div>
@@ -280,6 +295,14 @@ function DesktopProjectReel({
         }
       });
 
+      // Spatial Chamber Coordinates within the Gravitational Archive Megastructure
+      const chamberShifts = [
+        { x: -0.18, y: 0.04, z: -0.7 },  // 01 SPECra: Chamber 1 (Cold Navy / Deep Blue)
+        { x: 0.20, y: -0.04, z: -1.4 },  // 02 ExpenseFlowAI: Chamber 2 (Warm Graphite / Emerald)
+        { x: 0.0, y: 0.08, z: -2.0 },   // 03 AI UG Academic Planner: Chamber 3 (Structured Obsidian / Violet)
+        { x: -0.22, y: -0.05, z: -2.7 }  // 04 CAPACITYX: Chamber 4 (Monolithic Tungsten / Silver)
+      ];
+
       // 2. Master pinned timeline scrubbing over calibrated travel (+240%)
       // Eliminates excessive empty scroll distance while giving each project ample showcase time
       const tl = gsap.timeline({
@@ -293,13 +316,30 @@ function DesktopProjectReel({
           onEnter: () => {
             const modes = ['p1', 'p2', 'p3', 'p4'];
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[activeIdxRef.current] || 'p1' }));
+              const curIdx = activeIdxRef.current || 0;
+              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[curIdx] || 'p1' }));
+              const c = chamberShifts[curIdx] || chamberShifts[0];
+              window.dispatchEvent(new CustomEvent('camera-shift', { detail: c }));
             }
           },
           onEnterBack: () => {
             const modes = ['p1', 'p2', 'p3', 'p4'];
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[activeIdxRef.current] || 'p4' }));
+              const curIdx = activeIdxRef.current || 3;
+              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[curIdx] || 'p4' }));
+              const c = chamberShifts[curIdx] || chamberShifts[3];
+              window.dispatchEvent(new CustomEvent('camera-shift', { detail: c }));
+            }
+          },
+          onLeave: () => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('camera-shift', { detail: { x: 0, y: 0, z: 0 } }));
+            }
+          },
+          onLeaveBack: () => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'work' }));
+              window.dispatchEvent(new CustomEvent('camera-shift', { detail: { x: 0, y: 0.05, z: -0.5 } }));
             }
           },
           onUpdate: (self) => {
@@ -313,6 +353,21 @@ function DesktopProjectReel({
                 const modes = ['p1', 'p2', 'p3', 'p4'];
                 window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'default' }));
               }
+            }
+
+            // Spatial Chamber Camera Travel: Smoothly interpolate camera position across chambers
+            if (typeof window !== 'undefined' && !isMobile) {
+              const totalSegs = projects.length - 1;
+              const clamped = Math.max(0, Math.min(1, p));
+              const seg = Math.min(totalSegs - 1, Math.floor(clamped * totalSegs));
+              const localT = (clamped * totalSegs) - seg;
+              const easeT = localT * localT * (3 - 2 * localT);
+              const cA = chamberShifts[seg];
+              const cB = chamberShifts[Math.min(totalSegs, seg + 1)];
+              const cx = cA.x + (cB.x - cA.x) * easeT;
+              const cy = cA.y + (cB.y - cA.y) * easeT;
+              const cz = cA.z + (cB.z - cA.z) * easeT;
+              window.dispatchEvent(new CustomEvent('camera-shift', { detail: { x: cx, y: cy, z: cz } }));
             }
           }
         }
@@ -413,15 +468,34 @@ function DesktopProjectReel({
             tl.to(currentTitle, { autoAlpha: 0, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.26 * dur }, transStart);
           }
           if (currentVisual) {
-            const exitX = isMobile ? 0 : (i === 0 ? -20 : (i === 1 ? 20 : -16));
-            tl.to(currentVisual, {
-              autoAlpha: 0,
-              x: exitX,
-              y: isMobile ? -14 : -24,
-              scale: isMobile ? 0.98 : 0.965,
-              ease: 'power2.in',
-              duration: 0.30 * dur
-            }, transStart);
+            if (i === 0) {
+              // Requirement 18: As SPECra exits, surface fragments into tiny architectural light traces and disappears into darkness
+              tl.to(currentVisual, {
+                filter: 'brightness(1.5) contrast(1.2)',
+                duration: 0.08 * dur,
+                ease: 'power1.in'
+              }, transStart);
+              tl.to(currentVisual, {
+                autoAlpha: 0,
+                x: isMobile ? 0 : -22,
+                y: isMobile ? -14 : -24,
+                scale: isMobile ? 0.98 : 0.965,
+                clipPath: 'polygon(0% 49%, 100% 49%, 100% 51%, 0% 51%)',
+                filter: 'brightness(0.0) contrast(1.0)',
+                ease: 'power2.in',
+                duration: 0.24 * dur
+              }, transStart + 0.06 * dur);
+            } else {
+              const exitX = isMobile ? 0 : (i === 1 ? 20 : -16);
+              tl.to(currentVisual, {
+                autoAlpha: 0,
+                x: exitX,
+                y: isMobile ? -14 : -24,
+                scale: isMobile ? 0.98 : 0.965,
+                ease: 'power2.in',
+                duration: 0.30 * dur
+              }, transStart);
+            }
           }
           if (currentImg) {
             tl.to(currentImg, { scale: 0.98, ease: 'power1.in', duration: 0.30 * dur }, transStart);
@@ -801,7 +875,13 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
               className="mobile-project-scene"
               initial={{ opacity: 0.9, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
+              onViewportEnter={() => {
+                const modes = ['p1', 'p2', 'p3', 'p4'];
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'p1' }));
+                }
+              }}
+              viewport={{ once: false, amount: 0.35 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mobile-scene-eyebrow">
@@ -905,6 +985,7 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
   const [isMobile, setIsMobile] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const introRef = useRef(null);
 
   useEffect(() => {
     const checkEnvironment = () => {
@@ -924,10 +1005,38 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
     };
   }, []);
 
+  // Selected Work Introduction: Cinematic reveal of the vast archive colonnade
+  useEffect(() => {
+    const introEl = introRef.current;
+    if (!introEl) return;
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: introEl,
+        start: 'top 75%',
+        end: 'bottom 20%',
+        onEnter: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'work' }));
+            window.dispatchEvent(new CustomEvent('camera-shift', { detail: { x: 0, y: 0.05, z: -0.5 } }));
+          }
+        },
+        onLeaveBack: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'exploring' }));
+            window.dispatchEvent(new CustomEvent('camera-shift', { detail: { x: 0, y: 0, z: 0 } }));
+          }
+        }
+      });
+    }, introEl);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section id="work" className="project-showcase-section" aria-label="Selected Work Showcase">
       {/* SINGLE DOMINANT EDITORIAL SECTION INTRODUCTION */}
-      <div className="work-editorial-intro">
+      <div ref={introRef} className="work-editorial-intro">
         <motion.div
           className="work-intro-kicker-wrap"
           initial={{ opacity: 0.85, y: 10 }}

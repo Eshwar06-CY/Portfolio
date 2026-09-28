@@ -2785,5 +2785,911 @@ canvas {
 }
 
 
+/* ===========================================================================
+   PHASE 7C.3 — REAL PHYSICAL 3D ARC-REACTOR DEVICE & PHYSICAL PROJECTION
+   Physical relationship:
+         PORTRAIT (100% Real Photograph)
+              ↑
+       projected light
+              ↑
+       [ LUMINOUS CORE ]
+     ╔══════════════════╗
+     ║  REACTOR CHASSIS ║ (Physical 3D Object with Depth & Coils)
+     ╚══════════════════╝
+              ↑
+        VIEW CONTROL
+   =========================================================================== */
+
+/* Elevated stage positioning: comfortably inside viewport, well above bottom bar */
+.hero-portrait-stage {
+  position: absolute;
+  z-index: 5;
+  right: clamp(0.5rem, 1.4vw, 1.8rem);
+  bottom: clamp(56px, 7.5vh, 76px);
+  width: clamp(440px, 38vw, 550px);
+  height: clamp(640px, 84svh, 800px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.hero-portrait-float {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  will-change: transform;
+}
+
+.projector-stage-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+/* ── 1. INTENTIONAL UPPER PROJECTION REGION ──────────────────────────────── */
+.projection-space-field {
+  position: relative;
+  width: 100%;
+  height: clamp(430px, 55svh, 500px);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Subtle dormant atmospheric haze in empty space (visible when portrait is NOT projected) */
+.dormant-atmospheric-haze {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+.projector-stage-container.projector--on .dormant-atmospheric-haze {
+  opacity: 0;
+}
+
+.dormant-dust {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #64b5f6;
+  pointer-events: none;
+  filter: blur(0.5px);
+}
+
+.dust-1 {
+  width: 2px;
+  height: 2px;
+  bottom: 25%;
+  left: 48%;
+  opacity: 0.35;
+  animation: dormantFloat1 6.5s ease-in-out infinite;
+}
+
+.dust-2 {
+  width: 1.5px;
+  height: 1.5px;
+  bottom: 45%;
+  left: 54%;
+  opacity: 0.25;
+  animation: dormantFloat2 8s ease-in-out infinite;
+}
+
+.dust-3 {
+  width: 2px;
+  height: 2px;
+  bottom: 60%;
+  left: 45%;
+  opacity: 0.20;
+  animation: dormantFloat1 7.2s ease-in-out infinite reverse;
+}
+
+.dormant-ring-marker {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%) rotateX(65deg);
+  width: 140px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px dashed rgba(100, 181, 246, 0.08);
+  pointer-events: none;
+  animation: dormantRingPulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes dormantFloat1 {
+  0%, 100% { transform: translateY(0); opacity: 0.2; }
+  50% { transform: translateY(-16px); opacity: 0.45; }
+}
+
+@keyframes dormantFloat2 {
+  0%, 100% { transform: translateY(0); opacity: 0.15; }
+  50% { transform: translateY(-22px); opacity: 0.38; }
+}
+
+@keyframes dormantRingPulse {
+  0% { transform: translateX(-50%) rotateX(65deg) scale(0.95); opacity: 0.05; }
+  100% { transform: translateX(-50%) rotateX(65deg) scale(1.05); opacity: 0.15; }
+}
+
+/* ── THE REAL PHOTOGRAPHIC PORTRAIT WRAPPER ──────────────────────────────── */
+.projected-portrait-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2;
+  will-change: transform, opacity, filter;
+  pointer-events: none;
+}
+
+/* Initial State: COMPLETELY HIDDEN (No silhouette, no blue tint, no face) */
+.projector-stage-container.phase--dormant .projected-portrait-wrapper,
+.projector-stage-container.phase--waking .projected-portrait-wrapper {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(58px) scale(0.92);
+  filter: blur(8px);
+  clip-path: inset(100% 0 0 0);
+  pointer-events: none;
+}
+
+/* Step 2: Energy Build — Beam rises straight from reactor core */
+.projector-stage-container.phase--energy-build .projected-portrait-wrapper {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(52px) scale(0.94);
+  filter: blur(6px);
+  clip-path: inset(100% 0 0 0);
+}
+
+/* Step 3: Portrait Emergence (0.55s - 1.15s) — Physically pops upward from reactor toward lower resting position */
+.projector-stage-container.phase--emerging .projected-portrait-wrapper {
+  visibility: visible;
+  animation: reactorPortraitAscent 0.60s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes reactorPortraitAscent {
+  0% {
+    transform: translateY(58px) scale(0.92);
+    opacity: 0.10;
+    filter: blur(8px);
+    clip-path: inset(50% 0 0 0);
+  }
+  60% {
+    transform: translateY(30px) scale(0.98);
+    opacity: 0.88;
+    filter: blur(1.5px);
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    transform: translateY(24px) scale(1.0);
+    opacity: 1;
+    filter: blur(0px);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Step 4: Full Projection (1.15s - 1.70s) — Reaches lower, closer position */
+.projector-stage-container.phase--projected .projected-portrait-wrapper {
+  visibility: visible;
+  transform: translateY(24px) scale(1.0);
+  opacity: 1;
+  filter: blur(0px);
+  clip-path: inset(0 0 0 0);
+}
+
+/* Step 5: Settle (1.70s - 2.20s) — Gently settles into place */
+.projector-stage-container.phase--settling .projected-portrait-wrapper {
+  visibility: visible;
+  transform: translateY(24px) scale(1.0);
+  opacity: 1;
+  filter: blur(0px);
+  clip-path: inset(0 0 0 0);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Step 6: Active Resting State (2.20s+) — Very subtle micro-float */
+.projector-stage-container.phase--active .projected-portrait-wrapper {
+  visibility: visible;
+  opacity: 1;
+  filter: blur(0px);
+  clip-path: inset(0 0 0 0);
+  animation: reactorPortraitRestingFloat 5.0s ease-in-out infinite alternate;
+}
+
+@keyframes reactorPortraitRestingFloat {
+  0% { transform: translateY(24px); }
+  100% { transform: translateY(20.5px); }
+}
+
+/* Hide Animation: Reverse projection downward into reactor */
+.projector-stage-container.phase--collapsing .projected-portrait-wrapper {
+  visibility: visible;
+  animation: reactorPortraitCollapse 0.80s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes reactorPortraitCollapse {
+  0% {
+    transform: translateY(24px) scale(1.0);
+    opacity: 1;
+    filter: blur(0px);
+    clip-path: inset(0 0 0 0);
+  }
+  50% {
+    transform: translateY(36px) scale(0.96);
+    opacity: 0.55;
+    filter: blur(4px);
+    clip-path: inset(0 0 30% 0);
+  }
+  100% {
+    transform: translateY(58px) scale(0.92);
+    opacity: 0;
+    filter: blur(8px);
+    clip-path: inset(0 0 90% 0);
+  }
+}
+
+/* ── MASK FRAME & REAL PHOTOGRAPH ────────────────────────────────────────── */
+.portrait-image-mask-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  /* Natural Bottom Fade Mask — Soft Torso Projection Transition */
+  -webkit-mask-image: linear-gradient(to bottom, #000000 0%, #000000 84%, rgba(0, 0, 0, 0.25) 96%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000000 0%, #000000 84%, rgba(0, 0, 0, 0.25) 96%, transparent 100%);
+}
+
+/* 100% REAL PHOTOGRAPH — NO BLUE FACE, NO WIREFRAME, NO PARTICLES ON FACE */
+.hero-real-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 52% 6%;
+  filter: contrast(1.10) brightness(0.97) saturate(1.02);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Very subtle projection edge boundary without harsh horizontal box-shadow */
+.portrait-projection-rim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+/* Upward projection light spill — soft atmospheric illumination with NO horizontal platform shelf */
+.portrait-projection-underglow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 65%;
+  height: 75px;
+  background: radial-gradient(
+    ellipse 60% 80% at 50% 100%,
+    rgba(0, 229, 255, 0.05) 0%,
+    rgba(56, 189, 248, 0.015) 50%,
+    transparent 75%
+  );
+  filter: blur(28px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.projector-stage-container.phase--emerging .portrait-projection-underglow,
+.projector-stage-container.phase--projected .portrait-projection-underglow,
+.projector-stage-container.phase--settling .portrait-projection-underglow,
+.projector-stage-container.phase--active .portrait-projection-underglow {
+  opacity: 1;
+}
+
+/* ── 2. VISIBLE 3-LAYER PHYSICAL PROJECTION FIELD ────────────────────────── */
+/* Connects the central reactor aperture directly to the portrait base */
+.projection-field-conduit {
+  position: relative;
+  width: clamp(390px, 35vw, 490px);
+  height: clamp(84px, 10.5vh, 100px);
+  margin-top: -6px;
+  margin-bottom: -34px;
+  z-index: 12;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+.projection-field-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+/* Activates when energy builds and remains connected */
+.projector-stage-container.phase--energy-build .projection-field-conduit,
+.projector-stage-container.phase--emerging .projection-field-conduit,
+.projector-stage-container.phase--projected .projection-field-conduit,
+.projector-stage-container.phase--settling .projection-field-conduit {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+/* Resting state: projection field becomes soft, coherent, and beautifully visible */
+.projector-stage-container.phase--active .projection-field-conduit {
+  transform: scaleY(1);
+  opacity: 0.85;
+  transition: opacity 0.8s ease;
+}
+
+/* Deactivation: beam collapses back into reactor core */
+.projector-stage-container.phase--collapsing .projection-field-conduit {
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+}
+
+/* Individual Projection Field Elements */
+.conduit-core-shaft {
+  opacity: 0.95;
+  filter: drop-shadow(0 0 10px #00e5ff);
+}
+
+.conduit-core-bloom {
+  opacity: 0.75;
+  mix-blend-mode: screen;
+}
+
+.conduit-volumetric-cone {
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+
+.conduit-volumetric-sheath {
+  opacity: 0.35;
+  mix-blend-mode: screen;
+}
+
+.conduit-ray {
+  opacity: 0.60;
+  mix-blend-mode: screen;
+}
+
+.conduit-source-flare {
+  opacity: 0.95;
+  mix-blend-mode: screen;
+}
+
+/* Breathing animation for active projection rays */
+.projector-stage-container.phase--active .conduit-core-shaft {
+  animation: coreShaftPulse 3.5s ease-in-out infinite alternate;
+}
+
+.projector-stage-container.phase--active .conduit-ray {
+  animation: rayAtmosphereBreath 4.2s ease-in-out infinite alternate;
+}
+
+@keyframes coreShaftPulse {
+  0% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+@keyframes rayAtmosphereBreath {
+  0% { opacity: 0.45; }
+  100% { opacity: 0.70; }
+}
+
+/* ── 3. SUBSTANTIAL PHYSICAL ARC-REACTOR DEVICE ──────────────────────────── */
+.reactor-device-assembly {
+  position: relative;
+  width: clamp(245px, 20vw, 285px);
+  height: clamp(124px, 10.2vw, 144px);
+  margin-top: 0px;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contact shadow & physical ambient occlusion grounding footprint */
+.reactor-device-assembly::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  height: 24px;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(0, 0, 0, 0.70) 50%,
+    transparent 80%
+  );
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.physical-reactor-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+  filter: drop-shadow(0 26px 42px rgba(0, 0, 0, 0.98)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.92));
+}
+
+/* Dynamic Energy Response on the SVG Elements */
+.reactor-ground-energy-glow {
+  opacity: 0.12;
+  transition: opacity 0.6s ease;
+}
+
+.reactor-energy-ring-chamber {
+  opacity: 0.22;
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.4));
+  transition: opacity 0.5s ease;
+}
+
+.coil-block-unit {
+  transition: transform 0.4s ease;
+}
+
+.reactor-stator-vents {
+  opacity: 0.30;
+  transition: opacity 0.4s ease;
+}
+
+.core-diffuse-disc {
+  opacity: 0.25;
+  transition: opacity 0.4s ease;
+}
+
+.core-hot-crystal {
+  opacity: 0.25;
+  filter: drop-shadow(0 0 8px #00e5ff);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.core-flare-line {
+  opacity: 0.15;
+  transition: opacity 0.35s ease;
+}
+
+.core-vertical-beam {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* ── HOVER INTERACTION ── */
+.projector-stage-container.sys--hovered .reactor-ground-energy-glow {
+  opacity: 0.38;
+}
+
+.projector-stage-container.sys--hovered .reactor-energy-ring-chamber {
+  opacity: 0.55;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.6));
+}
+
+.projector-stage-container.sys--hovered .reactor-stator-vents {
+  opacity: 0.65;
+}
+
+.projector-stage-container.sys--hovered .core-diffuse-disc {
+  opacity: 0.55;
+}
+
+.projector-stage-container.sys--hovered .core-hot-crystal {
+  opacity: 0.60;
+  transform: scale(1.08);
+}
+
+.projector-stage-container.sys--hovered .core-flare-line {
+  opacity: 0.45;
+}
+
+/* ── ACTIVATION STATES ── */
+/* Waking (0.0s - 0.25s) */
+.projector-stage-container.phase--waking .core-hot-crystal {
+  opacity: 0.85;
+  filter: drop-shadow(0 0 16px #00e5ff);
+}
+
+.projector-stage-container.phase--waking .reactor-energy-ring-chamber {
+  opacity: 0.70;
+}
+
+/* Energy Build, Emerging, Projected, Settling, Active */
+.projector-stage-container.phase--energy-build .reactor-ground-energy-glow,
+.projector-stage-container.phase--emerging .reactor-ground-energy-glow,
+.projector-stage-container.phase--projected .reactor-ground-energy-glow,
+.projector-stage-container.phase--settling .reactor-ground-energy-glow,
+.projector-stage-container.phase--active .reactor-ground-energy-glow {
+  opacity: 0.65;
+}
+
+.projector-stage-container.phase--energy-build .reactor-energy-ring-chamber,
+.projector-stage-container.phase--emerging .reactor-energy-ring-chamber,
+.projector-stage-container.phase--projected .reactor-energy-ring-chamber,
+.projector-stage-container.phase--settling .reactor-energy-ring-chamber,
+.projector-stage-container.phase--active .reactor-energy-ring-chamber {
+  opacity: 1;
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.8));
+}
+
+.projector-stage-container.phase--energy-build .reactor-stator-vents,
+.projector-stage-container.phase--emerging .reactor-stator-vents,
+.projector-stage-container.phase--projected .reactor-stator-vents,
+.projector-stage-container.phase--settling .reactor-stator-vents,
+.projector-stage-container.phase--active .reactor-stator-vents {
+  opacity: 0.95;
+}
+
+.projector-stage-container.phase--energy-build .core-diffuse-disc,
+.projector-stage-container.phase--emerging .core-diffuse-disc,
+.projector-stage-container.phase--projected .core-diffuse-disc,
+.projector-stage-container.phase--settling .core-diffuse-disc,
+.projector-stage-container.phase--active .core-diffuse-disc {
+  opacity: 1;
+}
+
+.projector-stage-container.phase--energy-build .core-hot-crystal,
+.projector-stage-container.phase--emerging .core-hot-crystal,
+.projector-stage-container.phase--projected .core-hot-crystal,
+.projector-stage-container.phase--settling .core-hot-crystal,
+.projector-stage-container.phase--active .core-hot-crystal {
+  opacity: 1;
+  filter: drop-shadow(0 0 20px #00e5ff) drop-shadow(0 0 35px rgba(56, 189, 248, 0.9));
+}
+
+.projector-stage-container.phase--energy-build .core-flare-line,
+.projector-stage-container.phase--emerging .core-flare-line,
+.projector-stage-container.phase--projected .core-flare-line,
+.projector-stage-container.phase--settling .core-flare-line,
+.projector-stage-container.phase--active .core-flare-line {
+  opacity: 0.95;
+}
+
+.projector-stage-container.phase--energy-build .core-vertical-beam,
+.projector-stage-container.phase--emerging .core-vertical-beam {
+  opacity: 1;
+}
+
+/* ── 4. DISCOVERY CONTROL (Directly beneath Hero Tagline on the Left) ─── */
+.hero-tagline-control-dock {
+  position: relative;
+  margin-top: clamp(20px, 2.8vh, 30px);
+  margin-bottom: 0px;
+  z-index: 25;
+  pointer-events: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.projector-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8e8e99;
+  background: rgba(12, 12, 16, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 6px 18px;
+  border-radius: 999px;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  outline: none;
+}
+
+.projector-action-btn:hover {
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.24), 0 4px 14px rgba(0, 0, 0, 0.85);
+  transform: translateY(-1px);
+}
+
+.projector-action-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 3px;
+}
+
+.projector-action-btn.btn--projected {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.75);
+  background: rgba(10, 24, 38, 0.90);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.30);
+}
+
+.btn-optic-indicator {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optic-dot {
+  width: 4.5px;
+  height: 4.5px;
+  border-radius: 50%;
+  background-color: #646472;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.optic-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  pointer-events: none;
+}
+
+.projector-action-btn:hover .optic-dot {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+.projector-action-btn.btn--projected .optic-dot {
+  background-color: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+.projector-action-btn.btn--projected .optic-ring {
+  border-color: rgba(0, 229, 255, 0.6);
+  animation: opticPulseGlow 2.2s infinite ease-out;
+}
+
+@keyframes opticPulseGlow {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ── 5. RESPONSIVE OPTIMIZATIONS ────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .hero-portrait-stage {
+    right: 0;
+    bottom: clamp(48px, 6.8vh, 66px);
+    width: 100%;
+    max-width: 460px;
+    height: 56svh;
+  }
+  .projection-space-field {
+    height: clamp(300px, 38svh, 360px);
+  }
+  .projection-field-conduit {
+    width: clamp(320px, 75vw, 400px);
+    height: 72px;
+    margin-top: -4px;
+    margin-bottom: -40px;
+  }
+  .reactor-device-assembly {
+    width: 240px;
+    height: 122px;
+    margin-top: 0px;
+  }
+  .hero-tagline-control-dock {
+    margin-top: 20px;
+  }
+  .projector-action-btn {
+    font-size: 8.5px;
+    padding: 5px 14px;
+    letter-spacing: 0.15em;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-portrait-stage {
+    height: 54svh;
+    bottom: clamp(56px, 7.5vh, 72px);
+    max-width: 360px;
+  }
+  .projection-space-field {
+    height: clamp(260px, 34svh, 310px);
+  }
+  .projection-field-conduit {
+    width: clamp(280px, 85vw, 330px);
+    height: 64px;
+    margin-top: -2px;
+    margin-bottom: -36px;
+  }
+  .reactor-device-assembly {
+    width: 216px;
+    height: 110px;
+    margin-top: 0px;
+  }
+  .hero-tagline-control-dock {
+    margin-top: 16px;
+  }
+}
+
+/* ── 6. PREFERS-REDUCED-MOTION ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .projector-stage-container.phase--active .projected-portrait-wrapper {
+    animation: none !important;
+  }
+  .projector-stage-container.phase--emerging .projected-portrait-wrapper {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+  .projector-stage-container.phase--collapsing .projected-portrait-wrapper {
+    animation: none !important;
+  }
+  .optic-ring {
+    animation: none !important;
+  }
+  .projection-field-conduit {
+    transition: opacity 0.3s ease !important;
+  }
+  .slide-visual-frame {
+    transform: none !important;
+    clip-path: none !important;
+    filter: none !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 7E — CINEMATIC PROJECT WORLDS: GRAVITATIONAL ARCHIVE ARTIFACTS
+   ========================================================================== */
+
+/* Artifact Base & Spatial Elevation */
+.slide-visual-frame {
+  transform-style: preserve-3d;
+  transition: border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-visual-artifact-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.5s ease;
+  opacity: 0.75;
+}
+
+.slide-visual-trace-beam {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  transform: translateY(-50%) scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* 1. SPECra: Cool Dark Navy / Technical Precision Glass Monolith */
+.slide-visual-frame.artifact-specra {
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.92),
+              0 0 40px -10px rgba(56, 189, 248, 0.12),
+              inset 0 0 0 1px rgba(56, 189, 248, 0.12);
+  background: linear-gradient(135deg, rgba(8, 14, 24, 0.95) 0%, rgba(3, 6, 12, 0.98) 100%);
+}
+
+.slide-visual-frame.artifact-specra:hover {
+  border-color: rgba(56, 189, 248, 0.38);
+  box-shadow: 0 26px 75px -12px rgba(0, 0, 0, 0.95),
+              0 0 50px -5px rgba(56, 189, 248, 0.22),
+              inset 0 0 0 1px rgba(56, 189, 248, 0.22);
+}
+
+.slide-visual-frame.artifact-specra .slide-visual-artifact-glow {
+  box-shadow: inset 0 1px 0 0 rgba(56, 189, 248, 0.25);
+}
+
+/* 2. ExpenseFlowAI: Deep Graphite / Restrained Emerald / Warm Highlights */
+.slide-visual-frame.artifact-expenseflow {
+  border: 1px solid rgba(52, 211, 153, 0.16);
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.92),
+              0 0 40px -10px rgba(52, 211, 153, 0.10),
+              inset 0 0 0 1px rgba(230, 200, 140, 0.12);
+  background: linear-gradient(135deg, rgba(12, 18, 16, 0.95) 0%, rgba(6, 8, 8, 0.98) 100%);
+}
+
+.slide-visual-frame.artifact-expenseflow:hover {
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 26px 75px -12px rgba(0, 0, 0, 0.95),
+              0 0 50px -5px rgba(52, 211, 153, 0.18),
+              inset 0 0 0 1px rgba(230, 200, 140, 0.20);
+}
+
+.slide-visual-frame.artifact-expenseflow .slide-visual-artifact-glow {
+  box-shadow: inset 0 1px 0 0 rgba(52, 211, 153, 0.22);
+}
+
+/* 3. AI UG Academic Planner: Deep Obsidian / Structured Violet */
+.slide-visual-frame.artifact-planner {
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.92),
+              0 0 40px -10px rgba(167, 139, 250, 0.12),
+              inset 0 0 0 1px rgba(167, 139, 250, 0.12);
+  background: linear-gradient(135deg, rgba(16, 12, 24, 0.95) 0%, rgba(6, 5, 10, 0.98) 100%);
+}
+
+.slide-visual-frame.artifact-planner:hover {
+  border-color: rgba(167, 139, 250, 0.38);
+  box-shadow: 0 26px 75px -12px rgba(0, 0, 0, 0.95),
+              0 0 50px -5px rgba(167, 139, 250, 0.22),
+              inset 0 0 0 1px rgba(167, 139, 250, 0.20);
+}
+
+.slide-visual-frame.artifact-planner .slide-visual-artifact-glow {
+  box-shadow: inset 0 1px 0 0 rgba(167, 139, 250, 0.25);
+}
+
+/* 4. CAPACITYX: Pure Monochrome / Silver Tungsten Monolith */
+.slide-visual-frame.artifact-capacityx {
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 24px 70px -15px rgba(0, 0, 0, 0.95),
+              0 0 40px -10px rgba(255, 255, 255, 0.08),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(14, 14, 16, 0.95) 0%, rgba(5, 5, 6, 0.98) 100%);
+}
+
+.slide-visual-frame.artifact-capacityx:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 30px 85px -12px rgba(0, 0, 0, 0.98),
+              0 0 55px -5px rgba(255, 255, 255, 0.16),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.slide-visual-frame.artifact-capacityx .slide-visual-artifact-glow {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.30);
+}
+
+/* Selected Work Editorial Introduction - Ambient Archive Depth */
+.work-editorial-intro {
+  background: radial-gradient(ellipse 70% 50% at 50% 60%, rgba(12, 16, 26, 0.55) 0%, transparent 100%);
+}
+
+/* Calmer background in active project scenes (Requirement 16) */
+.slide-active .slide-bg-atmosphere {
+  opacity: 0.90;
+}
+
 
 

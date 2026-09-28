@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ArrowDown } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
+import HolographicPortrait from './HolographicPortrait';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,6 +14,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
   const hairlineRef = useRef(null);
   const roleRef = useRef(null);
   const statementRef = useRef(null);
+  const taglineControlRef = useRef(null);
   const telemetryRef = useRef(null);
   const academicRef = useRef(null);
   const portraitStageRef = useRef(null);
@@ -22,6 +24,97 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
   const veilRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(false);
+  const [isProjected, setIsProjected] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [phase, setPhase] = useState('dormant');
+  const timersRef = useRef([]);
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(t => clearTimeout(t));
+    timersRef.current = [];
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
+
+  const dispatchProjectorState = useCallback((isProj, p) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('projector-state', { detail: { isProjected: isProj, phase: p } }));
+    }
+  }, []);
+
+  const handleActivate = useCallback(() => {
+    clearTimers();
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setIsProjected(true);
+      setPhase('active');
+      dispatchProjectorState(true, 'active');
+      return;
+    }
+
+    setIsProjected(true);
+    setPhase('waking');
+    dispatchProjectorState(true, 'waking');
+
+    const t1 = setTimeout(() => {
+      setPhase('energy-build');
+      dispatchProjectorState(true, 'energy-build');
+    }, 250);
+    const t2 = setTimeout(() => {
+      setPhase('emerging');
+      dispatchProjectorState(true, 'emerging');
+    }, 550);
+    const t3 = setTimeout(() => {
+      setPhase('projected');
+      dispatchProjectorState(true, 'projected');
+    }, 1150);
+    const t4 = setTimeout(() => {
+      setPhase('settling');
+      dispatchProjectorState(true, 'settling');
+    }, 1700);
+    const t5 = setTimeout(() => {
+      setPhase('active');
+      dispatchProjectorState(true, 'active');
+    }, 2200);
+
+    timersRef.current = [t1, t2, t3, t4, t5];
+  }, [clearTimers, dispatchProjectorState]);
+
+  const handleDeactivate = useCallback(() => {
+    clearTimers();
+    setIsProjected(false);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setPhase('dormant');
+      dispatchProjectorState(false, 'dormant');
+      return;
+    }
+
+    setPhase('collapsing');
+    dispatchProjectorState(false, 'collapsing');
+    const t = setTimeout(() => {
+      setPhase('dormant');
+      dispatchProjectorState(false, 'dormant');
+    }, 800);
+    timersRef.current = [t];
+  }, [clearTimers, dispatchProjectorState]);
+
+  const handleToggle = useCallback(() => {
+    if (!isProjected) {
+      handleActivate();
+    } else {
+      handleDeactivate();
+    }
+  }, [isProjected, handleActivate, handleDeactivate]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleToggle();
+    }
+  }, [handleToggle]);
 
   useEffect(() => {
     const checkEnvironment = () => {
@@ -55,8 +148,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         gsap.set(portraitFloatRef.current, {
           autoAlpha: 1,
           y: 0,
-          scale: 1,
-          filter: 'contrast(1.04) brightness(0.98)'
+          scale: 1
         });
       }
       if (ambientRef.current) gsap.set(ambientRef.current, { autoAlpha: 1, scale: 1 });
@@ -68,6 +160,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
       if (hairlineRef.current) gsap.set(hairlineRef.current, { scaleX: 1, autoAlpha: 1 });
       if (roleRef.current) gsap.set(roleRef.current, { y: 0, autoAlpha: 1 });
       if (statementRef.current) gsap.set(statementRef.current, { y: 0, autoAlpha: 1 });
+      if (taglineControlRef.current) gsap.set(taglineControlRef.current, { y: 0, autoAlpha: 1 });
       if (telemetryRef.current) gsap.set(telemetryRef.current, { y: 0, autoAlpha: 1 });
       if (academicRef.current) gsap.set(academicRef.current, { y: 0, autoAlpha: 1 });
       return;
@@ -114,33 +207,23 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         );
       }
 
-      // Beat 4: Portrait emerges: dark silhouette -> soft edge light -> portrait detail -> full portrait (0.45s – 1.35s)
+      // Beat 4: Projector installation enters smoothly on right side (0.45s – 1.10s)
       if (portraitFloatRef.current) {
         entryTl.fromTo(portraitFloatRef.current,
           {
-            scale: 1.03,
-            y: 12,
-            autoAlpha: 0,
-            filter: 'contrast(1.22) brightness(0.18)'
+            scale: 1,
+            y: 16,
+            autoAlpha: 0
           },
           {
-            scale: 1.015,
-            y: 6,
-            autoAlpha: 0.72,
-            filter: 'contrast(1.15) brightness(0.55)',
-            duration: 0.40,
+            scale: 1,
+            y: 0,
+            autoAlpha: 1,
+            duration: 0.65,
             ease: 'power2.out'
           },
           0.45
         );
-        entryTl.to(portraitFloatRef.current, {
-          scale: 1.0,
-          y: 0,
-          autoAlpha: 1,
-          filter: 'contrast(1.04) brightness(0.98)',
-          duration: 0.50,
-          ease: 'power2.out'
-        }, 0.85);
       }
 
       // Beat 5: ESHWAR M typography resolves through line mask (0.80s – 1.45s)
@@ -191,12 +274,21 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         );
       }
 
+      // Beat 7b: Hologram discovery control reveals naturally below tagline
+      if (taglineControlRef.current) {
+        entryTl.fromTo(taglineControlRef.current,
+          { y: 10, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power2.out' },
+          1.18
+        );
+      }
+
       // Beat 8: Explore bottom bar becomes active & Hero stabilizes (1.18s – 1.70s)
       if (bottomBarRef.current) {
         entryTl.fromTo(bottomBarRef.current,
           { y: 14, autoAlpha: 0 },
           { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power2.out' },
-          1.18
+          1.22
         );
       }
     }, root);
@@ -457,6 +549,35 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         >
           {profile.heroStatement || "Building at the intersection of AI, Product, Data & Innovation."}
         </p>
+
+        {/* Step 4: Holographic Projection Discovery Control — Placed directly below tagline */}
+        <div ref={taglineControlRef} className="hero-tagline-control-dock">
+          <button
+            type="button"
+            className={`projector-action-btn ${isProjected ? 'btn--projected' : ''}`}
+            onClick={handleToggle}
+            onKeyDown={handleKeyDown}
+            onMouseEnter={() => {
+              setIsHovered(true);
+              onCursorChange?.('hover');
+            }}
+            onMouseLeave={() => {
+              setIsHovered(false);
+              onCursorChange?.('default');
+            }}
+            aria-label={isProjected ? 'Hide projected portrait' : 'View projected portrait'}
+            aria-pressed={isProjected}
+            tabIndex={0}
+          >
+            <span className="btn-optic-indicator">
+              <span className="optic-dot" />
+              <span className="optic-ring" />
+            </span>
+            <span className="btn-action-label">
+              {isProjected ? 'HIDE PORTRAIT' : 'VIEW PORTRAIT'}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* RIGHT: Hero Portrait Emerging from Darkness & Receding with Spatial Depth */}
@@ -468,19 +589,17 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
           ref={portraitFloatRef}
           className="hero-portrait-float"
         >
-          <div className="hero-portrait-mask-layer">
-            <img
-              src="/portrait.png"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = "/assets/images/portrait.png";
-              }}
-              alt={`${profile.name || 'Eshwar M'} — Editorial Portrait`}
-              className="hero-portrait-img"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
+          <HolographicPortrait
+            src="/portrait_tb.png"
+            fallbackSrc="/portrait.png"
+            alt={`${profile.name || 'Eshwar M'} — Editorial Portrait`}
+            hasEntered={hasEntered}
+            isMobile={isMobile}
+            onCursorChange={onCursorChange}
+            isProjected={isProjected}
+            phase={phase}
+            isHovered={isHovered}
+          />
         </div>
       </div>
 
