@@ -504,7 +504,7 @@ export default function About({ aboutData, onCursorChange }) {
       {/* ====================================================================
           3. WHAT I'M EXPLORING: INTERACTIVE CAPABILITY FIELD
           ==================================================================== */}
-      <div ref={exploringMomentRef} className="about-story-moment exploring-moment">
+      <div ref={exploringMomentRef} id="exploring" className="about-story-moment exploring-moment">
         <div className="story-label-col">
           <span className="story-label">WHAT I'M EXPLORING</span>
           <span className="story-sub-tag">FOCUS DOMAINS</span>

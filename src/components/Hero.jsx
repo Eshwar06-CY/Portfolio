@@ -171,7 +171,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         defaults: { ease: 'power3.out' }
       });
 
-      // Beat 1: Controlled darkness veil dissolves as soft cinematic light emerges (0.05s – 0.50s)
+      // 1. Environment: controlled darkness veil dissolves and ambient light blooms (0.05s - 0.50s)
       if (veilRef.current) {
         entryTl.to(veilRef.current, {
           autoAlpha: 0,
@@ -179,116 +179,110 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
           ease: 'power2.inOut'
         }, 0.05);
       }
-
-      // Ambient light blooms in behind subject (0.05s - 0.90s)
       if (ambientRef.current) {
         entryTl.fromTo(ambientRef.current,
-          { scale: 0.88, autoAlpha: 0 },
-          { scale: 1.0, autoAlpha: 1, duration: 0.85, ease: 'power2.out' },
+          { scale: 0.90, autoAlpha: 0 },
+          { scale: 1.0, autoAlpha: 1, duration: 0.80, ease: 'power2.out' },
           0.05
         );
       }
 
-      // Beat 2: Hero environment coordinates & telemetry reveal (0.38s – 0.80s)
+      // 2. Navigation / Identity / Telemetry reveal (0.18s – 0.55s)
       if (telemetryRef.current) {
         entryTl.fromTo(telemetryRef.current,
-          { y: -8, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.5 },
-          0.38
+          { y: -6, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power2.out' },
+          0.18
         );
       }
 
-      // Beat 3: Academic context reveals with upward glide (0.45s – 0.90s)
-      if (academicRef.current) {
-        entryTl.fromTo(academicRef.current,
-          { y: 12, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.52 },
-          0.45
-        );
-      }
-
-      // Beat 4: Projector installation enters smoothly on right side (0.45s – 1.10s)
-      if (portraitFloatRef.current) {
-        entryTl.fromTo(portraitFloatRef.current,
-          {
-            scale: 1,
-            y: 16,
-            autoAlpha: 0
-          },
-          {
-            scale: 1,
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.65,
-            ease: 'power2.out'
-          },
-          0.45
-        );
-      }
-
-      // Beat 5: ESHWAR M typography resolves through line mask (0.80s – 1.45s)
+      // 3. Main Headline: ESHWAR M typography resolves through line mask (0.35s – 1.10s)
       const titleWords = titleRef.current?.querySelectorAll('.hero-title-word');
       if (titleWords && titleWords.length) {
         entryTl.fromTo(titleWords,
           {
             yPercent: 105,
-            letterSpacing: '0.02em',
+            letterSpacing: '0.01em',
             autoAlpha: 0
           },
           {
             yPercent: 0,
             letterSpacing: '-0.035em',
             autoAlpha: 1,
-            stagger: 0.08,
-            duration: 0.78,
-            ease: 'power3.out'
+            stagger: 0.07,
+            duration: 0.75,
+            ease: 'power4.out'
           },
-          0.80
+          0.35
         );
       }
 
-      // Delicate hairline accent expands (1.00s - 1.55s)
+      // Delicate hairline accent expands directly after headline (0.65s - 1.15s)
       if (hairlineRef.current) {
         entryTl.fromTo(hairlineRef.current,
           { scaleX: 0, autoAlpha: 0 },
-          { scaleX: 1, autoAlpha: 1, duration: 0.60, ease: 'power2.out' },
-          1.00
+          { scaleX: 1, autoAlpha: 1, duration: 0.55, ease: 'power2.out' },
+          0.65
         );
       }
 
-      // Beat 6: Role terms line appears (1.05s – 1.55s)
+      // 4. Supporting Tagline & Academic Context (0.80s – 1.35s)
       if (roleRef.current) {
         entryTl.fromTo(roleRef.current,
-          { y: 12, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power2.out' },
-          1.05
+          { y: 10, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power3.out' },
+          0.80
         );
       }
-
-      // Beat 7: Supporting statement settles (1.10s – 1.60s)
       if (statementRef.current) {
         entryTl.fromTo(statementRef.current,
           { y: 10, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power2.out' },
+          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power3.out' },
+          0.88
+        );
+      }
+      if (academicRef.current) {
+        entryTl.fromTo(academicRef.current,
+          { y: 10, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power3.out' },
+          0.96
+        );
+      }
+
+      // 5. Portrait / Reactor installation enters smoothly (1.10s – 1.75s)
+      if (portraitFloatRef.current) {
+        entryTl.fromTo(portraitFloatRef.current,
+          {
+            scale: 0.98,
+            y: 18,
+            autoAlpha: 0
+          },
+          {
+            scale: 1.0,
+            y: 0,
+            autoAlpha: 1,
+            duration: 0.70,
+            ease: 'power3.out'
+          },
           1.10
         );
       }
 
-      // Beat 7b: Hologram discovery control reveals naturally below tagline
+      // 6. View Portrait Control physical entrance (1.35s – 1.85s)
       if (taglineControlRef.current) {
         entryTl.fromTo(taglineControlRef.current,
-          { y: 10, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power2.out' },
-          1.18
+          { scale: 0.97, y: 8, autoAlpha: 0 },
+          { scale: 1.0, y: 0, autoAlpha: 1, duration: 0.50, ease: 'power3.out' },
+          1.35
         );
       }
 
-      // Beat 8: Explore bottom bar becomes active & Hero stabilizes (1.18s – 1.70s)
+      // 7. Bottom Bar & Scroll Indicator stabilize (1.55s – 2.05s)
       if (bottomBarRef.current) {
         entryTl.fromTo(bottomBarRef.current,
-          { y: 14, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power2.out' },
-          1.22
+          { y: 12, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.50, ease: 'power2.out' },
+          1.55
         );
       }
     }, root);

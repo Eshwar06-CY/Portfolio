@@ -220,7 +220,7 @@ function DesktopProjectReel({
   const reelRootRef = useRef(null);
   const stageRef = useRef(null);
   const slidesRef = useRef([]);
-  const numbersRef = useRef([]);
+  const statementsRef = useRef([]);
   const titlesRef = useRef([]);
   const visualsRef = useRef([]);
   const imagesRef = useRef([]);
@@ -241,7 +241,7 @@ function DesktopProjectReel({
       // Slides 1..3 start hidden with personality-calibrated entry offsets
       projects.forEach((_, i) => {
         const slide = slidesRef.current[i];
-        const num = numbersRef.current[i];
+        const statement = statementsRef.current[i];
         const title = titlesRef.current[i];
         const visual = visualsRef.current[i];
         const meta = metasRef.current[i];
@@ -250,8 +250,8 @@ function DesktopProjectReel({
 
         if (i === 0) {
           if (slide) gsap.set(slide, { autoAlpha: 1, y: 0, scale: 1, zIndex: 10 });
-          if (num) gsap.set(num, { autoAlpha: 1, y: 0 });
           if (title) gsap.set(title, { autoAlpha: 1, y: 0, scale: 1.0 });
+          if (statement) gsap.set(statement, { autoAlpha: 1, y: 0 });
           if (visual) gsap.set(visual, { autoAlpha: 1, x: 0, y: 0, scale: 1.0, clipPath: 'inset(0% 0% 0% 0%)' });
           if (img) gsap.set(img, { scale: 1.0 });
           if (meta) gsap.set(meta, { autoAlpha: 1, y: 0 });
@@ -285,11 +285,11 @@ function DesktopProjectReel({
             }
           }
 
-          if (slide) gsap.set(slide, { autoAlpha: 0, y: isMobile ? 16 : 24, scale: 0.99, zIndex: 1 });
-          if (num) gsap.set(num, { autoAlpha: 0, y: isMobile ? 10 : 14 });
-          if (title) gsap.set(title, { autoAlpha: 0, y: isMobile ? 14 : 22, scale: 0.98 });
+          if (slide) gsap.set(slide, { autoAlpha: 0, y: isMobile ? 16 : 24, scale: 0.98, zIndex: 1 });
+          if (title) gsap.set(title, { autoAlpha: 0, y: isMobile ? 20 : 32, scale: 0.96 });
+          if (statement) gsap.set(statement, { autoAlpha: 0, y: isMobile ? 12 : 18 });
           if (visual) gsap.set(visual, { autoAlpha: 0, x: initX, y: initY, scale: initScale, clipPath: initClip });
-          if (img) gsap.set(img, { scale: 1.06 });
+          if (img) gsap.set(img, { scale: 1.05 });
           if (meta) gsap.set(meta, { autoAlpha: 0, y: isMobile ? 10 : 16 });
           if (bg) gsap.set(bg, { opacity: 0 });
         }
@@ -378,32 +378,32 @@ function DesktopProjectReel({
       // 3. First Project (SPECra) starts active and locked in
       const p0Visual = visualsRef.current[0];
       const p0Title = titlesRef.current[0];
-      const p0Num = numbersRef.current[0];
+      const p0Statement = statementsRef.current[0];
       const p0Meta = metasRef.current[0];
       const p0Img = imagesRef.current[0];
       const p0Bg = bgsRef.current[0];
 
+      if (p0Title) {
+        tl.to(p0Title, { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power3.out', duration: 0.18 * dur }, 0);
+      }
+      if (p0Statement) {
+        tl.to(p0Statement, { autoAlpha: 1, y: 0, ease: 'power3.out', duration: 0.18 * dur }, 0.04 * dur);
+      }
       if (p0Visual) {
         tl.to(p0Visual, {
           autoAlpha: 1,
           y: 0,
           scale: 1.00,
           clipPath: 'inset(0% 0% 0% 0%)',
-          ease: 'power2.out',
+          ease: 'power3.out',
           duration: 0.20 * dur
-        }, 0);
+        }, 0.05 * dur);
       }
       if (p0Img) {
-        tl.to(p0Img, { scale: 1.00, ease: 'none', duration: 0.20 * dur }, 0);
-      }
-      if (p0Num) {
-        tl.to(p0Num, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.16 * dur }, 0);
-      }
-      if (p0Title) {
-        tl.to(p0Title, { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.18 * dur }, 0);
+        tl.to(p0Img, { scale: 1.00, ease: 'none', duration: 0.20 * dur }, 0.05 * dur);
       }
       if (p0Meta) {
-        tl.to(p0Meta, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.18 * dur }, 0);
+        tl.to(p0Meta, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.18 * dur }, 0.08 * dur);
       }
       if (p0Bg) {
         tl.to(p0Bg, { opacity: 0.85, ease: 'power1.out', duration: 0.20 * dur }, 0);
@@ -412,8 +412,8 @@ function DesktopProjectReel({
       // 4. Sequential Project Scenes & Continuous Overlapping Transitions
       for (let i = 0; i < projects.length; i++) {
         const currentSlide = slidesRef.current[i];
-        const currentNum = numbersRef.current[i];
         const currentTitle = titlesRef.current[i];
+        const currentStatement = statementsRef.current[i];
         const currentVisual = visualsRef.current[i];
         const currentImg = imagesRef.current[i];
         const currentMeta = metasRef.current[i];
@@ -427,28 +427,28 @@ function DesktopProjectReel({
         const holdEnd = sceneHoldStart + holdDur;
 
         // Differential Camera Parallax during active scene hold:
-        // Visual moves at a slightly different rate from typography
-        // Image slowly settles from 1.02 down to 1.00
         if (currentImg) {
           tl.to(currentImg, { scale: 1.00, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
         if (currentVisual) {
-          // Personality-specific hold drift (kept vertical on mobile to avoid lateral overflow)
           const driftX = isMobile ? 0 : (i === 1 ? -6 : (i === 3 ? 8 : 0));
           tl.to(currentVisual, { y: isMobile ? -8 : -16, x: driftX, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
         if (currentTitle) {
           tl.to(currentTitle, { y: isMobile ? -6 : -10, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
+        if (currentStatement) {
+          tl.to(currentStatement, { y: isMobile ? -4 : -8, ease: 'none', duration: holdDur }, sceneHoldStart);
+        }
         if (currentBg) {
           tl.to(currentBg, { y: isMobile ? -4 : -8, ease: 'none', duration: holdDur }, sceneHoldStart);
         }
 
-        // Seamless Overlapping Hand-off to Next Slide (Scene 1 leaves WHILE Scene 2 arrives)
+        // Seamless Overlapping Hand-off to Next Slide (Scene leaves WHILE Next arrives)
         if (!isLastProject) {
           const nextSlide = slidesRef.current[i + 1];
-          const nextNum = numbersRef.current[i + 1];
           const nextTitle = titlesRef.current[i + 1];
+          const nextStatement = statementsRef.current[i + 1];
           const nextVisual = visualsRef.current[i + 1];
           const nextImg = imagesRef.current[i + 1];
           const nextMeta = metasRef.current[i + 1];
@@ -457,19 +457,17 @@ function DesktopProjectReel({
           const transStart = holdEnd;
           const transDur = 0.35 * dur;
 
-          // Outgoing Scene i: shifts away smoothly
-          if (currentMeta) {
-            tl.to(currentMeta, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart);
-          }
-          if (currentNum) {
-            tl.to(currentNum, { autoAlpha: 0, y: isMobile ? -8 : -12, ease: 'power1.in', duration: 0.20 * dur }, transStart);
-          }
+          // Outgoing Scene i: choreographed departure
+          // Title moves first with depth settle, followed by statement, visual and meta
           if (currentTitle) {
-            tl.to(currentTitle, { autoAlpha: 0, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.26 * dur }, transStart);
+            tl.to(currentTitle, { autoAlpha: 0, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.24 * dur }, transStart);
+          }
+          if (currentStatement) {
+            tl.to(currentStatement, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.02 * dur);
           }
           if (currentVisual) {
             if (i === 0) {
-              // Requirement 18: As SPECra exits, surface fragments into tiny architectural light traces and disappears into darkness
+              // SPECra exit: subtle architectural light traces and dissolve into darkness
               tl.to(currentVisual, {
                 filter: 'brightness(1.5) contrast(1.2)',
                 duration: 0.08 * dur,
@@ -493,12 +491,15 @@ function DesktopProjectReel({
                 y: isMobile ? -14 : -24,
                 scale: isMobile ? 0.98 : 0.965,
                 ease: 'power2.in',
-                duration: 0.30 * dur
-              }, transStart);
+                duration: 0.28 * dur
+              }, transStart + 0.03 * dur);
             }
           }
           if (currentImg) {
-            tl.to(currentImg, { scale: 0.98, ease: 'power1.in', duration: 0.30 * dur }, transStart);
+            tl.to(currentImg, { scale: 0.98, ease: 'power1.in', duration: 0.28 * dur }, transStart + 0.03 * dur);
+          }
+          if (currentMeta) {
+            tl.to(currentMeta, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.04 * dur);
           }
           if (currentSlide) {
             tl.to(currentSlide, { autoAlpha: 0, y: isMobile ? -10 : -18, ease: 'power2.inOut', duration: transDur }, transStart);
@@ -527,20 +528,23 @@ function DesktopProjectReel({
               arriveStart + 0.04 * dur
             );
           }
-          if (nextNum) {
-            tl.fromTo(nextNum,
-              { autoAlpha: 0, y: isMobile ? 8 : 14 },
-              { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.24 * dur },
-              arriveStart + 0.06 * dur
-            );
-          }
+          // 1. Cinematic Title Card reveals strongly
           if (nextTitle) {
             tl.fromTo(nextTitle,
-              { autoAlpha: 0, y: isMobile ? 12 : 20, scale: 0.98 },
-              { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power2.out', duration: 0.28 * dur },
-              arriveStart + 0.07 * dur
+              { autoAlpha: 0, y: isMobile ? 14 : 26, scale: 0.96 },
+              { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power4.out', duration: 0.28 * dur },
+              arriveStart + 0.04 * dur
             );
           }
+          // 2. Supporting statement follows
+          if (nextStatement) {
+            tl.fromTo(nextStatement,
+              { autoAlpha: 0, y: isMobile ? 10 : 16 },
+              { autoAlpha: 1, y: 0, ease: 'power3.out', duration: 0.24 * dur },
+              arriveStart + 0.08 * dur
+            );
+          }
+          // 3. Project Visual arrives with physical scale & depth settle
           if (nextVisual) {
             let nextInitX = 0;
             let nextInitY = isMobile ? 12 : 20;
@@ -549,19 +553,16 @@ function DesktopProjectReel({
 
             if (!isMobile) {
               if (nextIndex === 1) {
-                // 02 ExpenseFlow AI: slightly flowing lateral glide
                 nextInitX = 28;
                 nextInitY = 16;
                 nextInitClip = 'inset(0% 0% 0% 6%)';
                 nextInitScale = 1.04;
               } else if (nextIndex === 2) {
-                // 03 Academic Planner: calm / organized steady vertical rise
                 nextInitX = 0;
                 nextInitY = 24;
                 nextInitClip = 'inset(4% 0% 0% 0%)';
                 nextInitScale = 1.03;
               } else if (nextIndex === 3) {
-                // 04 CAPACITYX: spatial / expansive panoramic breath
                 nextInitX = -24;
                 nextInitY = 18;
                 nextInitClip = 'inset(0% 6% 0% 0%)';
@@ -583,23 +584,24 @@ function DesktopProjectReel({
                 y: 0,
                 scale: 1.00,
                 clipPath: 'inset(0% 0% 0% 0%)',
-                ease: 'power2.out',
+                ease: 'power3.out',
                 duration: 0.32 * dur
               },
-              arriveStart + 0.06 * dur
+              arriveStart + 0.07 * dur
             );
           }
           if (nextImg) {
             tl.fromTo(nextImg,
-              { scale: 1.06 },
-              { scale: 1.02, ease: 'power2.out', duration: 0.32 * dur },
-              arriveStart + 0.06 * dur
+              { scale: 1.05 },
+              { scale: 1.00, ease: 'power2.out', duration: 0.32 * dur },
+              arriveStart + 0.07 * dur
             );
           }
+          // 4. Supporting information and CTA arrive
           if (nextMeta) {
             tl.fromTo(nextMeta,
               { autoAlpha: 0, y: isMobile ? 10 : 16 },
-              { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.25 * dur },
+              { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.24 * dur },
               arriveStart + 0.12 * dur
             );
           }
@@ -607,7 +609,6 @@ function DesktopProjectReel({
 
         // Final Project (CAPACITYX) remains 100% visible and stable through to the unpinning into Experience
         if (isLastProject) {
-          // No vanishing exit: keep elements visible so there is zero black gap before Experience
           if (currentSlide) {
             tl.to(currentSlide, { autoAlpha: 1, y: 0, duration: 0.1 }, holdEnd);
           }
@@ -629,8 +630,6 @@ function DesktopProjectReel({
     }
   };
 
-  const activeProject = projects[activeIndex] || projects[0];
-
   const handleSelectProject = (project, idx) => {
     if (typeof idx === 'number' && visualsRef.current[idx]) {
       gsap.to(visualsRef.current[idx], {
@@ -649,50 +648,7 @@ function DesktopProjectReel({
     <div ref={reelRootRef} className="project-reel-container" aria-label="Selected Work Pinned Reel">
       <div ref={stageRef} className="reel-pinned-stage">
 
-        {/* 1. HUD Chrome: Top Header Bar */}
-        <div className="reel-hud-top">
-          <div className="hud-eyebrow-box">
-            <span className="hud-kicker">SELECTED WORK</span>
-            <span className="hud-divider">/</span>
-            <span className="hud-reel-label">PROJECT_REEL</span>
-            <span className="hud-divider">/</span>
-            <span className="hud-chapter-counter">CHAPTER 0{activeIndex + 1} OF 0{projects.length}</span>
-          </div>
-          <div className="hud-telemetry-box">
-            <span className="hud-telemetry-label">PROJECT</span>
-            <span className="hud-telemetry-val">{activeProject.title}</span>
-            <span className="hud-divider">•</span>
-            <span className="hud-active-category">{activeProject.category}</span>
-          </div>
-        </div>
-
-        {/* 2. HUD Chrome: Bottom Indicator Bar */}
-        <div className="reel-hud-bottom">
-          <div className="hud-counter-box">
-            <span className="hud-chapter-label">CHAPTER</span>
-            <div className="hud-digit-current-wrap">
-              <span key={activeIndex} className="hud-digit-current hud-digit-rolling">
-                0{activeIndex + 1}
-              </span>
-            </div>
-            <span className="hud-digit-sep">/</span>
-            <span className="hud-digit-total">0{projects.length}</span>
-            <div className="hud-progress-track">
-              <div
-                className="hud-progress-fill"
-                style={{ width: `${((activeIndex + 1) / projects.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="hud-scroll-cue">
-            <span className="hud-pulse-dot" />
-            <span className="hud-scroll-text">SCROLL TO ADVANCE CHAPTERS</span>
-            <span className="hud-scroll-arrow">↓</span>
-          </div>
-        </div>
-
-        {/* 3. The 4 Project Scenes */}
+        {/* The 4 Project Scenes */}
         <div className="reel-slides-viewport">
           {projects.map((project, idx) => {
             const isCurrent = idx === activeIndex;
@@ -706,33 +662,20 @@ function DesktopProjectReel({
                 ref={(el) => (slidesRef.current[idx] = el)}
                 className={`reel-slide reel-slide-${idx + 1} ${compClass} ${isCurrent ? 'slide-active' : ''}`}
               >
-                {/* Layer 1: Background Ambient Glow (0.7x speed) */}
+                {/* Layer 1: Background Ambient Glow */}
                 <div
                   ref={(el) => (bgsRef.current[idx] = el)}
                   className="slide-bg-atmosphere"
                   style={{ background: toneBg }}
                 />
 
-                {/* Layer 2, 3, 4: Content Composition */}
+                {/* Layer 2: Editorial Content Frame */}
                 <div className="slide-content-frame">
 
                   {/* Editorial Column */}
                   <div className="slide-editorial-col">
-                    <div
-                      ref={(el) => (numbersRef.current[idx] = el)}
-                      className="slide-num-eyebrow"
-                    >
-                      <div className="slide-chapter-tag-wrap">
-                        <span className="slide-chapter-prefix">CHAPTER</span>
-                        <span className="slide-num-tag">0{idx + 1}</span>
-                        <span className="slide-chapter-divider">/</span>
-                        <span className="slide-total-tag">0{projects.length}</span>
-                      </div>
-                      <span className="slide-eyebrow-sep">•</span>
-                      <span className="slide-technical-domain">{project.category}</span>
-                    </div>
 
-                    {/* Monumental Title Layer (0.9x speed) */}
+                    {/* 1. Monumental Cinematic Title Card */}
                     <div
                       ref={(el) => (titlesRef.current[idx] = el)}
                       className="slide-title-wrap"
@@ -751,42 +694,26 @@ function DesktopProjectReel({
                       </Link>
                     </div>
 
-                    {/* Progressive Metadata Layer (Beat 5) */}
+                    {/* 2. Project Statement */}
+                    {project.tagline && (
+                      <div
+                        ref={(el) => (statementsRef.current[idx] = el)}
+                        className="slide-tagline-bar"
+                      >
+                        <span className="slide-tagline-quote">“</span>
+                        <p className="slide-tagline-text">{project.tagline}</p>
+                      </div>
+                    )}
+
+                    {/* 3. Supporting Information & Action Cluster */}
                     <div
                       ref={(el) => (metasRef.current[idx] = el)}
                       className="slide-meta-wrap"
                     >
-                      {/* Editorial Tagline / Quote */}
-                      {project.tagline && (
-                        <div className="slide-tagline-bar">
-                          <span className="slide-tagline-quote">“</span>
-                          <p className="slide-tagline-text">{project.tagline}</p>
-                        </div>
-                      )}
-
-                      {/* Descriptive Body */}
                       <p className="slide-description-text">
                         {project.description}
                       </p>
 
-                      {/* Technical Micro-Telemetry Strip (Curated Layer) */}
-                      <div className="slide-micro-telemetry-strip">
-                        <div className="micro-telemetry-item">
-                          <span className="micro-telemetry-label">STAGE</span>
-                          <span className="micro-telemetry-val">
-                            {idx === 0 ? 'PROTOTYPE PROVEN' : idx === 1 ? 'APPLICATION' : idx === 2 ? 'ACTIVE ENGINEERING' : 'CONCEPT ARCHITECTURE'}
-                          </span>
-                        </div>
-                        <div className="micro-telemetry-divider">•</div>
-                        <div className="micro-telemetry-item">
-                          <span className="micro-telemetry-label">DOMAIN</span>
-                          <span className="micro-telemetry-val">
-                            {idx === 0 ? 'AI HYDRAULICS' : idx === 1 ? 'FINANCIAL AI' : idx === 2 ? 'OCR SCHEDULING' : 'LOGISTICS PLATFORM'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Minimalist Tech Tags */}
                       <div className="slide-tech-stream">
                         {project.tags.slice(0, 4).map((tag) => (
                           <span key={tag} className="slide-tech-pill">{tag}</span>
@@ -884,16 +811,7 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
               viewport={{ once: false, amount: 0.35 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="mobile-scene-eyebrow">
-                <div className="mobile-chapter-pill">
-                  <span className="mobile-chapter-txt">CHAPTER</span>
-                  <span className="mobile-scene-num">0{idx + 1}</span>
-                  <span className="mobile-chapter-sep">/</span>
-                  <span className="mobile-total-num">0{projects.length}</span>
-                </div>
-                <span className="mobile-scene-category">{project.category}</span>
-              </div>
-
+              {/* 1. Project Title */}
               <Link
                 to={`/projects/${projectSlug}`}
                 className="mobile-scene-title-link"
@@ -904,6 +822,12 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                 </h3>
               </Link>
 
+              {/* 2. Project Statement */}
+              {project.tagline && (
+                <p className="mobile-scene-tagline">“{project.tagline}”</p>
+              )}
+
+              {/* 3. Project Visual */}
               <div
                 className="mobile-scene-visual"
                 onClick={() => handleMobileSelect(project)}
@@ -930,9 +854,7 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                 <span className="mobile-reticle reticle-br">+</span>
               </div>
 
-              {project.tagline && (
-                <p className="mobile-scene-tagline">“{project.tagline}”</p>
-              )}
+              {/* 4. Supporting Information */}
 
               <p className="mobile-scene-desc">{project.description}</p>
 

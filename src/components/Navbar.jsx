@@ -58,6 +58,7 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label="Return to top"
           >
+            <img src="/logo.png" alt="ME Logo" className="brand-logo-mark" width="22" height="22" />
             <span className="brand-name">{profile.name || 'Eshwar M'}</span>
             <div className="status-indicator">
               <span className="status-dot" aria-hidden="true" />
@@ -126,8 +127,13 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             aria-label="Mobile Navigation"
           >
             <div className="mobile-editorial-header">
-              <span className="mobile-brand-title">{profile.name || 'Eshwar M'}</span>
-              <span className="mobile-brand-sub">AI · PRODUCT · DATA · INNOVATION</span>
+              <div className="mobile-brand-identity">
+                <img src="/logo.png" alt="ME Logo" className="mobile-brand-logo-mark" width="26" height="26" />
+                <div className="mobile-brand-text">
+                  <span className="mobile-brand-title">{profile.name || 'Eshwar M'}</span>
+                  <span className="mobile-brand-sub">AI · PRODUCT · DATA · INNOVATION</span>
+                </div>
+              </div>
             </div>
 
             <div className="mobile-editorial-list">

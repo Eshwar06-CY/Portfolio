@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import ComputationalCore3D from './ComputationalCore3D';
 import InfiniteArchiveArchitecture from './InfiniteArchiveArchitecture';
 import GravitationalVoidBackdrop from './GravitationalVoidBackdrop';
+import ScrollScrubbedCinematicVideo, { VIDEO_ENVIRONMENT_STATES, calculateCinematicTimeline } from './ScrollScrubbedCinematicVideo';
 
 /**
  * PHASE 7D: Gravitational Archive
@@ -521,6 +522,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [videoEnvState, setVideoEnvState] = useState(VIDEO_ENVIRONMENT_STATES.LOADING);
 
   // Gravitational Void World Coordinates: Located in deep space behind right installation
   const voidWorldPosRef = useRef(new THREE.Vector3(2.8, 0.5, -24.0));
@@ -550,10 +552,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
     };
 
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScroll > 0) {
-        scrollRef.current = window.scrollY / totalScroll;
-      }
+      scrollRef.current = calculateCinematicTimeline(window.scrollY);
     };
 
     const handleAtmosphereEvent = (e) => {
@@ -629,7 +628,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
 
   return (
     <div
-      className="global-cinematic-webgl-canvas"
+      className="global-cinematic-environment-root"
       style={{
         position: 'fixed',
         inset: 0,
@@ -641,84 +640,107 @@ export default function GlobalCinematicScene({ isProject = false }) {
       }}
       aria-hidden="true"
     >
-      <WebGLErrorBoundary fallback={null}>
-        <Canvas
-          camera={{ position: [0, 0, 5], fov: 46 }}
-          dpr={[1, isMobile ? 1 : 1.5]}
-          gl={{
-            antialias: false,
-            powerPreference: 'high-performance',
-            alpha: true,
-            stencil: false,
-            depth: false
-          }}
-        >
-          {/* 1. Cinematic Camera with Mass, Drift & Clamped Mouse Tilt */}
-          <SpatialCameraController
-            mouseRef={mouseRef}
-            scrollRef={scrollRef}
-            cameraShiftRef={cameraShiftRef}
-            introPhase={introPhase}
-            isReducedMotion={isReducedMotion}
-            isMobile={isMobile}
-            isTablet={isTablet}
-          />
+      {/* 1. Primary Environment: Native Scroll-Scrubbed HTML5 Cinematic Video */}
+      <ScrollScrubbedCinematicVideo
+        videoSrc="/gemini_generated_video_9efe4bc0.mp4"
+        atmosphereMode={atmosphereMode}
+        onStateChange={setVideoEnvState}
+        isReducedMotion={isReducedMotion}
+      />
 
-          {/* 1b. Gravitational Center Synchronizer: Seamless geodesic and lensing shift across chambers */}
-          <GravitationalCenterSync
-            atmosphereMode={atmosphereMode}
-            voidWorldPosRef={voidWorldPosRef}
-            voidScreenPosRef={voidScreenPosRef}
-            isReducedMotion={isReducedMotion}
-          />
-
-          {/* 2. Gravitational Void Deep Space Backdrop with Lensing & Curved Light (NO mouse spotlight) */}
-          <GravitationalVoidBackdrop
-            atmosphereConfig={currentAtmosphere}
-            isReducedMotion={isReducedMotion}
-            isMobile={isMobile}
-            projectorPulseRef={projectorPulseRef}
-            voidScreenPosRef={voidScreenPosRef}
-          />
-
-          {/* 3. Infinite Archive Monolithic Architecture in Depth (-4.5 to -30 Z) */}
-          <InfiniteArchiveArchitecture
-            atmosphereMode={atmosphereMode}
-            scrollRef={scrollRef}
-            isMobile={isMobile}
-            isTablet={isTablet}
-            isReducedMotion={isReducedMotion}
-            projectorPulseRef={projectorPulseRef}
-            voidWorldPosRef={voidWorldPosRef}
-          />
-
-          {/* 4. Stratified Suspended Atmospheric Particles with Geodesic Deflection */}
-          <GravitationalAtmosphericParticles
-            count={isMobile ? (isProject ? 16 : 24) : (isProject ? 36 : 72)}
-            mouseRef={mouseRef}
-            scrollRef={scrollRef}
-            atmosphereMode={atmosphereMode}
-            introPhase={introPhase}
-            isReducedMotion={isReducedMotion}
-            isMobile={isMobile}
-            isProject={isProject}
-            projectorPulseRef={projectorPulseRef}
-            voidWorldPosRef={voidWorldPosRef}
-          />
-
-          {/* 5. Computational Core during Intro (Unmounted once entered) */}
-          {introPhase !== 'done' && (
-            <ComputationalCore3D
-              phase={introPhase}
-              isHovered={isCoreHovered}
+      {/* 2. Visually Coherent WebGL Archive Fallback: Active immediately, fades to 0 when video is ready */}
+      <div
+        className="global-cinematic-webgl-canvas"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          opacity: videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 0 : 1.0,
+          visibility: videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 'hidden' : 'visible',
+          transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s'
+        }}
+      >
+        <WebGLErrorBoundary fallback={null}>
+          <Canvas
+            camera={{ position: [0, 0, 5], fov: 46 }}
+            dpr={[1, isMobile ? 1 : 1.5]}
+            gl={{
+              antialias: false,
+              powerPreference: 'high-performance',
+              alpha: true,
+              stencil: false,
+              depth: false
+            }}
+          >
+            {/* 1. Cinematic Camera with Mass, Drift & Clamped Mouse Tilt */}
+            <SpatialCameraController
               mouseRef={mouseRef}
+              scrollRef={scrollRef}
+              cameraShiftRef={cameraShiftRef}
+              introPhase={introPhase}
               isReducedMotion={isReducedMotion}
               isMobile={isMobile}
               isTablet={isTablet}
             />
-          )}
-        </Canvas>
-      </WebGLErrorBoundary>
+
+            {/* 1b. Gravitational Center Synchronizer: Seamless geodesic and lensing shift across chambers */}
+            <GravitationalCenterSync
+              atmosphereMode={atmosphereMode}
+              voidWorldPosRef={voidWorldPosRef}
+              voidScreenPosRef={voidScreenPosRef}
+              isReducedMotion={isReducedMotion}
+            />
+
+            {/* 2. Gravitational Void Deep Space Backdrop with Lensing & Curved Light (NO mouse spotlight) */}
+            <GravitationalVoidBackdrop
+              atmosphereConfig={currentAtmosphere}
+              isReducedMotion={isReducedMotion}
+              isMobile={isMobile}
+              projectorPulseRef={projectorPulseRef}
+              voidScreenPosRef={voidScreenPosRef}
+            />
+
+            {/* 3. Infinite Archive Monolithic Architecture in Depth (-4.5 to -30 Z) */}
+            <InfiniteArchiveArchitecture
+              atmosphereMode={atmosphereMode}
+              scrollRef={scrollRef}
+              isMobile={isMobile}
+              isTablet={isTablet}
+              isReducedMotion={isReducedMotion}
+              projectorPulseRef={projectorPulseRef}
+              voidWorldPosRef={voidWorldPosRef}
+            />
+
+            {/* 4. Stratified Suspended Atmospheric Particles with Geodesic Deflection */}
+            <GravitationalAtmosphericParticles
+              count={isMobile ? (isProject ? 16 : 24) : (isProject ? 36 : 72)}
+              mouseRef={mouseRef}
+              scrollRef={scrollRef}
+              atmosphereMode={atmosphereMode}
+              introPhase={introPhase}
+              isReducedMotion={isReducedMotion}
+              isMobile={isMobile}
+              isProject={isProject}
+              projectorPulseRef={projectorPulseRef}
+              voidWorldPosRef={voidWorldPosRef}
+            />
+
+            {/* 5. Computational Core during Intro (Unmounted once entered) */}
+            {introPhase !== 'done' && (
+              <ComputationalCore3D
+                phase={introPhase}
+                isHovered={isCoreHovered}
+                mouseRef={mouseRef}
+                isReducedMotion={isReducedMotion}
+                isMobile={isMobile}
+                isTablet={isTablet}
+              />
+            )}
+          </Canvas>
+        </WebGLErrorBoundary>
+      </div>
     </div>
   );
 }

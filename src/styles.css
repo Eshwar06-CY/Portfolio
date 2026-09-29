@@ -3691,5 +3691,209 @@ canvas {
   opacity: 0.90;
 }
 
+/* ============================================================
+   PHASE 8 — FINAL CINEMATIC MOTION + UI REFINEMENT
+   ============================================================ */
 
+/* 1. Complete HUD Elimination & Spacing Cleanup */
+.reel-hud-top,
+.reel-hud-bottom,
+.hud-eyebrow-box,
+.hud-telemetry-box,
+.hud-counter-box,
+.hud-scroll-cue,
+.slide-num-eyebrow,
+.slide-micro-telemetry-strip,
+.mobile-scene-eyebrow {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
 
+/* 2. Vertically Centered Pure Stage Presentation */
+.reel-pinned-stage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box;
+}
+
+.reel-slides-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.reel-slide {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 6vw !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* 3. Hero Mask Reveal for Cinematic Opening Shot */
+.hero-masthead-mask-wrapper {
+  position: relative;
+  margin-bottom: 28px;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden !important;
+}
+
+/* 4. Cinematic Title Card Typography */
+.slide-title-wrap {
+  will-change: transform, opacity;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.slide-project-title {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.8vw, 72px) !important;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  word-break: normal;
+  overflow-wrap: normal;
+  -webkit-hyphens: none;
+  hyphens: none;
+  max-width: 100%;
+}
+
+.slide-project-title:hover {
+  color: #f2f2fa;
+}
+
+/* 5. Project Statement Styling */
+.slide-tagline-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 10px;
+  max-width: 580px;
+}
+
+.slide-tagline-quote {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  user-select: none;
+}
+
+.slide-tagline-text {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 0.95vw, 14px);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: 0.07em;
+  color: #cfd0dc;
+  text-transform: uppercase;
+}
+
+/* 6. Physical Button & Link Interaction */
+.editorial-action-link {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+}
+
+.editorial-action-link:hover {
+  transform: translateY(-1.5px);
+}
+
+.editorial-secondary-link {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+}
+
+.editorial-secondary-link:hover {
+  transform: translateY(-1.5px);
+}
+
+/* 7. Mobile Editorial Flow */
+.mobile-scene-tagline {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: #cfd0dc;
+  line-height: 1.6;
+  text-transform: uppercase;
+  margin: 4px 0 8px;
+}
+
+/* ====================================================================
+   BRAND IDENTITY / LOGO SYSTEM
+   ==================================================================== */
+.brand-logo-mark {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 3px;
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.brand-wrapper:hover .brand-logo-mark {
+  transform: scale(1.08);
+}
+
+.mobile-brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-brand-logo-mark {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.mobile-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.footer-logo-mark {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 2px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.site-footer:hover .footer-logo-mark {
+  opacity: 1;
+}
