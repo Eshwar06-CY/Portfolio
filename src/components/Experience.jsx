@@ -60,22 +60,22 @@ export default function Experience({
 
         if (period) {
           tl.fromTo(period,
-            { x: isDesktop ? -10 : -4, autoAlpha: 0.85 },
-            { x: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.25 },
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -8, autoAlpha: 0.8 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
             0
           );
         }
         if (org) {
           tl.fromTo(org,
-            { x: isDesktop ? -12 : -6, autoAlpha: 0.85 },
-            { x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.32 },
+            { x: isDesktop ? -16 : -8, autoAlpha: 0.85 },
+            { x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.34 },
             0.05
           );
         }
         if (role) {
           tl.fromTo(role,
-            { y: 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.30 },
+            { yPercent: 100, autoAlpha: 0 },
+            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.38 },
             0.10
           );
         }
@@ -83,7 +83,7 @@ export default function Experience({
           tl.fromTo(desc,
             { y: 8, autoAlpha: 0.85 },
             { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.35 },
-            0.15
+            0.16
           );
         }
       });
@@ -106,23 +106,23 @@ export default function Experience({
 
         if (badge) {
           tl.fromTo(badge,
-            { scale: 0.96, autoAlpha: 0.85 },
+            { scale: 0.92, autoAlpha: 0.8 },
             { scale: 1.0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
             0
           );
         }
         if (title) {
           tl.fromTo(title,
-            { x: isDesktop ? -8 : -3, autoAlpha: 0.85 },
-            { x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.32 },
+            { yPercent: 100, autoAlpha: 0 },
+            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.36 },
             0.06
           );
         }
         if (desc) {
           tl.fromTo(desc,
             { y: 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.3 },
-            0.12
+            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.32 },
+            0.14
           );
         }
       });
@@ -200,7 +200,9 @@ export default function Experience({
                   <span className="milestone-progression-badge badge-previous">PREVIOUS_ROLE</span>
                 )}
               </div>
-              <div className="milestone-role-text">{item.role}</div>
+              <div className="timeline-role-mask">
+                <div className="milestone-role-text">{item.role}</div>
+              </div>
               <p className="milestone-body-desc">{item.description}</p>
             </div>
           </div>
@@ -245,7 +247,9 @@ export default function Experience({
 
                   <div className="milestone-content-col">
                     <div className="milestone-title-row">
-                      <h4 className="milestone-achievement-title">{item.title}</h4>
+                      <div className="timeline-role-mask">
+                        <h4 className="milestone-achievement-title">{item.title}</h4>
+                      </div>
                     </div>
                     <p className="milestone-body-desc">{item.whatIDid}</p>
                   </div>

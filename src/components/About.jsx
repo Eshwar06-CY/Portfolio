@@ -226,13 +226,25 @@ export default function About({ aboutData, onCursorChange }) {
           entranceTl.fromTo(divider, { scaleX: 0 }, { scaleX: 1, ease: 'none', duration: 0.4 }, 0);
         }
         if (num) {
-          entranceTl.fromTo(num, { y: 8, autoAlpha: 0.8 }, { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.3 }, 0.04);
+          entranceTl.fromTo(num,
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -6, autoAlpha: 0.8 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.32 },
+            0.04
+          );
         }
         if (title) {
-          entranceTl.fromTo(title, { x: isDesktop ? -8 : -3, y: 4, autoAlpha: 0.85 }, { x: 0, y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.35 }, 0.08);
+          entranceTl.fromTo(title,
+            { yPercent: 105, autoAlpha: 0 },
+            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.38 },
+            0.10
+          );
         }
         if (desc) {
-          entranceTl.fromTo(desc, { y: 4, autoAlpha: 0.85 }, { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.35 }, 0.12);
+          entranceTl.fromTo(desc,
+            { y: 6, autoAlpha: 0.85 },
+            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.32 },
+            0.18
+          );
         }
 
         // Active Row Emphasis (Closest to visual center of viewport)
@@ -397,13 +409,13 @@ export default function About({ aboutData, onCursorChange }) {
         <div className="about-hero-statement-col">
           <h1 ref={statementRef} className="asymmetric-statement" aria-label="I BUILD THINGS THAT SOLVE PROBLEMS.">
             <div className="statement-line-mask mask-row-1">
-              <span className="statement-row row-1">I BUILD THINGS</span>
+              <span className="statement-row row-1">I BUILD</span>
             </div>
             <div className="statement-line-mask mask-row-2">
-              <span className="statement-row row-2">THAT SOLVE</span>
+              <span className="statement-row row-2">THINGS THAT</span>
             </div>
             <div className="statement-line-mask mask-row-3">
-              <span className="statement-row row-3">PROBLEMS.</span>
+              <span className="statement-row row-3">SOLVE PROBLEMS.</span>
             </div>
           </h1>
 
@@ -518,7 +530,9 @@ export default function About({ aboutData, onCursorChange }) {
                 <span className="exploring-micro-tag">APPLIED AI</span>
               </div>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">GENERATIVE AI</h3>
+                <div className="exploring-title-mask">
+                  <h3 className="exploring-title">GENERATIVE AI</h3>
+                </div>
                 <p className="exploring-desc">
                   Exploring how LLMs and AI can be used to build practical applications, automate workflows, and create intelligent user experiences.
                 </p>
@@ -532,7 +546,9 @@ export default function About({ aboutData, onCursorChange }) {
                 <span className="exploring-micro-tag">PRODUCT DESIGN</span>
               </div>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">PRODUCT</h3>
+                <div className="exploring-title-mask">
+                  <h3 className="exploring-title">PRODUCT</h3>
+                </div>
                 <p className="exploring-desc">
                   Interested in understanding users, identifying meaningful problems, defining solutions, and turning ideas into useful products.
                 </p>
@@ -546,7 +562,9 @@ export default function About({ aboutData, onCursorChange }) {
                 <span className="exploring-micro-tag">DATA SYSTEMS</span>
               </div>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">DATA</h3>
+                <div className="exploring-title-mask">
+                  <h3 className="exploring-title">DATA</h3>
+                </div>
                 <p className="exploring-desc">
                   Working with data to uncover patterns, generate insights, support decisions, and understand real-world outcomes.
                 </p>
@@ -560,7 +578,9 @@ export default function About({ aboutData, onCursorChange }) {
                 <span className="exploring-micro-tag">VENTURE &amp; IMPACT</span>
               </div>
               <div className="exploring-text-wrap">
-                <h3 className="exploring-title">ENTREPRENEURSHIP</h3>
+                <div className="exploring-title-mask">
+                  <h3 className="exploring-title">ENTREPRENEURSHIP</h3>
+                </div>
                 <p className="exploring-desc">
                   Exploring startup ideas, innovation, business models, and how technology can be transformed into solutions for real-world problems.
                 </p>

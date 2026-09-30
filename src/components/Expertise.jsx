@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import TextReveal from './TextReveal';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Expertise({ expertiseData, onCursorChange }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
+  const sectionRef = useRef(null);
 
   // Exact 7 categorized skill groups matching Phase 1 Art Direction
   const fallbackCategories = [
@@ -118,8 +123,73 @@ export default function Expertise({ expertiseData, onCursorChange }) {
     'PRODUCT & VENTURE'
   ];
 
+  useEffect(() => {
+    const root = sectionRef.current;
+    if (!root) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      const items = root.querySelectorAll('.editorial-expertise-item');
+      items.forEach((item, idx) => {
+        const num = item.querySelector('.item-number');
+        const code = item.querySelector('.item-domain-code');
+        const title = item.querySelector('.item-title-text');
+        const pills = item.querySelectorAll('.item-skill-pill');
+        const detail = item.querySelector('.item-expanded-detail');
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 88%',
+            toggleActions: 'play none none none'
+          }
+        });
+
+        if (num) {
+          tl.fromTo(num,
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -6, autoAlpha: 0 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.3 },
+            0.02
+          );
+        }
+        if (code) {
+          tl.fromTo(code,
+            { autoAlpha: 0, x: -4 },
+            { autoAlpha: 1, x: 0, ease: 'power1.out', duration: 0.25 },
+            0.06
+          );
+        }
+        if (title) {
+          tl.fromTo(title,
+            { yPercent: 105, autoAlpha: 0 },
+            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.38 },
+            0.08
+          );
+        }
+        if (pills.length) {
+          tl.fromTo(pills,
+            { autoAlpha: 0, y: 5 },
+            { autoAlpha: 1, y: 0, stagger: 0.025, ease: 'power2.out', duration: 0.28 },
+            0.14
+          );
+        }
+        if (detail) {
+          tl.fromTo(detail,
+            { autoAlpha: 0, y: 6 },
+            { autoAlpha: 1, y: 0, ease: 'power1.out', duration: 0.3 },
+            0.20
+          );
+        }
+      });
+    }, root);
+
+    return () => ctx.revert();
+  }, [categories]);
+
   return (
-    <section id="expertise" className="cinematic-section expertise-section" aria-label="Skills & Technologies">
+    <section id="expertise" ref={sectionRef} className="cinematic-section expertise-section" aria-label="Skills & Technologies">
       {/* Section Kicker with Capability Matrix Telemetry */}
       <motion.div
         className="capability-matrix-header-box"
@@ -161,13 +231,9 @@ export default function Expertise({ expertiseData, onCursorChange }) {
           const domainTag = domainTags[idx] || 'CAPABILITY // SYSTEM';
 
           return (
-            <motion.div
+            <div
               key={item.category}
               className={`editorial-expertise-item ${isHovered ? 'item-active' : ''}`}
-              initial={{ opacity: 0.85, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 'some' }}
-              transition={{ duration: 0.7, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
               onMouseEnter={() => {
                 setHoveredIdx(idx);
                 onCursorChange?.('hover');
@@ -193,7 +259,9 @@ export default function Expertise({ expertiseData, onCursorChange }) {
                     <span className="item-number">{item.number}</span>
                     <span className="item-domain-code">{domainTag}</span>
                   </div>
-                  <h3 className="item-title-text">{item.category.toUpperCase()}</h3>
+                  <div className="expertise-title-mask">
+                    <h3 className="item-title-text">{item.category.toUpperCase()}</h3>
+                  </div>
                 </div>
 
                 <div className="item-skills-cluster">
@@ -207,7 +275,7 @@ export default function Expertise({ expertiseData, onCursorChange }) {
               <div className="item-expanded-detail">
                 <p className="item-description-text">{item.description}</p>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

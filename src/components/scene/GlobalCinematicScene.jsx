@@ -414,9 +414,8 @@ function SpatialCameraController({
 
     if (introPhase === 'entering') {
       enterTimeRef.current += delta;
-      const et = enterTimeRef.current;
-      const timingScale = isMobile ? 0.80 : (isTablet ? 0.90 : 1.0);
-      const travelScale = isMobile ? 0.78 : (isTablet ? 0.88 : 1.0);
+      const timingScale = 1.0;
+      const travelScale = 1.0;
 
       const easeInOut = (p) => p * p * (3 - 2 * p);
       const easeOut = (p) => p * (2 - p);
@@ -512,7 +511,7 @@ function SpatialCameraController({
  * Global Cinematic Scene: Exactly ONE WebGL world mounted fixed across the portfolio
  * Strictly respects pointer-events: none and handles graceful fallback.
  */
-export default function GlobalCinematicScene({ isProject = false }) {
+export default function GlobalCinematicScene({ isProject = false, hasEntered = false }) {
   const mouseRef = useRef({ x: 0, y: 0 });
   const scrollRef = useRef(0);
   const cameraShiftRef = useRef({ x: 0, y: 0, z: 0 });
@@ -640,15 +639,16 @@ export default function GlobalCinematicScene({ isProject = false }) {
       }}
       aria-hidden="true"
     >
-      {/* 1. Primary Environment: Native Scroll-Scrubbed HTML5 Cinematic Video */}
+      {/* 1. Primary Environment: Native Scroll-Scrubbed HTML5 Cinematic Video (Strictly invisible until entered) */}
       <ScrollScrubbedCinematicVideo
         videoSrc="/gemini_generated_video_9efe4bc0.mp4"
         atmosphereMode={atmosphereMode}
         onStateChange={setVideoEnvState}
         isReducedMotion={isReducedMotion}
+        hasEntered={hasEntered}
       />
 
-      {/* 2. Visually Coherent WebGL Archive Fallback: Active immediately, fades to 0 when video is ready */}
+      {/* 2. WebGL Canvas: Always active and visible during loading for ComputationalCore3D; transitions to 0 once entered and video is ready */}
       <div
         className="global-cinematic-webgl-canvas"
         style={{
@@ -657,8 +657,8 @@ export default function GlobalCinematicScene({ isProject = false }) {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          opacity: videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 0 : 1.0,
-          visibility: videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 'hidden' : 'visible',
+          opacity: (!hasEntered || introPhase !== 'done') ? 1.0 : (videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 0 : 1.0),
+          visibility: (!hasEntered || introPhase !== 'done' || videoEnvState !== VIDEO_ENVIRONMENT_STATES.READY) ? 'visible' : 'hidden',
           transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s'
         }}
       >
@@ -693,25 +693,29 @@ export default function GlobalCinematicScene({ isProject = false }) {
               isReducedMotion={isReducedMotion}
             />
 
-            {/* 2. Gravitational Void Deep Space Backdrop with Lensing & Curved Light (NO mouse spotlight) */}
-            <GravitationalVoidBackdrop
-              atmosphereConfig={currentAtmosphere}
-              isReducedMotion={isReducedMotion}
-              isMobile={isMobile}
-              projectorPulseRef={projectorPulseRef}
-              voidScreenPosRef={voidScreenPosRef}
-            />
+            {/* 2. Gravitational Void Deep Space Backdrop with Lensing & Curved Light (Only after loading) */}
+            {(introPhase === 'done' && hasEntered) && (
+              <GravitationalVoidBackdrop
+                atmosphereConfig={currentAtmosphere}
+                isReducedMotion={isReducedMotion}
+                isMobile={isMobile}
+                projectorPulseRef={projectorPulseRef}
+                voidScreenPosRef={voidScreenPosRef}
+              />
+            )}
 
-            {/* 3. Infinite Archive Monolithic Architecture in Depth (-4.5 to -30 Z) */}
-            <InfiniteArchiveArchitecture
-              atmosphereMode={atmosphereMode}
-              scrollRef={scrollRef}
-              isMobile={isMobile}
-              isTablet={isTablet}
-              isReducedMotion={isReducedMotion}
-              projectorPulseRef={projectorPulseRef}
-              voidWorldPosRef={voidWorldPosRef}
-            />
+            {/* 3. Infinite Archive Monolithic Architecture in Depth (-4.5 to -30 Z) (Only after loading) */}
+            {(introPhase === 'done' && hasEntered) && (
+              <InfiniteArchiveArchitecture
+                atmosphereMode={atmosphereMode}
+                scrollRef={scrollRef}
+                isMobile={isMobile}
+                isTablet={isTablet}
+                isReducedMotion={isReducedMotion}
+                projectorPulseRef={projectorPulseRef}
+                voidWorldPosRef={voidWorldPosRef}
+              />
+            )}
 
             {/* 4. Stratified Suspended Atmospheric Particles with Geodesic Deflection */}
             <GravitationalAtmosphericParticles
@@ -728,7 +732,7 @@ export default function GlobalCinematicScene({ isProject = false }) {
             />
 
             {/* 5. Computational Core during Intro (Unmounted once entered) */}
-            {introPhase !== 'done' && (
+            {(!hasEntered || introPhase !== 'done') && (
               <ComputationalCore3D
                 phase={introPhase}
                 isHovered={isCoreHovered}

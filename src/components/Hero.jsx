@@ -559,17 +559,14 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
               setIsHovered(false);
               onCursorChange?.('default');
             }}
-            aria-label={isProjected ? 'Hide projected portrait' : 'View projected portrait'}
+            aria-label={isProjected ? 'Close projected portal' : 'View portal'}
             aria-pressed={isProjected}
             tabIndex={0}
           >
-            <span className="btn-optic-indicator">
-              <span className="optic-dot" />
-              <span className="optic-ring" />
-            </span>
             <span className="btn-action-label">
-              {isProjected ? 'HIDE PORTRAIT' : 'VIEW PORTRAIT'}
+              {isProjected ? 'CLOSE PORTAL' : 'VIEW PORTAL'}
             </span>
+            <span className="btn-action-arrow" aria-hidden="true">→</span>
           </button>
         </div>
       </div>

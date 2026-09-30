@@ -17,23 +17,69 @@ export default function Contact({ contactData, onCursorChange }) {
     const el = contactRootRef.current;
     if (!el) return;
 
-    const trigger = ScrollTrigger.create({
-      trigger: el,
-      start: 'top 75%',
-      onEnter: () => {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'connect' }));
+    const ctx = gsap.context(() => {
+      // 1. Atmosphere mode trigger
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 75%',
+        onEnter: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'connect' }));
+          }
+        },
+        onLeaveBack: () => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'data' }));
+          }
         }
-      },
-      onLeaveBack: () => {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: 'data' }));
+      });
+
+      // 2. Part 10 — Cinematic Quiet Masked Reveal for Contact Section
+      const line1 = el.querySelector('.contact-headline-line.line-1');
+      const line2 = el.querySelector('.contact-headline-line.line-2');
+      const subline = el.querySelector('.contact-subline-text');
+      const links = el.querySelector('.contact-editorial-links-row');
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
         }
+      });
+
+      if (line1 && line2) {
+        tl.fromTo(line1,
+          { yPercent: 100, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.9, ease: 'power3.out' },
+          0.05
+        )
+        .fromTo(line2,
+          { yPercent: 100, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.95, ease: 'power3.out' },
+          0.2
+        );
       }
-    });
+
+      if (subline) {
+        tl.fromTo(subline,
+          { y: 16, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.85, ease: 'power2.out' },
+          0.38
+        );
+      }
+
+      if (links) {
+        tl.fromTo(links,
+          { y: 14, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' },
+          0.48
+        );
+      }
+    }, contactRootRef);
 
     return () => {
-      trigger.kill();
+      ctx.revert();
     };
   }, []);
 
@@ -41,62 +87,40 @@ export default function Contact({ contactData, onCursorChange }) {
     <section id="contact" ref={contactRootRef} className="cinematic-section contact-editorial-section" aria-label="Contact Section">
 
       {/* Section Kicker & Closing Session Telemetry */}
-      <motion.div
-        initial={{ opacity: 0.85, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 'some' }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}
-      >
+      <div style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}>
         <div className="contact-session-telemetry-row">
           <span className="kicker">05 — CONNECT</span>
           <span className="telemetry-sep">•</span>
           <span className="telemetry-sub-tag">OPEN TO COLLABORATION &amp; OPPORTUNITIES</span>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Choreographed Monumental Headline with Fail-Safe Visibility */}
+      {/* Choreographed Monumental Headline with Slow Masked Reveal */}
       <h2 className="contact-monumental-headline">
-        <motion.span
-          className="contact-headline-line line-1"
-          style={{ display: 'block' }}
-          initial={{ opacity: 0.85, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 'some' }}
-          transition={{ duration: 0.75, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
-        >
-          LET'S BUILD
-        </motion.span>
-        <motion.span
-          className="contact-headline-line line-2"
-          style={{ display: 'block' }}
-          initial={{ opacity: 0.85, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 'some' }}
-          transition={{ duration: 0.8, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <em className="headline-emphasis">SOMETHING.</em>
-        </motion.span>
+        <div className="cinematic-title-mask">
+          <span
+            className="contact-headline-line line-1"
+            style={{ display: 'block' }}
+          >
+            LET'S BUILD
+          </span>
+        </div>
+        <div className="cinematic-title-mask">
+          <span
+            className="contact-headline-line line-2"
+            style={{ display: 'block' }}
+          >
+            <em className="headline-emphasis">SOMETHING.</em>
+          </span>
+        </div>
       </h2>
 
-      <motion.p
-        className="contact-subline-text"
-        initial={{ opacity: 0.85, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 'some' }}
-        transition={{ duration: 0.75, delay: 0.36, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <p className="contact-subline-text">
         Have an idea, opportunity, or problem worth solving?
-      </motion.p>
+      </p>
 
       {/* Editorial Interactive Links (Native semantic mailto & external anchors) */}
-      <motion.div
-        className="contact-editorial-links-row"
-        initial={{ opacity: 0.85, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 'some' }}
-        transition={{ duration: 0.8, delay: 0.48, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <div className="contact-editorial-links-row">
         {/* Email Direct - semantic mailto link */}
         <Magnetic strength={0.18}>
           <a
@@ -142,7 +166,7 @@ export default function Contact({ contactData, onCursorChange }) {
             <ArrowUpRight size={15} className="link-arrow" aria-hidden="true" />
           </a>
         </Magnetic>
-      </motion.div>
+      </div>
     </section>
   );
 }

@@ -235,6 +235,8 @@ function DesktopProjectReel({
 
     const ctx = gsap.context(() => {
       const isMobile = window.innerWidth < 768;
+      // Master design coordinate scaling factor relative to 1440 reference canvas
+      const scaleFactor = Math.min(1.0, Math.max(0.60, window.innerWidth / 1440));
 
       // 1. Initial visual states
       // Slide 0 starts in responsive entry state (ready to lock into focus on scroll)
@@ -257,40 +259,42 @@ function DesktopProjectReel({
           if (meta) gsap.set(meta, { autoAlpha: 1, y: 0 });
           if (bg) gsap.set(bg, { opacity: 0.85 });
         } else {
-          // Personality-calibrated initial positions for slides 1..3 (zero lateral shift on mobile to avoid overflow)
+          // Proportional personality-calibrated initial positions for slides 1..3
           let initX = 0;
           let initY = isMobile ? 16 : 22;
           let initClip = 'inset(0% 0% 0% 0%)';
-          let initScale = isMobile ? 1.02 : 1.04;
+          let initScale = 1.04;
 
-          if (!isMobile) {
-            if (i === 1) {
-              // ExpenseFlow AI: slightly flowing lateral glide
-              initX = 28;
-              initY = 16;
-              initClip = 'inset(0% 0% 0% 6%)';
-              initScale = 1.04;
-            } else if (i === 2) {
-              // AI UG Academic Planner: calm / organized steady vertical
-              initX = 0;
-              initY = 24;
-              initClip = 'inset(4% 0% 0% 0%)';
-              initScale = 1.03;
-            } else if (i === 3) {
-              // CAPACITYX: spatial / expansive panoramic breath
-              initX = -24;
-              initY = 18;
-              initClip = 'inset(0% 6% 0% 0%)';
-              initScale = 1.05;
-            }
+          if (i === 1) {
+            // ExpenseFlow AI: flowing lateral glide from right
+            initX = 28 * scaleFactor;
+            initY = 16;
+            initClip = 'inset(0% 0% 0% 6%)';
+            initScale = 1.04;
+          } else if (i === 2) {
+            // AI UG Academic Planner: right-side visual artifact reveal matching ExpenseFlowAI
+            initX = 28 * scaleFactor;
+            initY = 16;
+            initClip = 'inset(0% 0% 0% 6%)';
+            initScale = 1.04;
+          } else if (i === 3) {
+            // CAPACITYX: spatial / expansive panoramic breath from left
+            initX = -24 * scaleFactor;
+            initY = 18;
+            initClip = 'inset(0% 6% 0% 0%)';
+            initScale = 1.05;
           }
 
+          const initTitleX = (i === 1 || i === 2) ? -24 * scaleFactor : 0;
+          const initStmtX = (i === 1 || i === 2) ? -18 * scaleFactor : 0;
+          const initMetaX = (i === 1 || i === 2) ? -14 * scaleFactor : 0;
+
           if (slide) gsap.set(slide, { autoAlpha: 0, y: isMobile ? 16 : 24, scale: 0.98, zIndex: 1 });
-          if (title) gsap.set(title, { autoAlpha: 0, y: isMobile ? 20 : 32, scale: 0.96 });
-          if (statement) gsap.set(statement, { autoAlpha: 0, y: isMobile ? 12 : 18 });
+          if (title) gsap.set(title, { autoAlpha: 0, x: initTitleX, y: isMobile ? 20 : 32, scale: 0.96 });
+          if (statement) gsap.set(statement, { autoAlpha: 0, x: initStmtX, y: isMobile ? 12 : 18 });
           if (visual) gsap.set(visual, { autoAlpha: 0, x: initX, y: initY, scale: initScale, clipPath: initClip });
           if (img) gsap.set(img, { scale: 1.05 });
-          if (meta) gsap.set(meta, { autoAlpha: 0, y: isMobile ? 10 : 16 });
+          if (meta) gsap.set(meta, { autoAlpha: 0, x: initMetaX, y: isMobile ? 10 : 16 });
           if (bg) gsap.set(bg, { opacity: 0 });
         }
       });
@@ -460,10 +464,12 @@ function DesktopProjectReel({
           // Outgoing Scene i: choreographed departure
           // Title moves first with depth settle, followed by statement, visual and meta
           if (currentTitle) {
-            tl.to(currentTitle, { autoAlpha: 0, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.24 * dur }, transStart);
+            const exitTitleX = (i === 1 || i === 2) ? -20 * scaleFactor : 0;
+            tl.to(currentTitle, { autoAlpha: 0, x: exitTitleX, y: isMobile ? -14 : -24, scale: 0.98, ease: 'power2.in', duration: 0.24 * dur }, transStart);
           }
           if (currentStatement) {
-            tl.to(currentStatement, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.02 * dur);
+            const exitStmtX = (i === 1 || i === 2) ? -16 * scaleFactor : 0;
+            tl.to(currentStatement, { autoAlpha: 0, x: exitStmtX, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.02 * dur);
           }
           if (currentVisual) {
             if (i === 0) {
@@ -475,7 +481,7 @@ function DesktopProjectReel({
               }, transStart);
               tl.to(currentVisual, {
                 autoAlpha: 0,
-                x: isMobile ? 0 : -22,
+                x: -22 * scaleFactor,
                 y: isMobile ? -14 : -24,
                 scale: isMobile ? 0.98 : 0.965,
                 clipPath: 'polygon(0% 49%, 100% 49%, 100% 51%, 0% 51%)',
@@ -484,7 +490,7 @@ function DesktopProjectReel({
                 duration: 0.24 * dur
               }, transStart + 0.06 * dur);
             } else {
-              const exitX = isMobile ? 0 : (i === 1 ? 20 : -16);
+              const exitX = (i === 1 || i === 2 ? 22 : -16) * scaleFactor;
               tl.to(currentVisual, {
                 autoAlpha: 0,
                 x: exitX,
@@ -499,7 +505,8 @@ function DesktopProjectReel({
             tl.to(currentImg, { scale: 0.98, ease: 'power1.in', duration: 0.28 * dur }, transStart + 0.03 * dur);
           }
           if (currentMeta) {
-            tl.to(currentMeta, { autoAlpha: 0, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.04 * dur);
+            const exitMetaX = (i === 1 || i === 2) ? -14 * scaleFactor : 0;
+            tl.to(currentMeta, { autoAlpha: 0, x: exitMetaX, y: isMobile ? -8 : -14, ease: 'power1.in', duration: 0.22 * dur }, transStart + 0.04 * dur);
           }
           if (currentSlide) {
             tl.to(currentSlide, { autoAlpha: 0, y: isMobile ? -10 : -18, ease: 'power2.inOut', duration: transDur }, transStart);
@@ -528,47 +535,30 @@ function DesktopProjectReel({
               arriveStart + 0.04 * dur
             );
           }
-          // 1. Cinematic Title Card reveals strongly
+          // 1. Cinematic Title Card reveals strongly from left
           if (nextTitle) {
+            const nextTitleInitX = (nextIndex === 1 || nextIndex === 2) ? -24 * scaleFactor : 0;
             tl.fromTo(nextTitle,
-              { autoAlpha: 0, y: isMobile ? 14 : 26, scale: 0.96 },
-              { autoAlpha: 1, y: 0, scale: 1.00, ease: 'power4.out', duration: 0.28 * dur },
+              { autoAlpha: 0, x: nextTitleInitX, y: isMobile ? 14 : 26, scale: 0.96 },
+              { autoAlpha: 1, x: 0, y: 0, scale: 1.00, ease: 'power4.out', duration: 0.28 * dur },
               arriveStart + 0.04 * dur
             );
           }
           // 2. Supporting statement follows
           if (nextStatement) {
+            const nextStmtInitX = (nextIndex === 1 || nextIndex === 2) ? -18 * scaleFactor : 0;
             tl.fromTo(nextStatement,
-              { autoAlpha: 0, y: isMobile ? 10 : 16 },
-              { autoAlpha: 1, y: 0, ease: 'power3.out', duration: 0.24 * dur },
+              { autoAlpha: 0, x: nextStmtInitX, y: isMobile ? 10 : 16 },
+              { autoAlpha: 1, x: 0, y: 0, ease: 'power3.out', duration: 0.24 * dur },
               arriveStart + 0.08 * dur
             );
           }
           // 3. Project Visual arrives with physical scale & depth settle
           if (nextVisual) {
-            let nextInitX = 0;
-            let nextInitY = isMobile ? 12 : 20;
-            let nextInitClip = 'inset(0% 0% 0% 0%)';
-            let nextInitScale = isMobile ? 1.02 : 1.04;
-
-            if (!isMobile) {
-              if (nextIndex === 1) {
-                nextInitX = 28;
-                nextInitY = 16;
-                nextInitClip = 'inset(0% 0% 0% 6%)';
-                nextInitScale = 1.04;
-              } else if (nextIndex === 2) {
-                nextInitX = 0;
-                nextInitY = 24;
-                nextInitClip = 'inset(4% 0% 0% 0%)';
-                nextInitScale = 1.03;
-              } else if (nextIndex === 3) {
-                nextInitX = -24;
-                nextInitY = 18;
-                nextInitClip = 'inset(0% 6% 0% 0%)';
-                nextInitScale = 1.05;
-              }
-            }
+            let nextInitX = (nextIndex === 1 || nextIndex === 2 ? 28 : (nextIndex === 3 ? -24 : 0)) * scaleFactor;
+            let nextInitY = isMobile ? 12 : 16;
+            let nextInitClip = (nextIndex === 1 || nextIndex === 2) ? 'inset(0% 0% 0% 6%)' : (nextIndex === 3 ? 'inset(0% 6% 0% 0%)' : 'inset(0% 0% 0% 0%)');
+            let nextInitScale = 1.04;
 
             tl.fromTo(nextVisual,
               {
@@ -599,11 +589,41 @@ function DesktopProjectReel({
           }
           // 4. Supporting information and CTA arrive
           if (nextMeta) {
+            const nextMetaInitX = (nextIndex === 1 || nextIndex === 2) ? -14 * scaleFactor : 0;
             tl.fromTo(nextMeta,
-              { autoAlpha: 0, y: isMobile ? 10 : 16 },
-              { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.24 * dur },
+              { autoAlpha: 0, x: nextMetaInitX, y: isMobile ? 10 : 16 },
+              { autoAlpha: 1, x: 0, y: 0, ease: 'power2.out', duration: 0.24 * dur },
               arriveStart + 0.12 * dur
             );
+
+            // Choreographed reveals for Academic Planner (nextIndex === 2)
+            if (nextIndex === 2) {
+              const descEl = nextMeta.querySelector('.slide-description-text');
+              const pills = nextMeta.querySelectorAll('.slide-tech-pill');
+              const actionEl = nextMeta.querySelector('.slide-actions-cluster');
+
+              if (descEl) {
+                tl.fromTo(descEl,
+                  { autoAlpha: 0, x: -10 * scaleFactor },
+                  { autoAlpha: 1, x: 0, ease: 'power2.out', duration: 0.22 * dur },
+                  arriveStart + 0.11 * dur
+                );
+              }
+              if (pills && pills.length > 0) {
+                tl.fromTo(pills,
+                  { autoAlpha: 0, y: 8, scale: 0.95 },
+                  { autoAlpha: 1, y: 0, scale: 1.0, stagger: 0.02 * dur, ease: 'power2.out', duration: 0.20 * dur },
+                  arriveStart + 0.14 * dur
+                );
+              }
+              if (actionEl) {
+                tl.fromTo(actionEl,
+                  { autoAlpha: 0, x: -12 * scaleFactor },
+                  { autoAlpha: 1, x: 0, ease: 'power3.out', duration: 0.22 * dur },
+                  arriveStart + 0.18 * dur
+                );
+              }
+            }
           }
         }
 
@@ -624,7 +644,7 @@ function DesktopProjectReel({
     switch (index) {
       case 0: return 'comp-asymmetric-right';  // 01 SPECra: visual right
       case 1: return 'comp-offset-diagonal';   // 02 ExpenseFlow AI: offset diagonal
-      case 2: return 'comp-centered-lower';    // 03 Academic Planner: centered lower
+      case 2: return 'comp-offset-diagonal';   // 03 Academic Planner: match ExpenseFlowAI composition
       case 3: return 'comp-asymmetric-left';   // 04 CapacityX: visual left
       default: return 'comp-asymmetric-right';
     }
@@ -680,6 +700,10 @@ function DesktopProjectReel({
                       ref={(el) => (titlesRef.current[idx] = el)}
                       className="slide-title-wrap"
                     >
+                      <div className="slide-num-eyebrow">
+                        <span className="slide-num-tag">{`0${idx + 1}`}</span>
+                        <span className="slide-tagline">{project.category || 'FEATURED WORK'}</span>
+                      </div>
                       <Link
                         to={`/projects/${projectSlug}`}
                         className="slide-title-link"
@@ -688,9 +712,11 @@ function DesktopProjectReel({
                         onMouseLeave={() => onCursorChange?.('default')}
                         aria-label={`View ${project.title} project`}
                       >
-                        <h3 className="slide-project-title">
-                          {project.title}
-                        </h3>
+                        <div className="slide-title-mask">
+                          <h3 className="slide-project-title">
+                            {project.title}
+                          </h3>
+                        </div>
                       </Link>
                     </div>
 
@@ -827,35 +853,36 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                 <p className="mobile-scene-tagline">“{project.tagline}”</p>
               )}
 
-              {/* 3. Project Visual */}
-              <div
-                className="mobile-scene-visual"
-                onClick={() => handleMobileSelect(project)}
-                role="button"
-                tabIndex={0}
-                aria-label={`View ${project.title} visual showcase`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleMobileSelect(project);
-                  }
-                }}
-              >
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="mobile-img"
-                  loading={idx < 2 ? 'eager' : 'lazy'}
-                  decoding="async"
-                />
-                <div className="mobile-visual-vignette" />
-                <div className="mobile-visual-film-edge" />
-                <span className="mobile-reticle reticle-tl">+</span>
-                <span className="mobile-reticle reticle-br">+</span>
-              </div>
+              {/* For standard projects (SPECra, ExpenseFlowAI, CapacityX), visual remains in standard flow */}
+              {idx !== 2 && (
+                <div
+                  className="mobile-scene-visual"
+                  onClick={() => handleMobileSelect(project)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View ${project.title} visual showcase`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleMobileSelect(project);
+                    }
+                  }}
+                >
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="mobile-img"
+                    loading={idx < 2 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
+                  <div className="mobile-visual-vignette" />
+                  <div className="mobile-visual-film-edge" />
+                  <span className="mobile-reticle reticle-tl">+</span>
+                  <span className="mobile-reticle reticle-br">+</span>
+                </div>
+              )}
 
-              {/* 4. Supporting Information */}
-
+              {/* Supporting Information */}
               <p className="mobile-scene-desc">{project.description}</p>
 
               <div className="mobile-tech-row">
@@ -888,10 +915,40 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                     aria-label={`Read ${project.title} Case Study`}
                   >
                     <span>CASE STUDY</span>
-                    <ArrowRight size={12} />
+                    <ArrowRight size={13} />
                   </button>
                 )}
               </div>
+
+              {/* For Academic Planner (idx === 2): clean mobile hierarchy: title -> tagline -> desc -> tech -> VIEW PROJECT -> project visual */}
+              {idx === 2 && (
+                <div
+                  className="mobile-scene-visual"
+                  onClick={() => handleMobileSelect(project)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View ${project.title} visual showcase`}
+                  style={{ marginTop: '14px' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleMobileSelect(project);
+                    }
+                  }}
+                >
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="mobile-img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="mobile-visual-vignette" />
+                  <div className="mobile-visual-film-edge" />
+                  <span className="mobile-reticle reticle-tl">+</span>
+                  <span className="mobile-reticle reticle-br">+</span>
+                </div>
+              )}
             </motion.div>
           );
         })}
@@ -1001,21 +1058,14 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
         </motion.div>
       </div>
 
-      {(isMobile || isReducedMotion) ? (
-        <MobileProjectReel
-          projects={projects}
-          onOpenCaseStudy={onOpenCaseStudy}
-          onCursorChange={onCursorChange}
-        />
-      ) : (
-        <DesktopProjectReel
-          projects={projects}
-          onOpenCaseStudy={onOpenCaseStudy}
-          onCursorChange={onCursorChange}
-          activeIndex={activeIndex}
-          setActiveIndex={setActiveIndex}
-        />
-      )}
+      {/* Unified Master Pinned Cinematic Project Reel across ALL Viewports */}
+      <DesktopProjectReel
+        projects={projects}
+        onOpenCaseStudy={onOpenCaseStudy}
+        onCursorChange={onCursorChange}
+        activeIndex={activeIndex}
+        setActiveIndex={setActiveIndex}
+      />
     </section>
   );
 }

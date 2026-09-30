@@ -1,24 +1,36 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
 /**
- * ScrollScrubbedCinematicVideo — Phase 8 Hybrid Scroll-Directed Cinematic Playback System
+ * ScrollScrubbedCinematicVideo — Phase 9C Section-Based Continuous Cinematic Video Playback System
  * 
- * Architecture:
- * - PRIMARY ENVIRONMENT: 40-second continuous cinematic video (/gemini_generated_video_9efe4bc0.mp4)
- * - SCROLL = selects and transitions between cinematic scene zones.
- * - VIDEO TIME = keeps the scene alive by continuously playing when stationary.
- * - SEAMLESS DISSOLVE LOOPING: When an active scene reaches its end boundary, an offscreen/overlay
- *   canvas captures the departing frame and cross-dissolves it over ~380ms into the loop-entry frame.
- *   Zero frame jump, zero black frames, zero camera snap.
+ * High-End Architecture:
+ * 1. SECTION SCENE MAP:
+ *    - HERO:       0.0s –  8.0s (loop: 1.5s – 7.6s,  dur: 6.1s)
+ *    - ABOUT:      8.0s – 13.0s (loop: 8.5s – 12.8s, dur: 4.3s)
+ *    - EXPLORING: 13.0s – 18.0s (loop: 13.4s – 17.8s, dur: 4.4s)
+ *    - WORK:      18.0s – 28.0s (loop: 18.8s – 27.6s, dur: 8.8s)
+ *    - EXPERIENCE:28.0s – 33.0s (loop: 28.4s – 32.8s, dur: 4.4s)
+ *    - EXPERTISE: 33.0s – 36.0s (loop: 33.2s – 35.8s, dur: 2.6s)
+ *    - CONTACT:   36.0s – 39.8s (loop: 36.2s – 39.6s, dur: 3.4s)
  * 
- * Cinematic Scene Zone Map (40s footage):
- * - HERO:            1.0s –  8.0s (loop: 1.2s – 7.8s)  Deep monolithic void & floating particles
- * - ABOUT:           8.0s – 13.0s (loop: 8.2s – 12.8s) Forward tracking into architectural light
- * - EXPLORING:      13.0s – 18.0s (loop: 13.2s – 17.8s) Celestial halo & spatial perspective
- * - SELECTED WORK:  18.0s – 28.0s (loop: 18.5s – 27.8s) Gravitational light streams & portal
- * - EXPERIENCE:     28.0s – 33.0s (loop: 28.2s – 32.8s) Structured colonnade with suspended dust
- * - EXPERTISE:      33.0s – 36.0s (loop: 33.2s – 35.8s) Architectural monolithic pillars
- * - CONTACT:        36.0s – 39.8s (loop: 36.2s – 39.6s) Deep obsidian corridor & final destination
+ * 2. DUAL-LAYER ASYMMETRIC SEAMLESS SEEDING:
+ *    - Two native HTML5 video elements (Slot A & Slot B).
+ *    - Only ONE video decodes/plays at any given time (95%+ of time).
+ *    - Loop boundary triggers a subtle 200–250ms crossfade to pre-queued standby video.
+ *    - Zero camera snap, zero lighting jump, zero black frames, zero decoder contention.
+ * 
+ * 3. FAST SCROLL VELOCITY DETECTION:
+ *    - Fast scroll (flicking / rapid scroll across multiple sections) skips intermediate scene loops.
+ *    - Settles and transitions directly toward the destination section.
+ *    - Slow scroll (reading pace) transitions smoothly section by section.
+ * 
+ * 4. CONTINUOUS STATIONARY PLAYBACK:
+ *    - When scrolling stops, the active scene continues playing forward seamlessly.
+ *    - Zero pausing, zero frame freezes on scroll stop.
+ * 
+ * 5. STRICT LOADING ISOLATION:
+ *    - While hasEntered === false, the entire video container has opacity 0, visibility hidden,
+ *      and both videos are paused, guaranteeing a pure black neural loading experience.
  */
 
 export const VIDEO_ENVIRONMENT_STATES = {
@@ -28,18 +40,62 @@ export const VIDEO_ENVIRONMENT_STATES = {
   FALLBACK: 'FALLBACK'
 };
 
-export const CINEMATIC_SCENES = [
-  { id: 'hero', name: 'HERO', start: 1.0, end: 8.0, loopStart: 1.2, loopEnd: 7.8 },
-  { id: 'about', name: 'ABOUT', start: 8.0, end: 13.0, loopStart: 8.2, loopEnd: 12.8 },
-  { id: 'exploring', name: 'EXPLORING', start: 13.0, end: 18.0, loopStart: 13.2, loopEnd: 17.8 },
-  { id: 'work', name: 'SELECTED WORK', start: 18.0, end: 28.0, loopStart: 18.5, loopEnd: 27.8 },
-  { id: 'experience', name: 'EXPERIENCE', start: 28.0, end: 33.0, loopStart: 28.2, loopEnd: 32.8 },
-  { id: 'expertise', name: 'EXPERTISE', start: 33.0, end: 36.0, loopStart: 33.2, loopEnd: 35.8 },
-  { id: 'contact', name: 'CONTACT', start: 36.0, end: 39.8, loopStart: 36.2, loopEnd: 39.6 }
-];
+export const CINEMATIC_SCENES = {
+  hero: {
+    id: 'hero',
+    start: 0.5,
+    end: 8.0,
+    loopStart: 1.5,
+    loopEnd: 7.6
+  },
+  about: {
+    id: 'about',
+    start: 8.0,
+    end: 13.0,
+    loopStart: 8.5,
+    loopEnd: 12.8
+  },
+  exploring: {
+    id: 'exploring',
+    start: 13.0,
+    end: 18.0,
+    loopStart: 13.4,
+    loopEnd: 17.8
+  },
+  work: {
+    id: 'work',
+    start: 18.0,
+    end: 28.0,
+    loopStart: 18.8,
+    loopEnd: 27.6
+  },
+  experience: {
+    id: 'experience',
+    start: 28.0,
+    end: 33.0,
+    loopStart: 28.4,
+    loopEnd: 32.8
+  },
+  expertise: {
+    id: 'expertise',
+    start: 33.0,
+    end: 36.0,
+    loopStart: 33.2,
+    loopEnd: 35.8
+  },
+  contact: {
+    id: 'contact',
+    start: 36.0,
+    end: 39.8,
+    loopStart: 36.2,
+    loopEnd: 39.6
+  }
+};
+
+export const SCENE_ORDER = ['hero', 'about', 'exploring', 'work', 'experience', 'expertise', 'contact'];
 
 /**
- * Measure DOM section top offsets robustly from the document.
+ * Measure DOM section top offsets accurately.
  */
 export function measureSceneOffsets() {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
@@ -57,19 +113,12 @@ export function measureSceneOffsets() {
   };
 
   const yHero = 0;
-  const yAboutRaw = getTop('about');
-  const yExploringRaw = getTop('exploring');
-  const yWorkRaw = getTop('work');
-  const yExpRaw = getTop('experience');
-  const ySkillRaw = getTop('expertise');
-  const yContactRaw = getTop('contact');
-
-  const yAbout = yAboutRaw ?? (maxScroll * 0.14);
-  const yExploring = yExploringRaw ?? (maxScroll * 0.26);
-  const yWork = yWorkRaw ?? (maxScroll * 0.38);
-  const yExp = yExpRaw ?? (maxScroll * 0.66);
-  const ySkill = ySkillRaw ?? (maxScroll * 0.78);
-  const yContact = yContactRaw ?? (maxScroll * 0.89);
+  const yAbout = getTop('about') ?? (maxScroll * 0.14);
+  const yExploring = getTop('exploring') ?? (maxScroll * 0.26);
+  const yWork = getTop('work') ?? (maxScroll * 0.38);
+  const yExp = getTop('experience') ?? (maxScroll * 0.66);
+  const ySkill = getTop('expertise') ?? (maxScroll * 0.78);
+  const yContact = getTop('contact') ?? (maxScroll * 0.89);
 
   const offsets = [yHero];
   offsets[1] = Math.max(offsets[0] + 10, yAbout);
@@ -84,30 +133,22 @@ export function measureSceneOffsets() {
 }
 
 /**
- * Calculate the active scene index and target playback time from scroll offset.
+ * Calculate active section from scroll position using comfortable viewport reading trigger.
  */
-export function getSceneFromScroll(scrollY, offsets) {
-  const maxOffset = offsets[7];
-  if (scrollY <= 0) return { sceneIndex: 0, targetTime: CINEMATIC_SCENES[0].start };
-  if (scrollY >= maxOffset) return { sceneIndex: 6, targetTime: CINEMATIC_SCENES[6].start };
+export function getActiveSectionId(scrollY, offsets) {
+  const triggerY = scrollY + (typeof window !== 'undefined' ? window.innerHeight * 0.40 : 400);
 
-  for (let i = 0; i < 7; i++) {
-    const yA = offsets[i];
-    const yB = offsets[i + 1];
-    if (scrollY >= yA && scrollY <= yB) {
-      const segT = (scrollY - yA) / Math.max(1, yB - yA);
-      const tA = CINEMATIC_SCENES[i].start;
-      const tNext = i < 6 ? CINEMATIC_SCENES[i + 1].start : CINEMATIC_SCENES[i].end;
-      const targetTime = tA + segT * (tNext - tA);
-      return { sceneIndex: segT > 0.55 && i < 6 ? i + 1 : i, targetTime };
-    }
-  }
-
-  return { sceneIndex: 0, targetTime: CINEMATIC_SCENES[0].start };
+  if (triggerY >= offsets[6]) return 'contact';
+  if (triggerY >= offsets[5]) return 'expertise';
+  if (triggerY >= offsets[4]) return 'experience';
+  if (triggerY >= offsets[3]) return 'work';
+  if (triggerY >= offsets[2]) return 'exploring';
+  if (triggerY >= offsets[1]) return 'about';
+  return 'hero';
 }
 
 /**
- * Calculates continuous normalized timeline progress (0.00 to 1.00) for fallback WebGL camera.
+ * Normalized timeline progress (0.00 to 1.00) for fallback WebGL camera.
  */
 export function calculateCinematicTimeline(scrollY, cachedOffsets) {
   const offsets = cachedOffsets || measureSceneOffsets();
@@ -131,18 +172,25 @@ export default function ScrollScrubbedCinematicVideo({
   videoSrc = '/gemini_generated_video_9efe4bc0.mp4',
   atmosphereMode = 'hero',
   onStateChange,
-  isReducedMotion = false
+  isReducedMotion = false,
+  hasEntered = false
 }) {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const isTransitioningLoopRef = useRef(false);
-  const isScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef(null);
-  const rafIdRef = useRef(null);
-  const lastSeekTimeRef = useRef(0);
-  const cachedOffsetsRef = useRef(measureSceneOffsets());
-  const activeSceneIndexRef = useRef(0);
+  const videoARef = useRef(null);
+  const videoBRef = useRef(null);
+  const activeSlotRef = useRef('A'); // 'A' | 'B'
+  const isTransitioningRef = useRef(false);
+  const transitionTimeoutRef = useRef(null);
 
+  const activeSectionRef = useRef('hero');
+  const cachedOffsetsRef = useRef(measureSceneOffsets());
+
+  // Velocity tracking for fast-scroll skipping
+  const lastScrollYRef = useRef(0);
+  const lastScrollTimeRef = useRef(Date.now());
+  const fastScrollTimerRef = useRef(null);
+  const slowScrollTimerRef = useRef(null);
+
+  const rafIdRef = useRef(null);
   const [envState, setEnvState] = useState(VIDEO_ENVIRONMENT_STATES.LOADING);
 
   const updateState = useCallback((newState) => {
@@ -152,7 +200,7 @@ export default function ScrollScrubbedCinematicVideo({
     }
   }, [onStateChange]);
 
-  // 1. Maintain cached chapter scroll offsets across resizes & DOM layout updates
+  // 1. Maintain cached chapter scroll offsets across resizes & DOM updates
   useEffect(() => {
     const refreshOffsets = () => {
       cachedOffsetsRef.current = measureSceneOffsets();
@@ -170,26 +218,25 @@ export default function ScrollScrubbedCinematicVideo({
     };
   }, []);
 
-  // 2. Video Initialization & Autoplay Setup
+  // 2. Video Preload & Metadata initialization
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
 
-    updateState(VIDEO_ENVIRONMENT_STATES.LOADING);
-
-    const handleLoadedMetadata = () => {
-      if (video.duration && !isNaN(video.duration) && video.duration > 0) {
+    let loadedCount = 0;
+    const checkReady = () => {
+      loadedCount++;
+      if (loadedCount >= 2) {
         updateState(VIDEO_ENVIRONMENT_STATES.READY);
-        const { sceneIndex, targetTime } = getSceneFromScroll(window.scrollY || 0, cachedOffsetsRef.current);
-        activeSceneIndexRef.current = sceneIndex;
-        video.currentTime = Math.max(1.0, targetTime);
-        if (!isReducedMotion) {
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              // Browser may require user gesture on first interaction; handled when user clicks ENTER
-            });
-          }
+        vA.currentTime = CINEMATIC_SCENES.hero.start;
+        vB.currentTime = CINEMATIC_SCENES.hero.start;
+
+        if (hasEntered && !isReducedMotion) {
+          vA.play().catch(() => {});
+        } else {
+          vA.pause();
+          vB.pause();
         }
       }
     };
@@ -198,158 +245,187 @@ export default function ScrollScrubbedCinematicVideo({
       updateState(VIDEO_ENVIRONMENT_STATES.ERROR);
     };
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('error', handleError);
+    vA.addEventListener('loadedmetadata', checkReady);
+    vB.addEventListener('loadedmetadata', checkReady);
+    vA.addEventListener('error', handleError);
+    vB.addEventListener('error', handleError);
 
-    if (video.readyState >= 1 && video.duration > 0) {
-      handleLoadedMetadata();
+    if (vA.readyState >= 1 && vB.readyState >= 1) {
+      checkReady();
+      checkReady();
     }
 
     return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('error', handleError);
+      vA.removeEventListener('loadedmetadata', checkReady);
+      vB.removeEventListener('loadedmetadata', checkReady);
+      vA.removeEventListener('error', handleError);
+      vB.removeEventListener('error', handleError);
     };
-  }, [videoSrc, isReducedMotion, updateState]);
+  }, [videoSrc, hasEntered, isReducedMotion, updateState]);
 
-  // 3. Invisible Cross-Dissolve Looping Function
-  const triggerInvisibleLoop = useCallback((targetTime, duration = 380) => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || isTransitioningLoopRef.current) return;
-
-    isTransitioningLoopRef.current = true;
-
-    try {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        canvas.width = video.videoWidth || 1280;
-        canvas.height = video.videoHeight || 720;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.style.opacity = '1';
-        canvas.style.transition = 'none';
-
-        // Seek video underneath to loop start
-        video.currentTime = targetTime;
-
-        // Ensure playback continues smoothly
-        if (video.paused) {
-          video.play().catch(() => {});
-        }
-
-        // Cross-dissolve canvas snapshot out to reveal seamlessly continuing video
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            canvas.style.transition = `opacity ${duration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
-            canvas.style.opacity = '0';
-            setTimeout(() => {
-              isTransitioningLoopRef.current = false;
-            }, duration + 50);
-          });
-        });
-      } else {
-        video.currentTime = targetTime;
-        isTransitioningLoopRef.current = false;
-      }
-    } catch {
-      video.currentTime = targetTime;
-      isTransitioningLoopRef.current = false;
-    }
-  }, []);
-
-  // 4. Hybrid Playback & Scroll Coordination Loop
+  // 3. Playback Start on ENTER
   useEffect(() => {
-    if (envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
-    const video = videoRef.current;
-    if (!video) return;
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
 
-    let isRunning = true;
-
-    const playbackLoop = () => {
-      if (!isRunning) return;
-
-      const currentScene = CINEMATIC_SCENES[activeSceneIndexRef.current] || CINEMATIC_SCENES[0];
-      const curTime = video.currentTime || 0;
-
-      if (!isScrollingRef.current) {
-        // --- STATIONARY MODE: VIDEO KEEPS PLAYING & LOOPS INVISIBLY ---
-        if (!isReducedMotion && video.paused) {
-          video.play().catch(() => {});
-        }
-
-        // Loop check: if approaching or exceeding active scene boundary
-        if (!isTransitioningLoopRef.current && curTime >= currentScene.loopEnd) {
-          triggerInvisibleLoop(currentScene.loopStart, 420);
-        }
-      } else {
-        // --- SCROLLING MODE: SMOOTHLY SCRUB / TRANSITION BETWEEN SCENES ---
-        const scrollY = window.scrollY || 0;
-        const { sceneIndex, targetTime } = getSceneFromScroll(scrollY, cachedOffsetsRef.current);
-        activeSceneIndexRef.current = sceneIndex;
-
-        const timeDiff = targetTime - curTime;
-        const now = performance.now();
-
-        // Only scrub if there is a noticeable delta (> 0.09s) and rate-limit seeks to ~32ms
-        if (Math.abs(timeDiff) > 0.09 && (now - lastSeekTimeRef.current > 32)) {
-          lastSeekTimeRef.current = now;
-          if (typeof video.fastSeek === 'function') {
-            try {
-              video.fastSeek(targetTime);
-            } catch {
-              video.currentTime = targetTime;
-            }
-          } else {
-            video.currentTime = targetTime;
-          }
-        }
+    if (hasEntered && envState === VIDEO_ENVIRONMENT_STATES.READY) {
+      if (!isReducedMotion) {
+        const activeVid = activeSlotRef.current === 'A' ? vA : vB;
+        activeVid.play().catch(() => {});
       }
+    } else if (!hasEntered) {
+      vA.pause();
+      vB.pause();
+    }
+  }, [hasEntered, envState, isReducedMotion]);
 
-      rafIdRef.current = requestAnimationFrame(playbackLoop);
-    };
+  // 4. Dual-Video Crossfade Transition Helper (Temporal Seamless Handoff)
+  const executeDualTransition = useCallback((targetTime, durationMs = 260) => {
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB || isTransitioningRef.current) return;
 
-    rafIdRef.current = requestAnimationFrame(playbackLoop);
+    isTransitioningRef.current = true;
+    clearTimeout(transitionTimeoutRef.current);
 
-    // Scroll Listener with Debounced Settle into Continuous Playback
+    const isCurrentA = activeSlotRef.current === 'A';
+    const activeVid = isCurrentA ? vA : vB;
+    const standbyVid = isCurrentA ? vB : vA;
+
+    // 1. Prepare standby video at target timestamp
+    standbyVid.currentTime = targetTime;
+
+    // 2. Start standby video decoding/playback
+    if (!isReducedMotion) {
+      standbyVid.play().catch(() => {});
+    }
+
+    // 3. Perform seamless temporal crossfade
+    standbyVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+    activeVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+
+    standbyVid.style.opacity = '1';
+    activeVid.style.opacity = '0';
+
+    // 4. Once crossfade finishes, pause previous video and swap slot roles
+    transitionTimeoutRef.current = setTimeout(() => {
+      activeVid.pause();
+      activeSlotRef.current = isCurrentA ? 'B' : 'A';
+      isTransitioningRef.current = false;
+    }, durationMs + 20);
+  }, [isReducedMotion]);
+
+  // 5. Fast-Scroll Aware Section Transition Controller
+  const handleSectionSwitch = useCallback((newSectionId, isDirectSettle = false) => {
+    if (newSectionId === activeSectionRef.current && !isDirectSettle) return;
+
+    activeSectionRef.current = newSectionId;
+    const targetScene = CINEMATIC_SCENES[newSectionId] || CINEMATIC_SCENES.hero;
+
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
+
+    const activeVid = activeSlotRef.current === 'A' ? vA : vB;
+    const curTime = activeVid.currentTime || 0;
+
+    // If current video is already within the section's active range, let it continue naturally!
+    if (curTime >= targetScene.start && curTime <= targetScene.end) {
+      return;
+    }
+
+    // Otherwise, transition smoothly directly to the target scene
+    executeDualTransition(targetScene.start, 320);
+  }, [executeDualTransition]);
+
+  // 6. Scroll Listener with Velocity-Aware Fast Scroll Skipping
+  useEffect(() => {
+    if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
+
     const handleScroll = () => {
-      isScrollingRef.current = true;
+      const now = Date.now();
+      const dt = Math.max(1, now - lastScrollTimeRef.current);
+      const sy = window.scrollY || 0;
+      const dy = Math.abs(sy - lastScrollYRef.current);
+      const velocity = dy / dt; // pixels per millisecond
 
-      clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-        if (!isRunning || !video) return;
+      lastScrollYRef.current = sy;
+      lastScrollTimeRef.current = now;
 
-        // Settle active scene
-        const scrollY = window.scrollY || 0;
-        const { sceneIndex } = getSceneFromScroll(scrollY, cachedOffsetsRef.current);
-        activeSceneIndexRef.current = sceneIndex;
-        const scene = CINEMATIC_SCENES[sceneIndex];
+      const detectedSection = getActiveSectionId(sy, cachedOffsetsRef.current);
 
-        // If current time is outside the active scene window, align smoothly
-        const cTime = video.currentTime || 0;
-        if (cTime < scene.start - 0.2 || cTime > scene.end + 0.2) {
-          video.currentTime = scene.start;
-        }
+      if (velocity > 0.85) {
+        // --- FAST SCROLL DETECTED ---
+        // Do NOT trigger intermediate scene handoffs!
+        // Wait until scroll settles, then switch directly to the final destination section.
+        clearTimeout(fastScrollTimerRef.current);
+        clearTimeout(slowScrollTimerRef.current);
 
-        // Continue playing forward immediately!
-        if (!isReducedMotion) {
-          video.play().catch(() => {});
-        }
-      }, 120);
+        fastScrollTimerRef.current = setTimeout(() => {
+          const finalY = window.scrollY || 0;
+          const finalSection = getActiveSectionId(finalY, cachedOffsetsRef.current);
+          handleSectionSwitch(finalSection, true);
+        }, 110);
+      } else {
+        // --- SLOW / NORMAL READING SCROLL ---
+        clearTimeout(slowScrollTimerRef.current);
+        slowScrollTimerRef.current = setTimeout(() => {
+          handleSectionSwitch(detectedSection, false);
+        }, 70);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      clearTimeout(fastScrollTimerRef.current);
+      clearTimeout(slowScrollTimerRef.current);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [hasEntered, envState, handleSectionSwitch]);
+
+  // 7. Continuous Playback Monitor & Invisible Seamless Boundary Looping
+  useEffect(() => {
+    if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
+
+    let isRunning = true;
+
+    const loopMonitor = () => {
+      if (!isRunning) return;
+
+      const isCurrentA = activeSlotRef.current === 'A';
+      const activeVid = isCurrentA ? vA : vB;
+      const curTime = activeVid.currentTime || 0;
+      const currentScene = CINEMATIC_SCENES[activeSectionRef.current] || CINEMATIC_SCENES.hero;
+
+      // Rule: When scrolling stops, video MUST continue playing forward!
+      if (!isReducedMotion && activeVid.paused && !isTransitioningRef.current) {
+        activeVid.play().catch(() => {});
+      }
+
+      // Seamless Loop Boundary Detection:
+      // When approaching loopEnd (within 0.22s), crossfade seamlessly back to loopStart
+      if (!isTransitioningRef.current && curTime >= (currentScene.loopEnd - 0.22)) {
+        executeDualTransition(currentScene.loopStart, 240);
+      }
+
+      rafIdRef.current = requestAnimationFrame(loopMonitor);
+    };
+
+    rafIdRef.current = requestAnimationFrame(loopMonitor);
 
     return () => {
       isRunning = false;
-      clearTimeout(scrollTimeoutRef.current);
-      window.removeEventListener('scroll', handleScroll);
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [envState, isReducedMotion, triggerInvisibleLoop]);
+  }, [hasEntered, envState, isReducedMotion, executeDualTransition]);
 
-  // 5. Subtle Project Atmosphere Tint
+  // 8. Subtle Project Atmosphere Tint
   const atmosphereGradient = useMemo(() => {
     switch (atmosphereMode) {
       case 'p1': // SPECra: Cool navy / technical blue
@@ -374,6 +450,7 @@ export default function ScrollScrubbedCinematicVideo({
   }, [atmosphereMode]);
 
   const isReady = envState === VIDEO_ENVIRONMENT_STATES.READY;
+  const isVisible = hasEntered && isReady;
 
   return (
     <div
@@ -386,14 +463,15 @@ export default function ScrollScrubbedCinematicVideo({
         overflow: 'hidden',
         pointerEvents: 'none',
         zIndex: 1,
-        opacity: isReady ? 1 : 0,
-        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+        opacity: isVisible ? 1 : 0,
+        visibility: isVisible ? 'visible' : 'hidden',
+        transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s'
       }}
       aria-hidden="true"
     >
-      {/* 1. Primary Native HTML5 Video Element with Subtle Corner Concealment Scale */}
+      {/* Video Layer A (Active by default) */}
       <video
-        ref={videoRef}
+        ref={videoARef}
         src={videoSrc}
         muted
         playsInline
@@ -401,18 +479,28 @@ export default function ScrollScrubbedCinematicVideo({
         disablePictureInPicture
         disableRemotePlayback
         style={{
+          position: 'absolute',
+          inset: 0,
           width: '100%',
           height: '100%',
           objectFit: 'cover',
           display: 'block',
+          opacity: 1,
           transform: 'scale(1.025)',
-          transformOrigin: '50% 50%'
+          transformOrigin: '50% 50%',
+          zIndex: 1
         }}
       />
 
-      {/* 2. Invisible Cross-Dissolve Looping Canvas Layer */}
-      <canvas
-        ref={canvasRef}
+      {/* Video Layer B (Standby for invisible crossfade looping & direct handoff) */}
+      <video
+        ref={videoBRef}
+        src={videoSrc}
+        muted
+        playsInline
+        preload="auto"
+        disablePictureInPicture
+        disableRemotePlayback
         style={{
           position: 'absolute',
           inset: 0,
@@ -420,7 +508,6 @@ export default function ScrollScrubbedCinematicVideo({
           height: '100%',
           objectFit: 'cover',
           display: 'block',
-          pointerEvents: 'none',
           opacity: 0,
           transform: 'scale(1.025)',
           transformOrigin: '50% 50%',
@@ -465,7 +552,7 @@ export default function ScrollScrubbedCinematicVideo({
         }}
       />
 
-      {/* 6. Part C: Subtle Bottom-Right Corner Softening Shield (Conceals any faint corner artifacts) */}
+      {/* 6. Subtle Bottom-Right Corner Softening Shield */}
       <div
         className="video-corner-shield"
         style={{

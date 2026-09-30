@@ -212,7 +212,7 @@ function MainApp() {
       <CinematicTransitionVeil />
 
       {/* Global Persistent Single WebGL Canvas for 3D Atmosphere */}
-      <GlobalCinematicScene isProject={isProjectRoute} />
+      <GlobalCinematicScene isProject={isProjectRoute} hasEntered={hasEntered} />
 
       {/* Film Grain & Vignette for Cinematic Atmosphere */}
       <div className="grain-overlay" />

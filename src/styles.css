@@ -2549,55 +2549,92 @@ canvas {
 }
 
 /* ==================================================
-   LOWER-CENTER: SYSTEM STATE + ENTER INTERACTION
+   PHASE 10: LOADING SCREEN TYPOGRAPHY & CINEMATIC MOTION
+   - Centered hierarchy beneath neural core
+   - Hero font matching (Syne display + JetBrains Mono technical)
+   - Terminal character typing ticker with caret
+   - Masked horizontal sweep-in for SYSTEM READY
+   - Controlled glitch/blink arrival for ENTER EXPERIENCE
    ================================================== */
 .intro-lower-center {
   position: absolute;
-  bottom: clamp(30px, 5.5vh, 54px);
+  top: 66%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 100%;
-  max-width: 520px;
+  max-width: 92vw;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   z-index: 25;
   pointer-events: auto;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .intro-init-block {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  width: 100%;
 }
 
 .intro-diagnostic-ticker {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: clamp(10.5px, 0.9vw, 12px);
   letter-spacing: 0.22em;
-  color: #7d9cb8;
+  color: #8bb5d6;
   text-transform: uppercase;
-  animation: tickerFadeIn 0.4s ease-out;
+  white-space: nowrap;
+  min-height: 24px;
 }
 
-@keyframes tickerFadeIn {
-  from { opacity: 0; transform: translateY(3px); }
-  to { opacity: 1; transform: translateY(0); }
+.diagnostic-text {
+  text-align: center;
+  display: inline-block;
+  letter-spacing: 0.22em;
+}
+
+.intro-typing-caret {
+  display: inline-block;
+  font-size: 11px;
+  color: #79baea;
+  vertical-align: baseline;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 8px;
+}
+
+.caret-active {
+  opacity: 1;
+}
+
+.caret-blinking {
+  animation: caretPulse 1s infinite ease-in-out;
+}
+
+@keyframes caretPulse {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.15; transform: scaleY(0.85); }
 }
 
 .diagnostic-beacon {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background-color: #64b5f6;
-  box-shadow: 0 0 7px rgba(100, 181, 246, 0.85);
+  box-shadow: 0 0 8px rgba(100, 181, 246, 0.85);
   animation: beaconPulse 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes beaconPulse {
@@ -2609,18 +2646,14 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
 }
 
+/* Subordinate pill hidden to allow pure, breathing composition under neural core */
 .intro-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.22em;
-  color: #6e6e84;
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  display: none !important;
 }
 
 .status-dot {
@@ -2631,49 +2664,101 @@ canvas {
   box-shadow: 0 0 6px rgba(52, 211, 153, 0.8);
 }
 
+/* Horizontal Sweep Mask & Light Beam for SYSTEM READY */
+.intro-heading-sweep-mask {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+  margin: 0 0 14px;
+  text-align: center;
+  max-width: 100%;
+}
+
 .intro-monumental-heading {
-  font-family: var(--font-mono);
-  font-size: clamp(12.5px, 1.1vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0.26em;
-  line-height: 1.2;
-  color: #c4dcf5;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.4vw, 56px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: #ffffff;
   text-transform: uppercase;
-  margin: 0 0 5px;
+  margin: 0;
+  white-space: nowrap !important;
+  text-shadow: 0 0 32px rgba(160, 215, 255, 0.35);
+  will-change: clip-path, transform, opacity;
+  display: block;
+  text-align: center;
+}
+
+.intro-sweep-beam {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(180, 225, 255, 0.95) 30%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(180, 225, 255, 0.95) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(160, 220, 255, 0.8), 0 0 22px rgba(100, 180, 245, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  will-change: left, opacity;
 }
 
 .intro-access-sub {
   font-family: var(--font-mono);
-  font-size: clamp(9px, 0.75vw, 10.5px);
+  font-size: clamp(10px, 0.8vw, 11.5px);
   letter-spacing: 0.22em;
-  color: #5c5c6e;
+  color: #8892a0;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin: 0 0 24px;
+  will-change: transform, opacity;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .intro-enter-wrap {
   position: relative;
   z-index: 30;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  will-change: transform, opacity;
 }
 
+/* ===========================================================================
+   PHASE 10B — ENTER EXPERIENCE DIRECTIONAL WHITE HOVER SWEEP
+   Default: Transparent background, subtle border, light text
+   Hover: White background sweeps horizontally across control; text transitions to dark
+   Mouse Leave: White background smoothly recedes back out
+   =========================================================================== */
 .intro-enter-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 30px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #dce1e8;
+  justify-content: center;
+  gap: 14px;
+  padding: 13px 34px;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
   overflow: hidden;
+  box-shadow: 0 0 24px rgba(100, 180, 245, 0.08);
+  will-change: transform, opacity;
+  transition: border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .intro-enter-btn:focus-visible {
@@ -2681,20 +2766,66 @@ canvas {
   outline-offset: 4px;
 }
 
-.intro-enter-btn:hover {
-  border-color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-  box-shadow: 0 0 20px rgba(100, 180, 245, 0.16);
-  transform: scale(1.02);
+/* Directional Horizontal White Sweep Pseudo-element */
+.intro-enter-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+  pointer-events: none;
 }
 
+.intro-enter-btn:hover::before {
+  transform: scaleX(1);
+}
+
+.intro-enter-btn:hover {
+  border-color: #ffffff;
+  box-shadow: 0 0 28px rgba(255, 255, 255, 0.25);
+}
+
+/* Text and arrow layers stay strictly above the sweep layer */
+.intro-enter-btn .btn-label-text {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  transition: color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.intro-enter-btn:hover .btn-label-text {
+  color: #060608 !important;
+}
+
+.intro-enter-btn .btn-enter-arrow {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  transition: color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.intro-enter-btn:hover .btn-enter-arrow {
+  color: #060608 !important;
+  transform: translateX(3px);
+}
+
+/* Reticles */
 .btn-reticle {
   position: absolute;
   width: 4px;
   height: 4px;
   border-color: rgba(255, 255, 255, 0.65);
   pointer-events: none;
+  z-index: 2;
+  transition: border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.intro-enter-btn:hover .btn-reticle {
+  border-color: rgba(6, 6, 8, 0.6);
 }
 
 .reticle-tl {
@@ -2725,30 +2856,6 @@ canvas {
   border-right: 1px solid;
 }
 
-.btn-enter-arrow {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  color: #8bb5d6;
-}
-
-.intro-enter-btn:hover .btn-enter-arrow {
-  transform: translateX(3px);
-  color: #ffffff;
-}
-
-/* Light sweep shimmer */
-.btn-light-sweep {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
-  transform: translateX(-100%);
-  pointer-events: none;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.intro-enter-btn:hover .btn-light-sweep {
-  transform: translateX(100%);
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .telemetry-fragment {
@@ -2765,22 +2872,25 @@ canvas {
     bottom: 18px;
     right: 18px;
   }
+  .intro-lower-center {
+    top: 68%;
+    padding: 0 16px;
+    max-width: 95vw;
+  }
   .intro-monumental-heading {
-    font-size: clamp(16px, 5vw, 22px);
-    letter-spacing: 0.18em;
-    margin: 0 0 6px;
+    font-size: clamp(22px, 6.2vw, 32px);
+    letter-spacing: 0.05em;
+    margin: 0 0 10px;
+    white-space: nowrap !important;
   }
   .intro-access-sub {
-    font-size: 8.5px;
-    margin-bottom: 16px;
+    font-size: 9.5px;
+    margin-bottom: 20px;
   }
   .intro-enter-btn {
-    padding: 11px 24px;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-  }
-  .intro-lower-center {
-    bottom: clamp(20px, 4vh, 36px);
+    padding: 11px 26px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
   }
 }
 
@@ -3396,87 +3506,63 @@ canvas {
 .projector-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8e8e99;
-  background: rgba(12, 12, 16, 0.82);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 6px 18px;
-  border-radius: 999px;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 8px 18px;
+  border-radius: 2px;
   cursor: pointer !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  transition: background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
   outline: none;
 }
 
+.btn-action-label {
+  display: inline-block;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-action-arrow {
+  display: inline-block;
+  font-size: 12px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .projector-action-btn:hover {
-  color: #ffffff;
-  border-color: rgba(56, 189, 248, 0.55);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.24), 0 4px 14px rgba(0, 0, 0, 0.85);
+  background: #ffffff;
+  color: #060608;
+  border-color: #ffffff;
   transform: translateY(-1px);
 }
 
+.projector-action-btn:hover .btn-action-arrow {
+  transform: translateX(3px);
+}
+
 .projector-action-btn:focus-visible {
-  outline: 2px solid #38bdf8;
-  outline-offset: 3px;
+  outline: 1px dashed rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
 }
 
 .projector-action-btn.btn--projected {
-  color: #38bdf8;
-  border-color: rgba(56, 189, 248, 0.75);
-  background: rgba(10, 24, 38, 0.90);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.30);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.btn-optic-indicator {
-  position: relative;
-  width: 7px;
-  height: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.optic-dot {
-  width: 4.5px;
-  height: 4.5px;
-  border-radius: 50%;
-  background-color: #646472;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.optic-ring {
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  pointer-events: none;
-}
-
-.projector-action-btn:hover .optic-dot {
-  background-color: #38bdf8;
-  box-shadow: 0 0 8px #00e5ff;
-}
-
-.projector-action-btn.btn--projected .optic-dot {
-  background-color: #00e5ff;
-  box-shadow: 0 0 8px #00e5ff;
-}
-
-.projector-action-btn.btn--projected .optic-ring {
-  border-color: rgba(0, 229, 255, 0.6);
-  animation: opticPulseGlow 2.2s infinite ease-out;
-}
-
-@keyframes opticPulseGlow {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
+.projector-action-btn.btn--projected:hover {
+  background: #ffffff;
+  color: #060608;
+  border-color: #ffffff;
 }
 
 /* ── 5. RESPONSIVE OPTIMIZATIONS ────────────────────────────────────────── */
@@ -3867,19 +3953,45 @@ canvas {
   gap: 12px;
 }
 
-.mobile-brand-logo-mark {
-  width: 28px;
-  height: 28px;
+.brand-logo-mark {
+  width: 38px;
+  height: 38px;
   object-fit: contain;
-  border-radius: 4px;
+  display: block;
+  flex-shrink: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  will-change: transform, opacity;
+}
+
+.brand-wrapper:hover .brand-logo-mark {
+  opacity: 0.85;
+  transform: scale(1.04);
+}
+
+.mobile-brand-logo-mark {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
   display: block;
   flex-shrink: 0;
 }
 
-.mobile-brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+@media (max-width: 900px) {
+  .brand-logo-mark {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-logo-mark {
+    width: 28px;
+    height: 28px;
+  }
+  .mobile-brand-logo-mark {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .footer-logo-mark {
@@ -3897,3 +4009,298 @@ canvas {
 .site-footer:hover .footer-logo-mark {
   opacity: 1;
 }
+
+/* ── CINEMATIC TYPOGRAPHY REVEAL MASKS (PHASE 11) ── */
+.cinematic-title-mask,
+.exploring-title-mask,
+.slide-title-mask,
+.expertise-title-mask,
+.timeline-role-mask,
+.statement-line-mask {
+  overflow: hidden;
+  display: block;
+}
+
+.cinematic-sweep-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  will-change: clip-path, transform;
+}
+
+.exploring-item {
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.exploring-item .exploring-title {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), color 0.28s ease;
+  will-change: transform;
+}
+
+.exploring-item .exploring-divider {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.28s ease;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-title-mask,
+  .exploring-title-mask,
+  .slide-title-mask,
+  .expertise-title-mask,
+  .timeline-role-mask,
+  .statement-line-mask {
+    overflow: visible !important;
+  }
+}
+
+/* ==================================================
+   AI UG ACADEMIC PLANNER COMPOSITION MATCHING EXPENSEFLOWAI
+   Editorial Left Content + Substantial Right Visual Artifact
+   ================================================== */
+.reel-slide-3.comp-offset-diagonal .slide-content-frame {
+  grid-template-columns: 1fr 1.18fr;
+  gap: clamp(28px, 4.5vw, 70px);
+  align-items: center;
+  min-width: 0;
+}
+
+.reel-slide-3 .slide-editorial-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.reel-slide-3 .slide-project-title {
+  text-align: left;
+  line-height: 1.02;
+}
+
+.reel-slide-3 .slide-tagline-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  margin-top: 2px;
+}
+
+.reel-slide-3 .slide-description-text {
+  text-align: left;
+  max-width: 520px;
+}
+
+.reel-slide-3 .slide-tech-stream {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.reel-slide-3 .slide-actions-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 28px;
+}
+
+.reel-slide-3 .slide-visual-frame {
+  min-width: 0;
+  max-height: clamp(260px, 48vh, 500px);
+  aspect-ratio: 16 / 10;
+  transform: translateY(12px);
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .reel-slide-3.comp-offset-diagonal .slide-content-frame {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  .reel-slide-3 .slide-visual-frame {
+    max-height: 40vh;
+    transform: translateY(6px);
+  }
+}
+
+/* ==================================================
+   PHASE 12 — MASTER VIEWPORT CONSISTENCY (1440 × 1200)
+   Universal Cross-Device Cinematic Architecture
+   ================================================== */
+
+:root {
+  --master-viewport-w: 1440;
+  --master-viewport-h: 1200;
+  --master-max-width: 1440px;
+  --master-inner-width: 1380px;
+  --master-aspect: 1.20;
+}
+
+/* 1. Ultrawide / Superwide Master Canvas Centering (3440x1440, 5120x1440, 7680x4320)
+   Preserves canonical 1440x1200 composition; extra space exposes 3D ambient atmosphere */
+@media (min-width: 1441px) {
+  .hero-content,
+  .hero-bottom-bar,
+  .about-hero-block,
+  .about-story-moment,
+  .spatial-words-stack,
+  .exploring-typo-list,
+  .about-transition-to-work,
+  .work-editorial-intro,
+  .reel-pinned-stage,
+  .experience-timeline-container,
+  .expertise-matrix-container,
+  .contact-cinematic-inner {
+    max-width: 1440px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .site-header {
+    max-width: 100%;
+  }
+
+  .site-header > * {
+    max-width: 1440px;
+  }
+
+  .hero-container {
+    max-width: 100%;
+  }
+
+  .hero-portrait-stage {
+    right: calc((100vw - 1440px) / 2 + 4vw) !important;
+  }
+}
+
+/* 2. No Element Distortion / Aspect Ratio Preservation */
+img,
+video,
+canvas,
+.hero-portrait-img,
+.slide-visual-img,
+.about-portrait-img {
+  object-fit: cover !important;
+  max-width: 100%;
+}
+
+.hero-portrait-stage,
+.slide-visual-frame,
+.about-portrait-frame {
+  flex-shrink: 0;
+}
+
+/* 3. About Statement Master Scaling — Zero Clipping / Zero Overflow at 1440x1200 & all sizes */
+.asymmetric-statement {
+  font-size: clamp(30px, 5.8vw, 98px) !important;
+  line-height: 0.96 !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+}
+
+.statement-row.row-2 {
+  margin-left: clamp(1rem, 4vw, 5.5rem) !important;
+}
+
+.statement-row.row-3 {
+  margin-left: clamp(1.5rem, 6.5vw, 9rem) !important;
+}
+
+/* 4. Compact Laptop Fitting (1366x768, 1440x900) — Intelligent Vertical Proportions */
+@media (max-height: 850px) and (min-width: 1025px) {
+  .hero-content {
+    padding-top: 0 !important;
+    max-width: 58vw !important;
+  }
+  .hero-title {
+    font-size: clamp(2.4rem, 5.0vw, 4.8rem) !important;
+    line-height: 0.96 !important;
+  }
+  .hero-role {
+    margin-top: 14px !important;
+    margin-bottom: 14px !important;
+    font-size: 11.5px !important;
+  }
+  .hero-portrait-stage {
+    height: 82svh !important;
+    width: clamp(340px, 34vw, 520px) !important;
+  }
+  .hero-bottom-bar {
+    bottom: 18px !important;
+  }
+  .reel-slide {
+    padding: clamp(40px, 6vh, 60px) 5vw !important;
+  }
+  .slide-visual-frame {
+    max-height: clamp(220px, 42vh, 420px) !important;
+  }
+}
+
+/* 5. Universal Pinned Project Reel on Narrow / Mobile Viewports */
+@media (max-width: 768px) {
+  .project-reel-container {
+    width: 100% !important;
+    position: relative !important;
+  }
+  .reel-pinned-stage {
+    height: 100svh !important;
+    min-height: 100svh !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+  .reel-slide {
+    padding: clamp(52px, 8.5svh, 72px) 5vw clamp(48px, 8svh, 64px) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .slide-content-frame {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: clamp(8px, 1.6svh, 14px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100svh - 110px) !important;
+    margin: 0 !important;
+  }
+  .slide-editorial-col {
+    order: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: clamp(5px, 1svh, 10px) !important;
+  }
+  .slide-project-title {
+    font-size: clamp(22px, 6.2vw, 34px) !important;
+    line-height: 1.04 !important;
+    text-align: left !important;
+  }
+  .slide-visual-frame {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    max-height: clamp(155px, 27svh, 230px) !important;
+    transform: none !important;
+  }
+}
+
+/* 6. Document-Level Horizontal Overflow Shield */
+html,
+body,
+#root,
+.site-wrapper {
+  overflow-x: clip !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+
