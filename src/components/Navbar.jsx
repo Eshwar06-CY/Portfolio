@@ -49,7 +49,7 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
         className={`site-header ${scrolled ? 'header-scrolled' : ''}`}
         role="banner"
       >
-        {/* Brand identity: quiet editorial film title */}
+        {/* Brand identity: logo-tb asset */}
         <Magnetic strength={0.12} maxOffset={3.5}>
           <button
             className="brand-wrapper"
@@ -58,11 +58,13 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label="Return to top"
           >
-            <span className="brand-name">{profile.name || 'Eshwar M'}</span>
-            <div className="status-indicator">
-              <span className="status-dot" aria-hidden="true" />
-              <span>AI · PRODUCT · DATA · INNOVATION</span>
-            </div>
+            <img
+              src="/logo-tb.png"
+              alt="Eshwar M Logo"
+              className="brand-logo-mark"
+              width="38"
+              height="38"
+            />
           </button>
         </Magnetic>
 
@@ -126,8 +128,15 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             aria-label="Mobile Navigation"
           >
             <div className="mobile-editorial-header">
-              <span className="mobile-brand-title">{profile.name || 'Eshwar M'}</span>
-              <span className="mobile-brand-sub">AI · PRODUCT · DATA · INNOVATION</span>
+              <div className="mobile-brand-identity">
+                <img
+                  src="/logo-tb.png"
+                  alt="Eshwar M Logo"
+                  className="mobile-brand-logo-mark"
+                  width="36"
+                  height="36"
+                />
+              </div>
             </div>
 
             <div className="mobile-editorial-list">

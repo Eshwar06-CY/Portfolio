@@ -4,6 +4,7 @@ export default function Footer({ profile, onCursorChange }) {
   return (
     <footer className="site-footer" aria-label="Site Footer">
       <div className="footer-left">
+        <img src="/logo.png" alt="ME Logo" className="footer-logo-mark" width="18" height="18" />
         <span className="footer-brand-name">{profile?.name || "Eshwar M"}</span>
         <span className="footer-divider">•</span>
         <span className="footer-role">Building at the intersection of AI, Product, Data &amp; Innovation.</span>

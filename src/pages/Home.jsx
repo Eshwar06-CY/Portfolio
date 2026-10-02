@@ -13,25 +13,29 @@ export default function Home({
   portfolioData,
   onNavigate,
   onOpenCaseStudy,
-  onCursorChange
+  onCursorChange,
+  hasEntered = true
 }) {
   const { scrollYProgress } = useScroll();
 
   return (
-    <main className="homepage-main">
+    <main className="homepage-main" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
 
-      {/* Minimal Thin Scroll Progress Indicator */}
-      <motion.div
-        className="global-scroll-progress-bar"
-        style={{ scaleY: scrollYProgress }}
-        aria-hidden="true"
-      />
+      {/* Minimal Thin Scroll Progress Indicator (Only visible after entering) */}
+      {hasEntered && (
+        <motion.div
+          className="global-scroll-progress-bar"
+          style={{ scaleY: scrollYProgress }}
+          aria-hidden="true"
+        />
+      )}
 
       {/* 1. HERO OPENING FRAME */}
       <Hero
         profile={portfolioData.profile}
         onScrollExplore={() => onNavigate('about')}
         onCursorChange={onCursorChange}
+        hasEntered={hasEntered}
       />
 
       {/* 2. ABOUT: CINEMATIC PERSONAL INTRODUCTION */}

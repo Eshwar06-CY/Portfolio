@@ -10,7 +10,7 @@ export const portfolioData = {
     heroStatement: "Building at the intersection of AI, Product, Data & Innovation.",
     status: "OPEN FOR COLLABORATION & ROLES",
     location: "MYSURU, KARNATAKA",
-    portrait: "/assets/images/portrait.png",
+    portrait: "/portrait_tb.png",
     email: "meshwar824@gmail.com",
     academic: {
       degree: "B.E. Computer Science & Engineering Student",
@@ -64,7 +64,19 @@ export const portfolioData = {
   expertise: [
     {
       number: "01",
-      category: "AI & Emerging Technology",
+      category: "Programming",
+      skills: [
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "C / C++",
+        "Object-Oriented Programming"
+      ],
+      description: "Solid foundations in programming languages, algorithmic logic, object-oriented principles, and clean code architecture."
+    },
+    {
+      number: "02",
+      category: "AI / ML",
       skills: [
         "Generative AI",
         "Large Language Models (LLMs)",
@@ -76,21 +88,21 @@ export const portfolioData = {
       description: "Developing practical AI applications with modern LLM APIs, prompt engineering frameworks, intelligent workflows, and structured outputs."
     },
     {
-      number: "02",
-      category: "Product & Problem Solving",
+      number: "03",
+      category: "Web Development",
       skills: [
-        "Product Thinking",
-        "Requirements Analysis",
-        "Problem Solving",
-        "Product Development",
-        "Innovation",
-        "Entrepreneurship"
+        "React.js",
+        "FastAPI",
+        "Flask",
+        "REST APIs",
+        "Back-End Development",
+        "Modern Frontend Architecture"
       ],
-      description: "Understanding users, identifying meaningful operational problems, scoping clear requirements, and turning ideas into useful products."
+      description: "Architecting responsive, high-performance web applications and robust backend services with clean API contracts and solid engineering fundamentals."
     },
     {
-      number: "03",
-      category: "Data & Database",
+      number: "04",
+      category: "Data & Databases",
       skills: [
         "Data Analytics",
         "SQL",
@@ -98,32 +110,13 @@ export const portfolioData = {
         "MySQL",
         "SQLite",
         "DBMS",
-        "Database Design"
+        "Relational Schema Design"
       ],
       description: "Working with data to uncover patterns, generate actionable insights, support decisions, and engineer structured relational schemas."
     },
     {
-      number: "04",
-      category: "Development",
-      skills: [
-        "Python",
-        "JavaScript",
-        "TypeScript",
-        "React.js",
-        "FastAPI",
-        "Flask",
-        "API Development",
-        "Back-End Development",
-        "Web Services",
-        "Object-Oriented Programming",
-        "Data Structures",
-        "Algorithms"
-      ],
-      description: "Architecting responsive, high-performance web applications and robust backend services with clean API contracts and solid engineering fundamentals."
-    },
-    {
       number: "05",
-      category: "Tools",
+      category: "Tools & Platforms",
       skills: [
         "Git",
         "GitHub",
@@ -133,6 +126,31 @@ export const portfolioData = {
         "Testing & Debugging"
       ],
       description: "Modern developer workflow tools, version control discipline, automated testing, and dependable development practices."
+    },
+    {
+      number: "06",
+      category: "Core CS",
+      skills: [
+        "Data Structures",
+        "Algorithms",
+        "DBMS Concepts",
+        "Operating Systems Fundamentals",
+        "Computer Networks Basics"
+      ],
+      description: "Strong theoretical and practical grounding in algorithms, data structures, system architecture, and computational problem solving."
+    },
+    {
+      number: "07",
+      category: "Product & Startup",
+      skills: [
+        "Product Thinking",
+        "Requirements Analysis",
+        "Problem Solving",
+        "Product Development",
+        "Innovation",
+        "Entrepreneurship"
+      ],
+      description: "Understanding users, identifying meaningful operational problems, scoping clear requirements, and turning ideas into viable products."
     }
   ],
 
@@ -141,24 +159,32 @@ export const portfolioData = {
       period: "July 2026 – Present",
       role: "Sub-Core Member",
       organization: "VVCE E-Cell ASPERA",
+      status: "active",
+      isCurrent: true,
       description: "Contribute to entrepreneurship and innovation initiatives, events, and activities within the VVCE ecosystem, with involvement in organizing and coordinating college-level programs."
     },
     {
       period: "March 2025 – July 2026",
       role: "Member",
       organization: "VVCE E-Cell ASPERA",
+      status: "past",
+      isCurrent: false,
       description: "Contributed to entrepreneurship and innovation-related activities, events, and initiatives, supporting E-Cell programs and student-focused activities."
     },
     {
       period: "September 2026 – Present",
       role: "President",
       organization: "VVCE Shiksha",
+      status: "active",
+      isCurrent: true,
       description: "Lead the organization and coordinate student-focused initiatives, activities, and programs as part of the leadership team."
     },
     {
       period: "September 2025 – September 2026",
       role: "Joint Secretary",
       organization: "VVCE Shiksha",
+      status: "past",
+      isCurrent: false,
       description: "Supported organizational planning, coordination, and execution of student-focused initiatives and activities."
     }
   ],
