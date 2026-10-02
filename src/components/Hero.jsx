@@ -579,12 +579,12 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
               setIsHovered(false);
               onCursorChange?.('default');
             }}
-            aria-label={isProjected ? 'Close projected portal' : 'View portal'}
+            aria-label={isProjected ? 'Close projected portrait' : 'View portrait'}
             aria-pressed={isProjected}
-            tabIndex={0}
+            tabIndex={hasEntered ? 0 : -1}
           >
             <span className="btn-action-label">
-              {isProjected ? 'CLOSE PORTAL' : 'VIEW PORTAL'}
+              {isProjected ? 'CLOSE PORTRAIT' : 'VIEW PORTRAIT'}
             </span>
             <span className="btn-action-arrow" aria-hidden="true">→</span>
           </button>
@@ -630,6 +630,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
               onMouseEnter={() => onCursorChange?.('link')}
               onMouseLeave={() => onCursorChange?.('default')}
               aria-label="Scroll to explore"
+              tabIndex={hasEntered ? 0 : -1}
             >
               <span className="scroll-arrow-box" aria-hidden="true">
                 <span className="scroll-pulsing-dot" />

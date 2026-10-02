@@ -274,9 +274,13 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
     return () => ctx.revert();
   }, [phase, isReducedMotion]);
 
-  // 3. Accessibility: Keyboard triggers (Enter or Space)
+  // 3. Accessibility: Keyboard triggers (Enter or Space) & auto-focus on enter button
   useEffect(() => {
     if (phase !== 'ready') return;
+
+    const focusTimer = setTimeout(() => {
+      enterBtnRef.current?.focus();
+    }, 400);
 
     const handleKeyDown = (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -286,7 +290,10 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [phase]);
 
   // 4. Critical ENTER -> NEURAL CASCADE -> CAMERA TRAVEL THROUGH CORE -> HERO TRANSITION

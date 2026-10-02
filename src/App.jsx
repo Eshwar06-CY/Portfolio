@@ -258,6 +258,7 @@ function MainApp() {
                 <div
                   className="home-route-stage"
                   aria-hidden={!hasEntered}
+                  inert={!hasEntered ? '' : undefined}
                   style={{
                     visibility: hasEntered ? 'visible' : 'hidden',
                     pointerEvents: hasEntered ? 'auto' : 'none',

@@ -4133,6 +4133,77 @@ canvas {
   }
 }
 
+/* ====================================================================
+   MOBILE ACCESSIBLE TOUCH TARGETS (SURGICAL EXPANSION >= 44x44px)
+   Preserves visual appearance, typography, animations, and desktop sizing
+   ==================================================================== */
 
+/* 1. Mobile Menu Toggle - expands hit target to 44px without visual alteration */
+.mobile-menu-toggle {
+  position: relative;
+  min-height: 44px;
+  min-width: 44px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
 
+.mobile-menu-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
 
+@media (max-width: 860px) {
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+}
+
+/* 2. Brand / Return Button - expands hit target to 44x44px on mobile */
+.brand-wrapper {
+  position: relative;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* 3. Hero CTA (VIEW PORTRAIT) - invisible hit area expansion to 44px height */
+.projector-action-btn {
+  position: relative;
+}
+
+.projector-action-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 44px;
+  width: 100%;
+  height: 44px;
+  pointer-events: auto;
+}

@@ -10,7 +10,7 @@ export const portfolioData = {
     heroStatement: "Building at the intersection of AI, Product, Data & Innovation.",
     status: "OPEN FOR COLLABORATION & ROLES",
     location: "MYSURU, KARNATAKA",
-    portrait: "/assets/images/portrait_tb.png",
+    portrait: "/portrait_tb.png",
     email: "meshwar824@gmail.com",
     academic: {
       degree: "B.E. Computer Science & Engineering Student",
