@@ -187,11 +187,14 @@ export default function ScrollScrubbedCinematicVideo({
   const activeSectionRef = useRef('hero');
   const cachedOffsetsRef = useRef(measureSceneOffsets());
 
-  // Velocity tracking for fast-scroll skipping
+  // Velocity tracking for adaptive catch-up and scrolling
   const lastScrollYRef = useRef(0);
-  const lastScrollTimeRef = useRef(Date.now());
-  const fastScrollTimerRef = useRef(null);
-  const slowScrollTimerRef = useRef(null);
+  const lastScrollTimeRef = useRef(performance.now());
+  const settleTimerRef = useRef(null);
+
+  // Single persistent temporal transition controller
+  const temporalTransitionRef = useRef(null); // { startTime, targetTime, duration, startTimestamp, lastSeekTime }
+  const temporalRafRef = useRef(null);
 
   const rafIdRef = useRef(null);
   const [envState, setEnvState] = useState(VIDEO_ENVIRONMENT_STATES.LOADING);
@@ -300,8 +303,33 @@ export default function ScrollScrubbedCinematicVideo({
     }
   }, [hasEntered, envState, isReducedMotion]);
 
-  // 4. Dual-Video Crossfade Transition Helper (Temporal Seamless Handoff)
-  const executeDualTransition = useCallback((targetTime, durationMs = 260) => {
+  // 4a. Emergency cancel for dual-slot loop crossfade if user initiates scroll travel
+  const cancelDualTransitionIfActive = useCallback(() => {
+    if (!isTransitioningRef.current) return;
+    clearTimeout(transitionTimeoutRef.current);
+    pendingTargetTimeRef.current = null;
+    isTransitioningRef.current = false;
+
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
+
+    const isCurrentA = activeSlotRef.current === 'A';
+    const activeVid = isCurrentA ? vA : vB;
+    const standbyVid = isCurrentA ? vB : vA;
+
+    activeVid.style.transition = 'none';
+    standbyVid.style.transition = 'none';
+    activeVid.style.opacity = '1';
+    standbyVid.style.opacity = '0';
+    standbyVid.pause();
+    if (!isReducedMotion && activeVid.paused) {
+      activeVid.play().catch(() => {});
+    }
+  }, [isReducedMotion]);
+
+  // 4b. Dual-Video Crossfade Transition Helper (Strictly for stationary intra-section loop resets)
+  const executeDualTransition = useCallback((targetTime, durationMs = 240) => {
     const vA = videoARef.current;
     const vB = videoBRef.current;
     if (!vA || !vB) return;
@@ -349,8 +377,109 @@ export default function ScrollScrubbedCinematicVideo({
     }, durationMs + 20);
   }, [isReducedMotion]);
 
-  // 5. Fast-Scroll Aware Section Transition Controller
-  const handleSectionSwitch = useCallback((newSectionId, isDirectSettle = false) => {
+  // 4c. Single Persistent Temporal Interpolation Controller (Camera Travel Between Sections)
+  const convergeToTemporalTarget = useCallback((targetTime, isFast = false) => {
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
+
+    // Settle any active dual-layer loop crossfade so active slot is 100% visible
+    cancelDualTransitionIfActive();
+
+    const activeVid = activeSlotRef.current === 'A' ? vA : vB;
+    const curTime = activeVid.currentTime || 0;
+
+    // Accessibility: Reduced motion jumps immediately without temporal interpolation
+    if (isReducedMotion) {
+      if (temporalRafRef.current) {
+        cancelAnimationFrame(temporalRafRef.current);
+        temporalRafRef.current = null;
+      }
+      temporalTransitionRef.current = null;
+      activeVid.currentTime = targetTime;
+      if (activeVid.paused) {
+        activeVid.play().catch(() => {});
+      }
+      return;
+    }
+
+    const delta = Math.abs(targetTime - curTime);
+    // Minimal movement: already at desired point
+    if (delta < 0.25) {
+      if (activeVid.paused) {
+        activeVid.play().catch(() => {});
+      }
+      return;
+    }
+
+    // Adaptive catch-up window:
+    // Fast scrolling: ~160ms - 340ms
+    // Normal scrolling: ~280ms - 520ms
+    const duration = isFast
+      ? Math.max(160, Math.min(340, 150 + delta * 10))
+      : Math.max(280, Math.min(520, 260 + delta * 18));
+
+    const now = performance.now();
+
+    // If a transition is already in progress, redirect flight path mid-transition
+    if (temporalTransitionRef.current) {
+      temporalTransitionRef.current.startTime = curTime;
+      temporalTransitionRef.current.targetTime = targetTime;
+      temporalTransitionRef.current.duration = duration;
+      temporalTransitionRef.current.startTimestamp = now;
+      temporalTransitionRef.current.lastSeekTime = 0;
+      return;
+    }
+
+    // Initialize the single active temporal transition controller
+    temporalTransitionRef.current = {
+      startTime: curTime,
+      targetTime,
+      duration,
+      startTimestamp: now,
+      lastSeekTime: 0
+    };
+
+    if (activeVid.paused) {
+      activeVid.play().catch(() => {});
+    }
+
+    const step = (frameTimestamp) => {
+      const trans = temporalTransitionRef.current;
+      if (!trans) return;
+
+      const elapsed = frameTimestamp - trans.startTimestamp;
+      const progress = Math.min(1, Math.max(0, elapsed / trans.duration));
+
+      // Cubic ease-out: responsive initial flight, organic deceleration into target chapter
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const interpolatedTime = trans.startTime + (trans.targetTime - trans.startTime) * ease;
+
+      // Frame pacing: at least ~26ms (~38fps) to give hardware video decoder room to deliver frames cleanly
+      if (progress >= 1 || (frameTimestamp - trans.lastSeekTime) >= 26) {
+        trans.lastSeekTime = frameTimestamp;
+        try {
+          activeVid.currentTime = progress >= 1 ? trans.targetTime : interpolatedTime;
+        } catch (_) {}
+      }
+
+      if (progress < 1) {
+        temporalRafRef.current = requestAnimationFrame(step);
+      } else {
+        // Transition complete: release controller and ensure natural continuous forward 1x playback
+        temporalTransitionRef.current = null;
+        temporalRafRef.current = null;
+        if (!isReducedMotion) {
+          activeVid.play().catch(() => {});
+        }
+      }
+    };
+
+    temporalRafRef.current = requestAnimationFrame(step);
+  }, [cancelDualTransitionIfActive, isReducedMotion]);
+
+  // 5. Logical Section Switch Handler
+  const handleSectionSwitch = useCallback((newSectionId, isFast = false) => {
     const targetScene = CINEMATIC_SCENES[newSectionId] || CINEMATIC_SCENES.hero;
 
     const vA = videoARef.current;
@@ -362,7 +491,7 @@ export default function ScrollScrubbedCinematicVideo({
 
     const isAlreadyWithinRange = curTime >= targetScene.start && curTime <= targetScene.end;
 
-    if (newSectionId === activeSectionRef.current && isAlreadyWithinRange && !isDirectSettle) {
+    if (newSectionId === activeSectionRef.current && isAlreadyWithinRange) {
       return;
     }
 
@@ -373,24 +502,24 @@ export default function ScrollScrubbedCinematicVideo({
       return;
     }
 
-    // Otherwise, transition smoothly directly to the target scene
-    executeDualTransition(targetScene.start, 320);
-  }, [executeDualTransition]);
+    // Smoothly converge camera through the continuous world to the target section's anchor
+    convergeToTemporalTarget(targetScene.loopStart, isFast);
+  }, [convergeToTemporalTarget]);
 
   // 5b. Dual-trigger synchronization: When atmosphereMode shifts to 'about', activate About scene
   useEffect(() => {
     if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
-    if (atmosphereMode === 'about') {
+    if (atmosphereMode === 'about' && activeSectionRef.current !== 'about') {
       handleSectionSwitch('about', false);
     }
   }, [atmosphereMode, hasEntered, envState, handleSectionSwitch]);
 
-  // 6. Scroll Listener with Velocity-Aware Fast Scroll Skipping
+  // 6. Scroll Listener with Velocity-Aware Real-Time Chapter Tracking
   useEffect(() => {
     if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
 
     const handleScroll = () => {
-      const now = Date.now();
+      const now = performance.now();
       const dt = Math.max(1, now - lastScrollTimeRef.current);
       const sy = window.scrollY || 0;
       const dy = Math.abs(sy - lastScrollYRef.current);
@@ -399,33 +528,27 @@ export default function ScrollScrubbedCinematicVideo({
       lastScrollYRef.current = sy;
       lastScrollTimeRef.current = now;
 
+      const isFast = velocity > 0.85;
       const detectedSection = getActiveSectionId(sy, cachedOffsetsRef.current);
 
-      if (velocity > 0.85) {
-        // --- FAST SCROLL DETECTED ---
-        // Do NOT trigger intermediate scene handoffs!
-        // Wait until scroll settles, then switch directly to the final destination section.
-        clearTimeout(fastScrollTimerRef.current);
-        clearTimeout(slowScrollTimerRef.current);
-
-        fastScrollTimerRef.current = setTimeout(() => {
-          const finalY = window.scrollY || 0;
-          const finalSection = getActiveSectionId(finalY, cachedOffsetsRef.current);
-          handleSectionSwitch(finalSection, true);
-        }, 110);
-      } else {
-        // --- SLOW / NORMAL READING SCROLL ---
-        clearTimeout(slowScrollTimerRef.current);
-        slowScrollTimerRef.current = setTimeout(() => {
-          handleSectionSwitch(detectedSection, false);
-        }, 70);
+      if (detectedSection !== activeSectionRef.current) {
+        handleSectionSwitch(detectedSection, isFast);
       }
+
+      // Rest verification: ensure final settled section is accurately aligned once scrolling ends
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = setTimeout(() => {
+        const finalY = window.scrollY || 0;
+        const finalSection = getActiveSectionId(finalY, cachedOffsetsRef.current);
+        if (finalSection !== activeSectionRef.current) {
+          handleSectionSwitch(finalSection, false);
+        }
+      }, 90);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      clearTimeout(fastScrollTimerRef.current);
-      clearTimeout(slowScrollTimerRef.current);
+      clearTimeout(settleTimerRef.current);
       window.removeEventListener('scroll', handleScroll);
     };
   }, [hasEntered, envState, handleSectionSwitch]);
@@ -447,17 +570,20 @@ export default function ScrollScrubbedCinematicVideo({
       const curTime = activeVid.currentTime || 0;
       const currentScene = CINEMATIC_SCENES[activeSectionRef.current] || CINEMATIC_SCENES.hero;
 
-      // Rule: When scrolling stops, video MUST continue playing forward!
-      if (!isReducedMotion && activeVid.paused && !isTransitioningRef.current) {
+      const isTemporalActive = temporalTransitionRef.current !== null;
+
+      // Rule: When scrolling stops or when stationary, video MUST continue playing forward!
+      if (!isReducedMotion && activeVid.paused && !isTemporalActive && !isTransitioningRef.current) {
         activeVid.play().catch(() => {});
       }
 
-      // Seamless Loop Boundary Detection & Out-of-Bounds Recovery:
-      if (!isTransitioningRef.current) {
-        if (curTime >= (currentScene.loopEnd - 0.22)) {
+      // Seamless Loop Boundary Detection:
+      // Loop seamlessly only when stationary within the section's allocated end boundary
+      if (!isTemporalActive && !isTransitioningRef.current) {
+        if (curTime >= (currentScene.loopEnd - 0.22) && curTime <= (currentScene.end + 0.4)) {
           executeDualTransition(currentScene.loopStart, 240);
-        } else if (activeSectionRef.current === 'about' && (curTime < (currentScene.start - 0.25) || curTime > (currentScene.end + 0.4))) {
-          executeDualTransition(currentScene.start, 260);
+        } else if (curTime < (currentScene.start - 0.4) || curTime > (currentScene.end + 0.4)) {
+          convergeToTemporalTarget(currentScene.loopStart, false);
         }
       }
 
@@ -471,8 +597,13 @@ export default function ScrollScrubbedCinematicVideo({
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
       }
+      if (temporalRafRef.current) {
+        cancelAnimationFrame(temporalRafRef.current);
+        temporalRafRef.current = null;
+      }
+      temporalTransitionRef.current = null;
     };
-  }, [hasEntered, envState, isReducedMotion, executeDualTransition]);
+  }, [hasEntered, envState, isReducedMotion, executeDualTransition, convergeToTemporalTarget]);
 
   // 8. Subtle Project Atmosphere Tint
   const atmosphereGradient = useMemo(() => {
