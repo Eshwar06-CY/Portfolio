@@ -35,18 +35,23 @@ export default function Contact({ contactData, onCursorChange }) {
       });
 
       // 2. Part 10 — Cinematic Quiet Masked Reveal for Contact Section
+      const kicker = el.querySelector('.contact-session-telemetry-row');
       const line1 = el.querySelector('.contact-headline-line.line-1');
       const line2 = el.querySelector('.contact-headline-line.line-2');
       const subline = el.querySelector('.contact-subline-text');
       const links = el.querySelector('.contact-editorial-links-row');
 
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 85%',
-          toggleActions: 'play none none none'
-        }
+        paused: true
       });
+
+      if (kicker) {
+        tl.fromTo(kicker,
+          { y: 10, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out' },
+          0
+        );
+      }
 
       if (line1 && line2) {
         tl.fromTo(line1,
@@ -76,6 +81,16 @@ export default function Contact({ contactData, onCursorChange }) {
           0.48
         );
       }
+
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 85%',
+        end: 'bottom 10%',
+        onEnter: () => tl.restart(),
+        onLeave: () => tl.pause(0),
+        onEnterBack: () => tl.restart(),
+        onLeaveBack: () => tl.pause(0)
+      });
     }, contactRootRef);
 
     return () => {

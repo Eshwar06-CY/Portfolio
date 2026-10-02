@@ -68,11 +68,13 @@ export default function ComputationalCore3D({
     enterTime: 0
   });
 
-  // Universal Master Initialization Duration (7.8s canonical duration across all viewports)
+  // Calculate platform-adjusted initialization duration
   const initDuration = useMemo(() => {
     if (isReducedMotion) return 1.6;
+    if (isMobile) return 4.8;
+    if (isTablet) return 6.0;
     return 7.8;
-  }, [isReducedMotion]);
+  }, [isMobile, isTablet, isReducedMotion]);
 
   // -------------------------------------------------------------
   // 1. PROCEDURAL SOFT LUMINOUS TEXTURES

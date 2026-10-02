@@ -166,19 +166,26 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
       return;
     }
 
+    // One-time opening veil dissolution: permanently hide once faded out so it never covers sections
+    if (veilRef.current) {
+      gsap.to(veilRef.current, {
+        autoAlpha: 0,
+        duration: 0.45,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          if (veilRef.current) {
+            veilRef.current.style.display = 'none';
+          }
+        }
+      });
+    }
+
     const ctx = gsap.context(() => {
       const entryTl = gsap.timeline({
         defaults: { ease: 'power3.out' }
       });
 
-      // 1. Environment: controlled darkness veil dissolves and ambient light blooms (0.05s - 0.50s)
-      if (veilRef.current) {
-        entryTl.to(veilRef.current, {
-          autoAlpha: 0,
-          duration: 0.45,
-          ease: 'power2.inOut'
-        }, 0.05);
-      }
+      // 1. Ambient key illumination blooms (0.05s - 0.85s)
       if (ambientRef.current) {
         entryTl.fromTo(ambientRef.current,
           { scale: 0.90, autoAlpha: 0 },
@@ -285,6 +292,19 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
           1.55
         );
       }
+
+      // Replayable Hero ScrollTrigger: Reset when scrolling past Hero, replay on returning
+      ScrollTrigger.create({
+        trigger: root,
+        start: 'top top',
+        end: 'bottom 15%',
+        onLeave: () => {
+          entryTl.pause(0);
+        },
+        onEnterBack: () => {
+          entryTl.restart();
+        }
+      });
     }, root);
 
     return () => ctx.revert();

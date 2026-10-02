@@ -108,8 +108,18 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
       window.dispatchEvent(new CustomEvent('intro-state', { detail: { phase: 'initializing', isHovered: false } }));
     }
 
-    // Universal Master Timing (7.8s canonical duration across all viewports, 1.6s for reduced motion)
-    let totalDuration = hasReducedMotion ? 1600 : 7800;
+    // Platform-aware duration: Desktop ~7.8s, Tablet ~6.0s, Mobile ~4.8s, Reduced Motion ~1.6s
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+    let totalDuration = 7800;
+    if (hasReducedMotion) {
+      totalDuration = 1600;
+    } else if (w < 768) {
+      totalDuration = 4800; // Mobile
+    } else if (w < 1024) {
+      totalDuration = 6000; // Tablet
+    } else {
+      totalDuration = 7800; // Desktop
+    }
 
     // Phase 6D status text sequence (single primary state at a time)
     const statusTimeline = [
@@ -311,8 +321,10 @@ export default function CinematicIntro({ onEnter, onCursorChange }) {
           }
         });
       } else {
-        // Universal Master Enter Duration (3.20s across all viewports)
-        const totalEnterDuration = 3.20;
+        const w = typeof window !== 'undefined' ? window.innerWidth : 1440;
+        const isMobileScreen = w < 768;
+        const isTabletScreen = w >= 768 && w < 1024;
+        const totalEnterDuration = isMobileScreen ? 2.60 : (isTabletScreen ? 2.90 : 3.20);
 
         const exitTl = gsap.timeline({
           onComplete: () => {

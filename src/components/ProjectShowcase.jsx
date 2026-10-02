@@ -1018,9 +1018,9 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
       <div ref={introRef} className="work-editorial-intro">
         <motion.div
           className="work-intro-kicker-wrap"
-          initial={{ opacity: 0.85, y: 10 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 'some' }}
+          viewport={{ once: false, amount: 0.25 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="kicker">02 — SELECTED WORK</span>
@@ -1028,9 +1028,9 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
 
         <motion.h2
           className="work-monumental-heading"
-          initial={{ opacity: 0.85, y: 14 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 'some' }}
+          viewport={{ once: false, amount: 0.25 }}
           transition={{ duration: 0.75, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
         >
           SELECTED WORK
@@ -1038,9 +1038,9 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
 
         <motion.p
           className="work-supporting-text"
-          initial={{ opacity: 0.85, y: 10 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 'some' }}
+          viewport={{ once: false, amount: 0.25 }}
           transition={{ duration: 0.75, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
         >
           The ideas in action: four projects exploring practical applications of technology.
@@ -1048,9 +1048,9 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
 
         <motion.div
           className="work-reel-cue"
-          initial={{ opacity: 0.75 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 'some' }}
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.25 }}
           transition={{ duration: 0.75, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="reel-cue-text">THE PROJECT REEL</span>
@@ -1058,14 +1058,21 @@ export default function ProjectShowcase({ projects, onOpenCaseStudy, onCursorCha
         </motion.div>
       </div>
 
-      {/* Unified Master Pinned Cinematic Project Reel across ALL Viewports */}
-      <DesktopProjectReel
-        projects={projects}
-        onOpenCaseStudy={onOpenCaseStudy}
-        onCursorChange={onCursorChange}
-        activeIndex={activeIndex}
-        setActiveIndex={setActiveIndex}
-      />
+      {(isMobile || isReducedMotion) ? (
+        <MobileProjectReel
+          projects={projects}
+          onOpenCaseStudy={onOpenCaseStudy}
+          onCursorChange={onCursorChange}
+        />
+      ) : (
+        <DesktopProjectReel
+          projects={projects}
+          onOpenCaseStudy={onOpenCaseStudy}
+          onCursorChange={onCursorChange}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+        />
+      )}
     </section>
   );
 }

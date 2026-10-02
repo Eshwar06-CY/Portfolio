@@ -40,27 +40,23 @@ export default function About({ aboutData, onCursorChange }) {
 
       if (heroBlock) {
         const entryTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: heroBlock,
-            start: 'top 92%',
-            end: 'top 40%',
-            scrub: 0.6
-          }
+          paused: true,
+          defaults: { ease: 'power3.out' }
         });
 
         if (openingHairline) {
           entryTl.fromTo(openingHairline,
             { scaleX: 0 },
-            { scaleX: 1, ease: 'none', duration: 0.35 },
+            { scaleX: 1, ease: 'power2.out', duration: 0.55 },
             0
           );
         }
 
         if (eyebrowRail) {
           entryTl.fromTo(eyebrowRail,
-            { y: isDesktop ? 12 : 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.25 },
-            0.05
+            { y: isDesktop ? 12 : 6, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.45 },
+            0.08
           );
         }
 
@@ -73,24 +69,24 @@ export default function About({ aboutData, onCursorChange }) {
           if (row1) {
             entryTl.fromTo(row1,
               { yPercent: isDesktop ? 105 : 70, autoAlpha: 0 },
-              { yPercent: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.42 },
-              0.08
+              { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.65 },
+              0.14
             );
           }
 
           if (row2) {
             entryTl.fromTo(row2,
               { yPercent: isDesktop ? 105 : 70, autoAlpha: 0 },
-              { yPercent: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.46 },
-              0.14
+              { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.70 },
+              0.24
             );
           }
 
           if (row3) {
             entryTl.fromTo(row3,
               { yPercent: isDesktop ? 105 : 70, autoAlpha: 0 },
-              { yPercent: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.50 },
-              0.20
+              { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.75 },
+              0.34
             );
           }
         }
@@ -100,26 +96,36 @@ export default function About({ aboutData, onCursorChange }) {
         if (chips.length) {
           entryTl.fromTo(chips,
             { y: 14, autoAlpha: 0 },
-            { y: 0, autoAlpha: 1, stagger: 0.05, ease: 'power2.out', duration: 0.35 },
-            0.22
+            { y: 0, autoAlpha: 1, stagger: 0.06, ease: 'power2.out', duration: 0.45 },
+            0.42
           );
         }
 
         if (heroLead) {
           entryTl.fromTo(heroLead,
-            { y: isDesktop ? 12 : 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.3 },
-            0.20
+            { y: isDesktop ? 12 : 6, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.5 },
+            0.48
           );
         }
 
         if (subMeta) {
           entryTl.fromTo(subMeta,
-            { y: isDesktop ? 10 : 4, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
-            0.24
+            { y: isDesktop ? 10 : 4, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.45 },
+            0.54
           );
         }
+
+        ScrollTrigger.create({
+          trigger: heroBlock,
+          start: 'top 85%',
+          end: 'bottom 15%',
+          onEnter: () => entryTl.restart(),
+          onLeave: () => entryTl.pause(0),
+          onEnterBack: () => entryTl.restart(),
+          onLeaveBack: () => entryTl.pause(0)
+        });
 
         // Environmental Parallax Drift across Statement Rows as user scrolls through
         if (statement && isDesktop) {
@@ -153,18 +159,14 @@ export default function About({ aboutData, onCursorChange }) {
         const tags = whoBlock.querySelector('.story-context-tags');
 
         const whoTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: whoBlock,
-            start: 'top 88%',
-            end: 'top 45%',
-            scrub: 0.6
-          }
+          paused: true,
+          defaults: { ease: 'power3.out' }
         });
 
         if (label) {
           whoTl.fromTo(label,
-            { y: isDesktop ? 10 : 4, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.25 },
+            { y: isDesktop ? 10 : 4, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.35 },
             0
           );
         }
@@ -173,33 +175,43 @@ export default function About({ aboutData, onCursorChange }) {
           whoTl.fromTo(lead,
             {
               x: isDesktop ? -10 : -3,
-              autoAlpha: 0.9
+              autoAlpha: 0
             },
             {
               x: 0,
               autoAlpha: 1,
-              ease: 'power2.out',
-              duration: 0.38
+              ease: 'power3.out',
+              duration: 0.48
             },
-            0.06
+            0.08
           );
         }
 
         if (paragraphs.length) {
           whoTl.fromTo(paragraphs,
-            { x: isDesktop ? -8 : -2, autoAlpha: 0.85 },
-            { x: 0, autoAlpha: 1, stagger: 0.08, ease: 'power1.out', duration: 0.35 },
-            0.14
+            { x: isDesktop ? -8 : -2, autoAlpha: 0 },
+            { x: 0, autoAlpha: 1, stagger: 0.08, ease: 'power2.out', duration: 0.45 },
+            0.18
           );
         }
 
         if (tags) {
           whoTl.fromTo(tags,
-            { y: 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.24 },
-            0.28
+            { y: 6, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.35 },
+            0.32
           );
         }
+
+        ScrollTrigger.create({
+          trigger: whoBlock,
+          start: 'top 85%',
+          end: 'bottom 15%',
+          onEnter: () => whoTl.restart(),
+          onLeave: () => whoTl.pause(0),
+          onEnterBack: () => whoTl.restart(),
+          onLeaveBack: () => whoTl.pause(0)
+        });
       }
 
       // ====================================================================
@@ -212,40 +224,46 @@ export default function About({ aboutData, onCursorChange }) {
         const desc = item.querySelector('.exploring-desc');
         const divider = item.querySelector('.exploring-divider');
 
-        // Entrance Reveal from safe readable baseline
+        // Entrance Reveal from safe readable baseline (Replayable on scroll down & up)
         const entranceTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 92%',
-            end: 'top 65%',
-            scrub: 0.5,
-          }
+          paused: true,
+          defaults: { ease: 'power3.out' }
         });
 
         if (divider) {
-          entranceTl.fromTo(divider, { scaleX: 0 }, { scaleX: 1, ease: 'none', duration: 0.4 }, 0);
+          entranceTl.fromTo(divider, { scaleX: 0 }, { scaleX: 1, ease: 'power2.out', duration: 0.45 }, 0);
         }
         if (num) {
           entranceTl.fromTo(num,
-            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -6, autoAlpha: 0.8 },
-            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.32 },
-            0.04
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -6, autoAlpha: 0 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.38 },
+            0.06
           );
         }
         if (title) {
           entranceTl.fromTo(title,
             { yPercent: 105, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.38 },
-            0.10
+            { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.48 },
+            0.12
           );
         }
         if (desc) {
           entranceTl.fromTo(desc,
-            { y: 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.32 },
-            0.18
+            { y: 6, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.38 },
+            0.20
           );
         }
+
+        ScrollTrigger.create({
+          trigger: item,
+          start: 'top 88%',
+          end: 'bottom 10%',
+          onEnter: () => entranceTl.restart(),
+          onLeave: () => entranceTl.pause(0),
+          onEnterBack: () => entranceTl.restart(),
+          onLeaveBack: () => entranceTl.pause(0)
+        });
 
         // Active Row Emphasis (Closest to visual center of viewport)
         ScrollTrigger.create({
@@ -390,7 +408,7 @@ export default function About({ aboutData, onCursorChange }) {
   }, [onCursorChange]);
 
   return (
-    <section id="about" ref={aboutRootRef} className="about-cinematic-page" aria-label="About Eshwar M">
+    <section id="about" ref={aboutRootRef} className="about-cinematic-page" aria-label="About Eshwar M" style={{ backgroundColor: 'transparent' }}>
 
       {/* ====================================================================
           1. ABOUT HERO: MONUMENTAL ASYMMETRIC EDITORIAL STATEMENT

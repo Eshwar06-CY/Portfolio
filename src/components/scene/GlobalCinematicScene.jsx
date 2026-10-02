@@ -414,8 +414,9 @@ function SpatialCameraController({
 
     if (introPhase === 'entering') {
       enterTimeRef.current += delta;
-      const timingScale = 1.0;
-      const travelScale = 1.0;
+      const et = enterTimeRef.current;
+      const timingScale = isMobile ? 0.80 : (isTablet ? 0.90 : 1.0);
+      const travelScale = isMobile ? 0.78 : (isTablet ? 0.88 : 1.0);
 
       const easeInOut = (p) => p * p * (3 - 2 * p);
       const easeOut = (p) => p * (2 - p);
@@ -648,7 +649,7 @@ export default function GlobalCinematicScene({ isProject = false, hasEntered = f
         hasEntered={hasEntered}
       />
 
-      {/* 2. WebGL Canvas: Always active and visible during loading for ComputationalCore3D; transitions to 0 once entered and video is ready */}
+      {/* 2. Secondary Atmospheric & Fallback Layer: Persistent Single WebGL Canvas */}
       <div
         className="global-cinematic-webgl-canvas"
         style={{
@@ -657,9 +658,10 @@ export default function GlobalCinematicScene({ isProject = false, hasEntered = f
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          opacity: (!hasEntered || introPhase !== 'done') ? 1.0 : (videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 0 : 1.0),
-          visibility: (!hasEntered || introPhase !== 'done' || videoEnvState !== VIDEO_ENVIRONMENT_STATES.READY) ? 'visible' : 'hidden',
-          transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s'
+          zIndex: 0,
+          opacity: (!hasEntered || introPhase !== 'done') ? 1.0 : (videoEnvState === VIDEO_ENVIRONMENT_STATES.READY ? 0.35 : 1.0),
+          visibility: 'visible',
+          transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
         <WebGLErrorBoundary fallback={null}>

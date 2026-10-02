@@ -103,31 +103,33 @@ export function measureSceneOffsets() {
   }
 
   const scrollY = window.scrollY || 0;
-  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  const vh = window.innerHeight || 800;
+  const maxScroll = Math.max(vh * 5, document.documentElement.scrollHeight - vh);
 
   const getTop = (id) => {
     const el = document.getElementById(id);
     if (!el) return null;
     const rect = el.getBoundingClientRect();
-    return Math.max(0, rect.top + scrollY);
+    const top = rect.top + scrollY;
+    return top > 0 ? top : null;
   };
 
   const yHero = 0;
-  const yAbout = getTop('about') ?? (maxScroll * 0.14);
-  const yExploring = getTop('exploring') ?? (maxScroll * 0.26);
-  const yWork = getTop('work') ?? (maxScroll * 0.38);
-  const yExp = getTop('experience') ?? (maxScroll * 0.66);
-  const ySkill = getTop('expertise') ?? (maxScroll * 0.78);
-  const yContact = getTop('contact') ?? (maxScroll * 0.89);
+  const yAbout = getTop('about') ?? vh;
+  const yExploring = getTop('exploring') ?? (yAbout + vh * 1.4);
+  const yWork = getTop('work') ?? (yExploring + vh * 1.2);
+  const yExp = getTop('experience') ?? (yWork + vh * 2.5);
+  const ySkill = getTop('expertise') ?? (yExp + vh * 1.5);
+  const yContact = getTop('contact') ?? (ySkill + vh * 1.2);
 
   const offsets = [yHero];
-  offsets[1] = Math.max(offsets[0] + 10, yAbout);
-  offsets[2] = Math.max(offsets[1] + 10, yExploring);
-  offsets[3] = Math.max(offsets[2] + 10, yWork);
-  offsets[4] = Math.max(offsets[3] + 10, yExp);
-  offsets[5] = Math.max(offsets[4] + 10, ySkill);
-  offsets[6] = Math.max(offsets[5] + 10, yContact);
-  offsets[7] = Math.max(offsets[6] + 10, maxScroll);
+  offsets[1] = Math.max(offsets[0] + 50, yAbout);
+  offsets[2] = Math.max(offsets[1] + 50, yExploring);
+  offsets[3] = Math.max(offsets[2] + 50, yWork);
+  offsets[4] = Math.max(offsets[3] + 50, yExp);
+  offsets[5] = Math.max(offsets[4] + 50, ySkill);
+  offsets[6] = Math.max(offsets[5] + 50, yContact);
+  offsets[7] = Math.max(offsets[6] + 50, maxScroll);
 
   return offsets;
 }
@@ -179,6 +181,7 @@ export default function ScrollScrubbedCinematicVideo({
   const videoBRef = useRef(null);
   const activeSlotRef = useRef('A'); // 'A' | 'B'
   const isTransitioningRef = useRef(false);
+  const pendingTargetTimeRef = useRef(null);
   const transitionTimeoutRef = useRef(null);
 
   const activeSectionRef = useRef('hero');
@@ -200,68 +203,81 @@ export default function ScrollScrubbedCinematicVideo({
     }
   }, [onStateChange]);
 
-  // 1. Maintain cached chapter scroll offsets across resizes & DOM updates
+  // 1. Maintain cached chapter scroll offsets across resizes, DOM updates & enter transition
   useEffect(() => {
     const refreshOffsets = () => {
       cachedOffsetsRef.current = measureSceneOffsets();
     };
 
     refreshOffsets();
-    const t1 = setTimeout(refreshOffsets, 400);
-    const t2 = setTimeout(refreshOffsets, 1500);
+    const t1 = setTimeout(refreshOffsets, 150);
+    const t2 = setTimeout(refreshOffsets, 600);
+    const t3 = setTimeout(refreshOffsets, 1500);
 
     window.addEventListener('resize', refreshOffsets, { passive: true });
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
       window.removeEventListener('resize', refreshOffsets);
     };
-  }, []);
+  }, [hasEntered]);
 
-  // 2. Video Preload & Metadata initialization
+  // 2. Video Preload & Metadata initialization (Rock-solid dual-slot readiness tracking)
   useEffect(() => {
     const vA = videoARef.current;
     const vB = videoBRef.current;
     if (!vA || !vB) return;
 
-    let loadedCount = 0;
-    const checkReady = () => {
-      loadedCount++;
-      if (loadedCount >= 2) {
-        updateState(VIDEO_ENVIRONMENT_STATES.READY);
-        vA.currentTime = CINEMATIC_SCENES.hero.start;
-        vB.currentTime = CINEMATIC_SCENES.hero.start;
+    vA.muted = true;
+    vB.muted = true;
 
-        if (hasEntered && !isReducedMotion) {
-          vA.play().catch(() => {});
-        } else {
-          vA.pause();
-          vB.pause();
+    let aReady = vA.readyState >= 1;
+    let bReady = vB.readyState >= 1;
+
+    const handleReady = () => {
+      if (vA.readyState >= 1) aReady = true;
+      if (vB.readyState >= 1) bReady = true;
+
+      // If primary slot A is ready, video system is ready to render
+      if (aReady) {
+        updateState(VIDEO_ENVIRONMENT_STATES.READY);
+        if (vA.currentTime === 0 || vA.currentTime < CINEMATIC_SCENES.hero.start) {
+          vA.currentTime = CINEMATIC_SCENES.hero.start;
+        }
+      }
+      if (bReady) {
+        if (vB.currentTime === 0 || vB.currentTime < CINEMATIC_SCENES.hero.start) {
+          vB.currentTime = CINEMATIC_SCENES.hero.start;
         }
       }
     };
 
-    const handleError = () => {
+    const handleError = (e) => {
+      console.warn('Cinematic video error, falling back to WebGL:', e);
       updateState(VIDEO_ENVIRONMENT_STATES.ERROR);
     };
 
-    vA.addEventListener('loadedmetadata', checkReady);
-    vB.addEventListener('loadedmetadata', checkReady);
+    vA.addEventListener('loadedmetadata', handleReady);
+    vB.addEventListener('loadedmetadata', handleReady);
+    vA.addEventListener('canplay', handleReady);
+    vB.addEventListener('canplay', handleReady);
     vA.addEventListener('error', handleError);
     vB.addEventListener('error', handleError);
 
-    if (vA.readyState >= 1 && vB.readyState >= 1) {
-      checkReady();
-      checkReady();
+    if (vA.readyState >= 1 || vB.readyState >= 1) {
+      handleReady();
     }
 
     return () => {
-      vA.removeEventListener('loadedmetadata', checkReady);
-      vB.removeEventListener('loadedmetadata', checkReady);
+      vA.removeEventListener('loadedmetadata', handleReady);
+      vB.removeEventListener('loadedmetadata', handleReady);
+      vA.removeEventListener('canplay', handleReady);
+      vB.removeEventListener('canplay', handleReady);
       vA.removeEventListener('error', handleError);
       vB.removeEventListener('error', handleError);
     };
-  }, [videoSrc, hasEntered, isReducedMotion, updateState]);
+  }, [videoSrc, updateState]);
 
   // 3. Playback Start on ENTER
   useEffect(() => {
@@ -272,7 +288,11 @@ export default function ScrollScrubbedCinematicVideo({
     if (hasEntered && envState === VIDEO_ENVIRONMENT_STATES.READY) {
       if (!isReducedMotion) {
         const activeVid = activeSlotRef.current === 'A' ? vA : vB;
-        activeVid.play().catch(() => {});
+        if (activeVid.paused) {
+          activeVid.play().catch((err) => {
+            console.warn('Cinematic video play prevented:', err);
+          });
+        }
       }
     } else if (!hasEntered) {
       vA.pause();
@@ -284,9 +304,15 @@ export default function ScrollScrubbedCinematicVideo({
   const executeDualTransition = useCallback((targetTime, durationMs = 260) => {
     const vA = videoARef.current;
     const vB = videoBRef.current;
-    if (!vA || !vB || isTransitioningRef.current) return;
+    if (!vA || !vB) return;
+
+    if (isTransitioningRef.current) {
+      pendingTargetTimeRef.current = targetTime;
+      return;
+    }
 
     isTransitioningRef.current = true;
+    pendingTargetTimeRef.current = null;
     clearTimeout(transitionTimeoutRef.current);
 
     const isCurrentA = activeSlotRef.current === 'A';
@@ -313,14 +339,18 @@ export default function ScrollScrubbedCinematicVideo({
       activeVid.pause();
       activeSlotRef.current = isCurrentA ? 'B' : 'A';
       isTransitioningRef.current = false;
+
+      // Handle queued pending transition if section switched during crossfade
+      if (pendingTargetTimeRef.current !== null) {
+        const nextTime = pendingTargetTimeRef.current;
+        pendingTargetTimeRef.current = null;
+        executeDualTransition(nextTime, durationMs);
+      }
     }, durationMs + 20);
   }, [isReducedMotion]);
 
   // 5. Fast-Scroll Aware Section Transition Controller
   const handleSectionSwitch = useCallback((newSectionId, isDirectSettle = false) => {
-    if (newSectionId === activeSectionRef.current && !isDirectSettle) return;
-
-    activeSectionRef.current = newSectionId;
     const targetScene = CINEMATIC_SCENES[newSectionId] || CINEMATIC_SCENES.hero;
 
     const vA = videoARef.current;
@@ -330,14 +360,30 @@ export default function ScrollScrubbedCinematicVideo({
     const activeVid = activeSlotRef.current === 'A' ? vA : vB;
     const curTime = activeVid.currentTime || 0;
 
+    const isAlreadyWithinRange = curTime >= targetScene.start && curTime <= targetScene.end;
+
+    if (newSectionId === activeSectionRef.current && isAlreadyWithinRange && !isDirectSettle) {
+      return;
+    }
+
+    activeSectionRef.current = newSectionId;
+
     // If current video is already within the section's active range, let it continue naturally!
-    if (curTime >= targetScene.start && curTime <= targetScene.end) {
+    if (isAlreadyWithinRange) {
       return;
     }
 
     // Otherwise, transition smoothly directly to the target scene
     executeDualTransition(targetScene.start, 320);
   }, [executeDualTransition]);
+
+  // 5b. Dual-trigger synchronization: When atmosphereMode shifts to 'about', activate About scene
+  useEffect(() => {
+    if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
+    if (atmosphereMode === 'about') {
+      handleSectionSwitch('about', false);
+    }
+  }, [atmosphereMode, hasEntered, envState, handleSectionSwitch]);
 
   // 6. Scroll Listener with Velocity-Aware Fast Scroll Skipping
   useEffect(() => {
@@ -406,10 +452,13 @@ export default function ScrollScrubbedCinematicVideo({
         activeVid.play().catch(() => {});
       }
 
-      // Seamless Loop Boundary Detection:
-      // When approaching loopEnd (within 0.22s), crossfade seamlessly back to loopStart
-      if (!isTransitioningRef.current && curTime >= (currentScene.loopEnd - 0.22)) {
-        executeDualTransition(currentScene.loopStart, 240);
+      // Seamless Loop Boundary Detection & Out-of-Bounds Recovery:
+      if (!isTransitioningRef.current) {
+        if (curTime >= (currentScene.loopEnd - 0.22)) {
+          executeDualTransition(currentScene.loopStart, 240);
+        } else if (activeSectionRef.current === 'about' && (curTime < (currentScene.start - 0.25) || curTime > (currentScene.end + 0.4))) {
+          executeDualTransition(currentScene.start, 260);
+        }
       }
 
       rafIdRef.current = requestAnimationFrame(loopMonitor);
@@ -462,7 +511,7 @@ export default function ScrollScrubbedCinematicVideo({
         height: '100%',
         overflow: 'hidden',
         pointerEvents: 'none',
-        zIndex: 1,
+        zIndex: hasEntered ? 1 : -1,
         opacity: isVisible ? 1 : 0,
         visibility: isVisible ? 'visible' : 'hidden',
         transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s'

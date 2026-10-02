@@ -10,7 +10,7 @@ export default function TextReveal({
   duration = 0.85
 }) {
   const rootRef = useRef(null);
-  const isInView = useInView(rootRef, { once: true, amount: 'some' });
+  const isInView = useInView(rootRef, { once: false, amount: 0.25 });
   const lineArray = Array.isArray(lines) ? lines : (typeof lines === 'string' ? lines.split('\n') : []);
 
   return (
@@ -19,8 +19,8 @@ export default function TextReveal({
         <span key={idx} className="reveal-line-wrapper">
           <motion.span
             className="reveal-line-content"
-            initial={{ y: '30%', opacity: 0.7 }}
-            animate={isInView ? { y: '0%', opacity: 1 } : { y: '0%', opacity: 0.85 }}
+            initial={{ y: '100%', opacity: 0 }}
+            animate={isInView ? { y: '0%', opacity: 1 } : { y: '100%', opacity: 0 }}
             transition={{
               duration: duration,
               delay: delay + idx * staggerDelay,

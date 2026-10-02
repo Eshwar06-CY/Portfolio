@@ -41,7 +41,7 @@ export default function Experience({
         }
       });
 
-      // 2. Choreographed Scroll Reveals for Experience Items
+      // 2. Choreographed Scroll Reveals for Experience Items (Replayable on scroll down & up)
       const expItems = root.querySelectorAll('.editorial-timeline-item.role-item');
       expItems.forEach((item) => {
         const period = item.querySelector('.milestone-period-text');
@@ -50,45 +50,51 @@ export default function Experience({
         const desc = item.querySelector('.milestone-body-desc');
 
         const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 88%',
-            end: 'top 55%',
-            scrub: 0.5
-          }
+          paused: true,
+          defaults: { ease: 'power3.out' }
         });
 
         if (period) {
           tl.fromTo(period,
-            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -8, autoAlpha: 0.8 },
-            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
+            { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -8, autoAlpha: 0 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.35 },
             0
           );
         }
         if (org) {
           tl.fromTo(org,
-            { x: isDesktop ? -16 : -8, autoAlpha: 0.85 },
-            { x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.34 },
-            0.05
+            { x: isDesktop ? -16 : -8, autoAlpha: 0 },
+            { x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.42 },
+            0.06
           );
         }
         if (role) {
           tl.fromTo(role,
             { yPercent: 100, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.38 },
-            0.10
+            { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.48 },
+            0.12
           );
         }
         if (desc) {
           tl.fromTo(desc,
-            { y: 8, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.35 },
-            0.16
+            { y: 8, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.42 },
+            0.20
           );
         }
+
+        ScrollTrigger.create({
+          trigger: item,
+          start: 'top 88%',
+          end: 'bottom 10%',
+          onEnter: () => tl.restart(),
+          onLeave: () => tl.pause(0),
+          onEnterBack: () => tl.restart(),
+          onLeaveBack: () => tl.pause(0)
+        });
       });
 
-      // 3. Staggered Reveals for Achievements from safe readable baseline
+      // 3. Staggered Reveals for Achievements from safe readable baseline (Replayable)
       const achItems = root.querySelectorAll('.editorial-timeline-item.achievement-item');
       achItems.forEach((item, idx) => {
         const badge = item.querySelector('.milestone-result-badge');
@@ -96,54 +102,65 @@ export default function Experience({
         const desc = item.querySelector('.milestone-body-desc');
 
         const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 90%',
-            end: 'top 65%',
-            scrub: 0.5
-          }
+          paused: true,
+          defaults: { ease: 'power3.out' }
         });
 
         if (badge) {
           tl.fromTo(badge,
-            { scale: 0.92, autoAlpha: 0.8 },
-            { scale: 1.0, autoAlpha: 1, ease: 'power2.out', duration: 0.28 },
+            { scale: 0.92, autoAlpha: 0 },
+            { scale: 1.0, autoAlpha: 1, ease: 'power2.out', duration: 0.35 },
             0
           );
         }
         if (title) {
           tl.fromTo(title,
             { yPercent: 100, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, ease: 'power3.out', duration: 0.36 },
-            0.06
+            { yPercent: 0, autoAlpha: 1, ease: 'power4.out', duration: 0.45 },
+            0.08
           );
         }
         if (desc) {
           tl.fromTo(desc,
-            { y: 6, autoAlpha: 0.85 },
-            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.32 },
-            0.14
+            { y: 6, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.40 },
+            0.16
           );
         }
+
+        ScrollTrigger.create({
+          trigger: item,
+          start: 'top 90%',
+          end: 'bottom 10%',
+          onEnter: () => tl.restart(),
+          onLeave: () => tl.pause(0),
+          onEnterBack: () => tl.restart(),
+          onLeaveBack: () => tl.pause(0)
+        });
       });
 
-      // 4. Quiet, Minimal Reveal for Education from safe readable baseline
+      // 4. Quiet, Minimal Reveal for Education from safe readable baseline (Replayable)
       const eduItem = root.querySelector('.education-timeline-item');
       if (eduItem) {
-        gsap.fromTo(eduItem,
-          { autoAlpha: 0.85, y: 10 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: eduItem,
-              start: 'top 90%',
-              end: 'top 65%',
-              scrub: 0.5
-            }
-          }
+        const eduTl = gsap.timeline({
+          paused: true,
+          defaults: { ease: 'power2.out' }
+        });
+
+        eduTl.fromTo(eduItem,
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: 0.55 }
         );
+
+        ScrollTrigger.create({
+          trigger: eduItem,
+          start: 'top 90%',
+          end: 'bottom 10%',
+          onEnter: () => eduTl.restart(),
+          onLeave: () => eduTl.pause(0),
+          onEnterBack: () => eduTl.restart(),
+          onLeaveBack: () => eduTl.pause(0)
+        });
       }
     }, root);
 
@@ -159,9 +176,9 @@ export default function Experience({
     >
       {/* 1. EXPERIENCE & LEADERSHIP CHAPTER */}
       <motion.div
-        initial={{ opacity: 0.85, y: 10 }}
+        initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 'some' }}
+        viewport={{ once: false, amount: 0.25 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px' }}
       >
@@ -213,9 +230,9 @@ export default function Experience({
       {achievements && achievements.length > 0 && (
         <div className="experience-sub-block" style={{ marginTop: 'clamp(80px, 12vh, 140px)' }}>
           <motion.div
-            initial={{ opacity: 0.85, y: 14 }}
+            initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 'some' }}
+            viewport={{ once: false, amount: 0.25 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{ marginBottom: '20px' }}
           >
@@ -264,9 +281,9 @@ export default function Experience({
       {education && (
         <div className="experience-sub-block" style={{ marginTop: 'clamp(90px, 14vh, 160px)' }}>
           <motion.div
-            initial={{ opacity: 0.85, y: 10 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 'some' }}
+            viewport={{ once: false, amount: 0.25 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{ marginBottom: '20px' }}
           >

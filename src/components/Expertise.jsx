@@ -140,17 +140,14 @@ export default function Expertise({ expertiseData, onCursorChange }) {
         const detail = item.querySelector('.item-expanded-detail');
 
         const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 88%',
-            toggleActions: 'play none none none'
-          }
+          paused: true,
+          defaults: { ease: 'power2.out' }
         });
 
         if (num) {
           tl.fromTo(num,
             { clipPath: 'polygon(0 0, 0% 0, 0% 100%, 0 100%)', x: -6, autoAlpha: 0 },
-            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, ease: 'power2.out', duration: 0.3 },
+            { clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', x: 0, autoAlpha: 1, duration: 0.3 },
             0.02
           );
         }
@@ -171,7 +168,7 @@ export default function Expertise({ expertiseData, onCursorChange }) {
         if (pills.length) {
           tl.fromTo(pills,
             { autoAlpha: 0, y: 5 },
-            { autoAlpha: 1, y: 0, stagger: 0.025, ease: 'power2.out', duration: 0.28 },
+            { autoAlpha: 1, y: 0, stagger: 0.025, duration: 0.28 },
             0.14
           );
         }
@@ -182,6 +179,16 @@ export default function Expertise({ expertiseData, onCursorChange }) {
             0.20
           );
         }
+
+        ScrollTrigger.create({
+          trigger: item,
+          start: 'top 88%',
+          end: 'bottom 10%',
+          onEnter: () => tl.restart(),
+          onLeave: () => tl.pause(0),
+          onEnterBack: () => tl.restart(),
+          onLeaveBack: () => tl.pause(0)
+        });
       });
     }, root);
 
@@ -193,9 +200,9 @@ export default function Expertise({ expertiseData, onCursorChange }) {
       {/* Section Kicker with Capability Matrix Telemetry */}
       <motion.div
         className="capability-matrix-header-box"
-        initial={{ opacity: 0.85, y: 10 }}
+        initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 'some' }}
+        viewport={{ once: false, amount: 0.25 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{ marginBottom: '24px' }}
       >
