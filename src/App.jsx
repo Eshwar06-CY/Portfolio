@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Analytics } from '@vercel/analytics/react';
 
 import { portfolioData } from './data/portfolioData';
 import { useLenis } from './hooks/useLenis';
@@ -321,6 +322,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <MainApp />
+      <Analytics />
     </BrowserRouter>
   );
 }
