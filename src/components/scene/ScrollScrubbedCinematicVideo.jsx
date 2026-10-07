@@ -170,6 +170,15 @@ export function calculateCinematicTimeline(scrollY, cachedOffsets) {
   return Math.max(0, Math.min(1, scrollY / maxOffset));
 }
 
+/**
+ * Centralized media timestamp clamp (Fix 5).
+ * Prevents seeking beyond physical duration (40.0s) and keeps video within safe playable bounds.
+ */
+export function safeMediaTime(targetTime, duration) {
+  const maxSafe = (duration && duration > 1) ? Math.min(39.2, duration - 0.6) : 39.2;
+  return Math.max(0.5, Math.min(maxSafe, Number.isFinite(targetTime) ? targetTime : 0.5));
+}
+
 export default function ScrollScrubbedCinematicVideo({
   videoSrc = '/gemini_generated_video_9efe4bc0.mp4',
   atmosphereMode = 'hero',
@@ -183,6 +192,13 @@ export default function ScrollScrubbedCinematicVideo({
   const isTransitioningRef = useRef(false);
   const pendingTargetTimeRef = useRef(null);
   const transitionTimeoutRef = useRef(null);
+  const transitionSafetyTimerRef = useRef(null);
+  const transitionStartTimeRef = useRef(0);
+  const standbyDecodeTimerRef = useRef(null);
+  const standbySeekedHandlerRef = useRef(null);
+
+  // Per-slot recovery tracking (Fix 1)
+  const retryCountRef = useRef({ A: 0, B: 0 });
 
   const activeSectionRef = useRef('hero');
   const cachedOffsetsRef = useRef(measureSceneOffsets());
@@ -193,7 +209,7 @@ export default function ScrollScrubbedCinematicVideo({
   const settleTimerRef = useRef(null);
 
   // Single persistent temporal transition controller
-  const temporalTransitionRef = useRef(null); // { startTime, targetTime, duration, startTimestamp, lastSeekTime }
+  const temporalTransitionRef = useRef(null); // { startTime, targetTime, duration, startTimestamp, lastSeekTime, pendingSeekTime }
   const temporalRafRef = useRef(null);
 
   const rafIdRef = useRef(null);
@@ -205,6 +221,97 @@ export default function ScrollScrubbedCinematicVideo({
       onStateChange(newState);
     }
   }, [onStateChange]);
+
+  // Centralized playback enforcer (Fix 4 & 5)
+  const ensureVideoPlaying = useCallback((vid) => {
+    if (!vid || isReducedMotion) return;
+    if (vid.paused || vid.ended) {
+      if (vid.ended) {
+        const currentScene = CINEMATIC_SCENES[activeSectionRef.current] || CINEMATIC_SCENES.hero;
+        vid.currentTime = safeMediaTime(currentScene.loopStart, vid.duration);
+      }
+      const playPromise = vid.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Handled gracefully (e.g. AbortError on rapid seek/pause)
+        });
+      }
+    }
+  }, [isReducedMotion]);
+
+  // Asynchronously recovers and resets an errored video slot (Fix 1)
+  const recoverVideoSlot = useCallback((slotId) => {
+    const isA = slotId === 'A';
+    const vid = isA ? videoARef.current : videoBRef.current;
+    if (!vid) return;
+
+    const currentScene = CINEMATIC_SCENES[activeSectionRef.current] || CINEMATIC_SCENES.hero;
+    const safeTime = safeMediaTime(currentScene.loopStart, vid.duration);
+
+    try {
+      vid.pause();
+      vid.currentTime = safeTime;
+      if (vid.error) {
+        vid.load(); // Reset media decoder pipeline
+      }
+      if (activeSlotRef.current === slotId) {
+        ensureVideoPlaying(vid);
+      }
+    } catch (_) {}
+  }, [ensureVideoPlaying]);
+
+  // Resilient Error Recovery with Auto-Healing (Fix 1)
+  const handleVideoError = useCallback((e) => {
+    const vA = videoARef.current;
+    const vB = videoBRef.current;
+    if (!vA || !vB) return;
+
+    const failedSlot = e.target === vA ? 'A' : 'B';
+    const healthySlot = failedSlot === 'A' ? 'B' : 'A';
+    const failedVid = failedSlot === 'A' ? vA : vB;
+    const healthyVid = failedSlot === 'A' ? vB : vA;
+
+    retryCountRef.current[failedSlot] = (retryCountRef.current[failedSlot] || 0) + 1;
+    const retries = retryCountRef.current[failedSlot];
+
+    console.warn(`Cinematic video slot ${failedSlot} error (retry ${retries}/3):`, failedVid.error);
+
+    const isHealthyVidUsable = healthyVid && healthyVid.readyState >= 1 && !healthyVid.error;
+
+    if (isHealthyVidUsable) {
+      // Promote the healthy video slot immediately
+      activeSlotRef.current = healthySlot;
+      healthyVid.style.transition = 'opacity 0.25s ease';
+      healthyVid.style.opacity = '1';
+      healthyVid.style.zIndex = '2';
+      failedVid.style.opacity = '0';
+      failedVid.style.zIndex = '1';
+
+      ensureVideoPlaying(healthyVid);
+
+      // Asynchronously recover failed slot
+      setTimeout(() => {
+        recoverVideoSlot(failedSlot);
+      }, 150);
+      return;
+    }
+
+    // Only enter WebGL fallback if BOTH video slots repeatedly fail
+    if (retryCountRef.current.A >= 3 && retryCountRef.current.B >= 3) {
+      console.warn('Both video slots failed repeatedly. Falling back to WebGL.');
+      updateState(VIDEO_ENVIRONMENT_STATES.ERROR);
+    } else {
+      recoverVideoSlot(failedSlot);
+    }
+  }, [ensureVideoPlaying, recoverVideoSlot, updateState]);
+
+  // Hard media EOF protection (Fix 5)
+  const handleVideoEnded = useCallback((e) => {
+    const vid = e.target;
+    const currentScene = CINEMATIC_SCENES[activeSectionRef.current] || CINEMATIC_SCENES.hero;
+    vid.currentTime = safeMediaTime(currentScene.loopStart, vid.duration);
+    ensureVideoPlaying(vid);
+  }, [ensureVideoPlaying]);
 
   // 1. Maintain cached chapter scroll offsets across resizes, DOM updates & enter transition
   useEffect(() => {
@@ -242,31 +349,33 @@ export default function ScrollScrubbedCinematicVideo({
       if (vA.readyState >= 1) aReady = true;
       if (vB.readyState >= 1) bReady = true;
 
-      // If primary slot A is ready, video system is ready to render
-      if (aReady) {
+      // If either slot is ready, video system is ready to render
+      if (aReady || bReady) {
         updateState(VIDEO_ENVIRONMENT_STATES.READY);
         if (vA.currentTime === 0 || vA.currentTime < CINEMATIC_SCENES.hero.start) {
-          vA.currentTime = CINEMATIC_SCENES.hero.start;
+          vA.currentTime = safeMediaTime(CINEMATIC_SCENES.hero.start, vA.duration);
         }
       }
       if (bReady) {
         if (vB.currentTime === 0 || vB.currentTime < CINEMATIC_SCENES.hero.start) {
-          vB.currentTime = CINEMATIC_SCENES.hero.start;
+          vB.currentTime = safeMediaTime(CINEMATIC_SCENES.hero.start, vB.duration);
         }
       }
     };
 
-    const handleError = (e) => {
-      console.warn('Cinematic video error, falling back to WebGL:', e);
-      updateState(VIDEO_ENVIRONMENT_STATES.ERROR);
-    };
+    const handlePlayingA = () => { retryCountRef.current.A = 0; };
+    const handlePlayingB = () => { retryCountRef.current.B = 0; };
 
     vA.addEventListener('loadedmetadata', handleReady);
     vB.addEventListener('loadedmetadata', handleReady);
     vA.addEventListener('canplay', handleReady);
     vB.addEventListener('canplay', handleReady);
-    vA.addEventListener('error', handleError);
-    vB.addEventListener('error', handleError);
+    vA.addEventListener('playing', handlePlayingA);
+    vB.addEventListener('playing', handlePlayingB);
+    vA.addEventListener('error', handleVideoError);
+    vB.addEventListener('error', handleVideoError);
+    vA.addEventListener('ended', handleVideoEnded);
+    vB.addEventListener('ended', handleVideoEnded);
 
     if (vA.readyState >= 1 || vB.readyState >= 1) {
       handleReady();
@@ -277,10 +386,14 @@ export default function ScrollScrubbedCinematicVideo({
       vB.removeEventListener('loadedmetadata', handleReady);
       vA.removeEventListener('canplay', handleReady);
       vB.removeEventListener('canplay', handleReady);
-      vA.removeEventListener('error', handleError);
-      vB.removeEventListener('error', handleError);
+      vA.removeEventListener('playing', handlePlayingA);
+      vB.removeEventListener('playing', handlePlayingB);
+      vA.removeEventListener('error', handleVideoError);
+      vB.removeEventListener('error', handleVideoError);
+      vA.removeEventListener('ended', handleVideoEnded);
+      vB.removeEventListener('ended', handleVideoEnded);
     };
-  }, [videoSrc, updateState]);
+  }, [videoSrc, updateState, handleVideoError, handleVideoEnded]);
 
   // 3. Playback Start on ENTER
   useEffect(() => {
@@ -291,93 +404,176 @@ export default function ScrollScrubbedCinematicVideo({
     if (hasEntered && envState === VIDEO_ENVIRONMENT_STATES.READY) {
       if (!isReducedMotion) {
         const activeVid = activeSlotRef.current === 'A' ? vA : vB;
-        if (activeVid.paused) {
-          activeVid.play().catch((err) => {
-            console.warn('Cinematic video play prevented:', err);
-          });
-        }
+        ensureVideoPlaying(activeVid);
       }
     } else if (!hasEntered) {
       vA.pause();
       vB.pause();
     }
-  }, [hasEntered, envState, isReducedMotion]);
+  }, [hasEntered, envState, isReducedMotion, ensureVideoPlaying]);
 
-  // 4a. Emergency cancel for dual-slot loop crossfade if user initiates scroll travel
-  const cancelDualTransitionIfActive = useCallback(() => {
-    if (!isTransitioningRef.current) return;
+  // 4a. Hard Deadlock Safety Settle (Fix 4)
+  const settleTransition = useCallback((forcedSlot = null) => {
     clearTimeout(transitionTimeoutRef.current);
-    pendingTargetTimeRef.current = null;
-    isTransitioningRef.current = false;
+    clearTimeout(transitionSafetyTimerRef.current);
+    clearTimeout(standbyDecodeTimerRef.current);
 
     const vA = videoARef.current;
     const vB = videoBRef.current;
-    if (!vA || !vB) return;
-
-    const isCurrentA = activeSlotRef.current === 'A';
-    const activeVid = isCurrentA ? vA : vB;
-    const standbyVid = isCurrentA ? vB : vA;
-
-    activeVid.style.transition = 'none';
-    standbyVid.style.transition = 'none';
-    activeVid.style.opacity = '1';
-    standbyVid.style.opacity = '0';
-    standbyVid.pause();
-    if (!isReducedMotion && activeVid.paused) {
-      activeVid.play().catch(() => {});
+    if (!vA || !vB) {
+      isTransitioningRef.current = false;
+      return;
     }
-  }, [isReducedMotion]);
 
-  // 4b. Dual-Video Crossfade Transition Helper (Strictly for stationary intra-section loop resets)
+    if (standbySeekedHandlerRef.current) {
+      vA.removeEventListener('seeked', standbySeekedHandlerRef.current);
+      vA.removeEventListener('canplay', standbySeekedHandlerRef.current);
+      vB.removeEventListener('seeked', standbySeekedHandlerRef.current);
+      vB.removeEventListener('canplay', standbySeekedHandlerRef.current);
+      standbySeekedHandlerRef.current = null;
+    }
+
+    let targetSlot = forcedSlot;
+    if (!targetSlot) {
+      // Pick healthiest slot (readyState >= 2, no error)
+      if (activeSlotRef.current === 'B' && vB.readyState >= 2 && !vB.error) {
+        targetSlot = 'B';
+      } else if (vA.readyState >= 2 && !vA.error) {
+        targetSlot = 'A';
+      } else {
+        targetSlot = activeSlotRef.current;
+      }
+    }
+
+    activeSlotRef.current = targetSlot;
+    isTransitioningRef.current = false;
+    pendingTargetTimeRef.current = null;
+
+    const activeVid = targetSlot === 'A' ? vA : vB;
+    const standbyVid = targetSlot === 'A' ? vB : vA;
+
+    activeVid.style.transition = 'opacity 0.2s ease';
+    standbyVid.style.transition = 'opacity 0.2s ease';
+    activeVid.style.opacity = '1';
+    activeVid.style.zIndex = '2';
+    standbyVid.style.opacity = '0';
+    standbyVid.style.zIndex = '1';
+
+    standbyVid.pause();
+    ensureVideoPlaying(activeVid);
+  }, [ensureVideoPlaying]);
+
+  // Emergency cancel for dual-slot loop crossfade if user initiates scroll travel
+  const cancelDualTransitionIfActive = useCallback(() => {
+    if (!isTransitioningRef.current) return;
+    settleTransition(activeSlotRef.current);
+  }, [settleTransition]);
+
+  // 4b. Decode-Gated Dual-Video Crossfade Transition Helper (Fix 3 & 4)
   const executeDualTransition = useCallback((targetTime, durationMs = 240) => {
     const vA = videoARef.current;
     const vB = videoBRef.current;
     if (!vA || !vB) return;
 
+    const safeTarget = safeMediaTime(targetTime, vA.duration || vB.duration);
+
     if (isTransitioningRef.current) {
-      pendingTargetTimeRef.current = targetTime;
+      pendingTargetTimeRef.current = safeTarget;
       return;
     }
 
     isTransitioningRef.current = true;
+    transitionStartTimeRef.current = performance.now();
     pendingTargetTimeRef.current = null;
     clearTimeout(transitionTimeoutRef.current);
+    clearTimeout(transitionSafetyTimerRef.current);
+    clearTimeout(standbyDecodeTimerRef.current);
 
     const isCurrentA = activeSlotRef.current === 'A';
     const activeVid = isCurrentA ? vA : vB;
     const standbyVid = isCurrentA ? vB : vA;
+    const standbySlot = isCurrentA ? 'B' : 'A';
+
+    // Hard safety timeout: if anything stalls or drops frame decode, settle within 600ms (Fix 4)
+    transitionSafetyTimerRef.current = setTimeout(() => {
+      console.warn('Dual-slot crossfade reached 600ms safety limit. Auto-settling.');
+      settleTransition(standbySlot);
+    }, 600);
 
     // 1. Prepare standby video at target timestamp
-    standbyVid.currentTime = targetTime;
+    standbyVid.currentTime = safeTarget;
+    ensureVideoPlaying(standbyVid);
 
-    // 2. Start standby video decoding/playback
-    if (!isReducedMotion) {
-      standbyVid.play().catch(() => {});
+    // 2. Decode-Gate (Fix 3): Only start fading out activeVid once standbyVid has decoded its frame
+    let crossfadeInitiated = false;
+    const initiateCrossfade = () => {
+      if (crossfadeInitiated || !isTransitioningRef.current) return;
+      crossfadeInitiated = true;
+      clearTimeout(standbyDecodeTimerRef.current);
+
+      // Bring standby to front and crossfade
+      standbyVid.style.zIndex = '2';
+      activeVid.style.zIndex = '1';
+      standbyVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+      activeVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+
+      standbyVid.style.opacity = '1';
+      activeVid.style.opacity = '0';
+
+      transitionTimeoutRef.current = setTimeout(() => {
+        clearTimeout(transitionSafetyTimerRef.current);
+        activeVid.pause();
+        activeSlotRef.current = standbySlot;
+        isTransitioningRef.current = false;
+
+        // Handle queued pending transition if section switched during crossfade
+        if (pendingTargetTimeRef.current !== null) {
+          const nextTime = pendingTargetTimeRef.current;
+          pendingTargetTimeRef.current = null;
+          executeDualTransition(nextTime, durationMs);
+        }
+      }, durationMs + 20);
+    };
+
+    // If standby already has decoded frame ready, crossfade immediately
+    if (!standbyVid.seeking && standbyVid.readyState >= 2) {
+      initiateCrossfade();
+    } else {
+      const onSeeked = () => {
+        standbyVid.removeEventListener('seeked', onSeeked);
+        standbyVid.removeEventListener('canplay', onSeeked);
+        standbySeekedHandlerRef.current = null;
+        initiateCrossfade();
+      };
+      standbySeekedHandlerRef.current = onSeeked;
+      standbyVid.addEventListener('seeked', onSeeked, { once: true });
+      standbyVid.addEventListener('canplay', onSeeked, { once: true });
+
+      // Bounded decode readiness timeout: 280ms (Fix 3 Requirement 5)
+      // If standby fails to become ready within timeout: ABORT crossfade, recover standby, keep active slot visible!
+      standbyDecodeTimerRef.current = setTimeout(() => {
+        standbyVid.removeEventListener('seeked', onSeeked);
+        standbyVid.removeEventListener('canplay', onSeeked);
+        standbySeekedHandlerRef.current = null;
+        if (crossfadeInitiated || !isTransitioningRef.current) return;
+
+        console.warn(`Standby slot ${standbySlot} decode timeout (280ms). Aborting transition to keep active slot visible.`);
+        clearTimeout(transitionSafetyTimerRef.current);
+        isTransitioningRef.current = false;
+
+        // Invariant: AT LEAST ONE HEALTHY VIDEO SLOT MUST REMAIN VISIBLE AT ALL TIMES
+        activeVid.style.opacity = '1';
+        activeVid.style.zIndex = '2';
+        standbyVid.style.opacity = '0';
+        standbyVid.style.zIndex = '1';
+
+        recoverVideoSlot(standbySlot);
+        ensureVideoPlaying(activeVid);
+      }, 280);
     }
+  }, [ensureVideoPlaying, recoverVideoSlot, settleTransition]);
 
-    // 3. Perform seamless temporal crossfade
-    standbyVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
-    activeVid.style.transition = `opacity ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
-
-    standbyVid.style.opacity = '1';
-    activeVid.style.opacity = '0';
-
-    // 4. Once crossfade finishes, pause previous video and swap slot roles
-    transitionTimeoutRef.current = setTimeout(() => {
-      activeVid.pause();
-      activeSlotRef.current = isCurrentA ? 'B' : 'A';
-      isTransitioningRef.current = false;
-
-      // Handle queued pending transition if section switched during crossfade
-      if (pendingTargetTimeRef.current !== null) {
-        const nextTime = pendingTargetTimeRef.current;
-        pendingTargetTimeRef.current = null;
-        executeDualTransition(nextTime, durationMs);
-      }
-    }, durationMs + 20);
-  }, [isReducedMotion]);
-
-  // 4c. Single Persistent Temporal Interpolation Controller (Camera Travel Between Sections)
+  // 4c. Single Persistent Temporal Interpolation Controller with Seek Gate (Fix 2 & 5)
   const convergeToTemporalTarget = useCallback((targetTime, isFast = false) => {
     const vA = videoARef.current;
     const vB = videoBRef.current;
@@ -387,6 +583,7 @@ export default function ScrollScrubbedCinematicVideo({
     cancelDualTransitionIfActive();
 
     const activeVid = activeSlotRef.current === 'A' ? vA : vB;
+    const safeTarget = safeMediaTime(targetTime, activeVid.duration);
     const curTime = activeVid.currentTime || 0;
 
     // Accessibility: Reduced motion jumps immediately without temporal interpolation
@@ -396,19 +593,15 @@ export default function ScrollScrubbedCinematicVideo({
         temporalRafRef.current = null;
       }
       temporalTransitionRef.current = null;
-      activeVid.currentTime = targetTime;
-      if (activeVid.paused) {
-        activeVid.play().catch(() => {});
-      }
+      activeVid.currentTime = safeTarget;
+      ensureVideoPlaying(activeVid);
       return;
     }
 
-    const delta = Math.abs(targetTime - curTime);
+    const delta = Math.abs(safeTarget - curTime);
     // Minimal movement: already at desired point
     if (delta < 0.25) {
-      if (activeVid.paused) {
-        activeVid.play().catch(() => {});
-      }
+      ensureVideoPlaying(activeVid);
       return;
     }
 
@@ -421,28 +614,28 @@ export default function ScrollScrubbedCinematicVideo({
 
     const now = performance.now();
 
-    // If a transition is already in progress, redirect flight path mid-transition
+    // If a transition is already in progress, redirect flight path mid-transition (Latest target wins)
     if (temporalTransitionRef.current) {
       temporalTransitionRef.current.startTime = curTime;
-      temporalTransitionRef.current.targetTime = targetTime;
+      temporalTransitionRef.current.targetTime = safeTarget;
       temporalTransitionRef.current.duration = duration;
       temporalTransitionRef.current.startTimestamp = now;
       temporalTransitionRef.current.lastSeekTime = 0;
+      temporalTransitionRef.current.pendingSeekTime = safeTarget;
       return;
     }
 
     // Initialize the single active temporal transition controller
     temporalTransitionRef.current = {
       startTime: curTime,
-      targetTime,
+      targetTime: safeTarget,
       duration,
       startTimestamp: now,
-      lastSeekTime: 0
+      lastSeekTime: 0,
+      pendingSeekTime: safeTarget
     };
 
-    if (activeVid.paused) {
-      activeVid.play().catch(() => {});
-    }
+    ensureVideoPlaying(activeVid);
 
     const step = (frameTimestamp) => {
       const trans = temporalTransitionRef.current;
@@ -453,30 +646,44 @@ export default function ScrollScrubbedCinematicVideo({
 
       // Cubic ease-out: responsive initial flight, organic deceleration into target chapter
       const ease = 1 - Math.pow(1 - progress, 3);
-      const interpolatedTime = trans.startTime + (trans.targetTime - trans.startTime) * ease;
+      const interpolatedTime = safeMediaTime(
+        trans.startTime + (trans.targetTime - trans.startTime) * ease,
+        activeVid.duration
+      );
 
-      // Frame pacing: at least ~26ms (~38fps) to give hardware video decoder room to deliver frames cleanly
-      if (progress >= 1 || (frameTimestamp - trans.lastSeekTime) >= 26) {
+      trans.pendingSeekTime = progress >= 1 ? trans.targetTime : interpolatedTime;
+
+      // SEEK GATE (Fix 2): If hardware decoder is currently seeking, DO NOT queue another seek!
+      // Only assign currentTime when !activeVid.seeking and paced at least ~32ms (~30fps)
+      const canSeek = !activeVid.seeking && (progress >= 1 || (frameTimestamp - trans.lastSeekTime) >= 32);
+
+      if (canSeek) {
         trans.lastSeekTime = frameTimestamp;
         try {
-          activeVid.currentTime = progress >= 1 ? trans.targetTime : interpolatedTime;
+          activeVid.currentTime = trans.pendingSeekTime;
         } catch (_) {}
       }
 
-      if (progress < 1) {
+      const isPastDuration = elapsed >= trans.duration;
+      const isSafetyTimeout = elapsed >= (trans.duration + 450);
+
+      if (progress < 1 || (activeVid.seeking && !isSafetyTimeout)) {
         temporalRafRef.current = requestAnimationFrame(step);
       } else {
-        // Transition complete: release controller and ensure natural continuous forward 1x playback
+        // Transition complete: apply final destination target if needed
+        if (Math.abs(activeVid.currentTime - trans.targetTime) > 0.08 && !activeVid.seeking) {
+          try {
+            activeVid.currentTime = trans.targetTime;
+          } catch (_) {}
+        }
         temporalTransitionRef.current = null;
         temporalRafRef.current = null;
-        if (!isReducedMotion) {
-          activeVid.play().catch(() => {});
-        }
+        ensureVideoPlaying(activeVid);
       }
     };
 
     temporalRafRef.current = requestAnimationFrame(step);
-  }, [cancelDualTransitionIfActive, isReducedMotion]);
+  }, [cancelDualTransitionIfActive, ensureVideoPlaying, isReducedMotion]);
 
   // 5. Logical Section Switch Handler
   const handleSectionSwitch = useCallback((newSectionId, isFast = false) => {
@@ -553,7 +760,7 @@ export default function ScrollScrubbedCinematicVideo({
     };
   }, [hasEntered, envState, handleSectionSwitch]);
 
-  // 7. Continuous Playback Monitor & Invisible Seamless Boundary Looping
+  // 7. Continuous Playback Monitor & Invisible Seamless Boundary Looping (Fix 4 & 5)
   useEffect(() => {
     if (!hasEntered || envState !== VIDEO_ENVIRONMENT_STATES.READY) return;
     const vA = videoARef.current;
@@ -565,6 +772,11 @@ export default function ScrollScrubbedCinematicVideo({
     const loopMonitor = () => {
       if (!isRunning) return;
 
+      // Watchdog 1: Check if transition stuck > 600ms (Fix 4)
+      if (isTransitioningRef.current && (performance.now() - transitionStartTimeRef.current) > 600) {
+        settleTransition();
+      }
+
       const isCurrentA = activeSlotRef.current === 'A';
       const activeVid = isCurrentA ? vA : vB;
       const curTime = activeVid.currentTime || 0;
@@ -572,17 +784,21 @@ export default function ScrollScrubbedCinematicVideo({
 
       const isTemporalActive = temporalTransitionRef.current !== null;
 
-      // Rule: When scrolling stops or when stationary, video MUST continue playing forward!
-      if (!isReducedMotion && activeVid.paused && !isTemporalActive && !isTransitioningRef.current) {
-        activeVid.play().catch(() => {});
+      // Watchdog 2: Continuous playback while stationary
+      if (!isReducedMotion && (activeVid.paused || activeVid.ended) && !isTemporalActive && !isTransitioningRef.current) {
+        ensureVideoPlaying(activeVid);
       }
 
       // Seamless Loop Boundary Detection:
-      // Loop seamlessly only when stationary within the section's allocated end boundary
       if (!isTemporalActive && !isTransitioningRef.current) {
-        if (curTime >= (currentScene.loopEnd - 0.22) && curTime <= (currentScene.end + 0.4)) {
+        const safeEnd = (activeVid.duration && activeVid.duration > 1)
+          ? Math.min(currentScene.loopEnd, activeVid.duration - 0.8)
+          : Math.min(currentScene.loopEnd, 39.2);
+        const loopThreshold = safeEnd - 0.22;
+        const maxBoundary = safeMediaTime(currentScene.end + 0.4, activeVid.duration);
+        if (curTime >= loopThreshold && curTime <= maxBoundary) {
           executeDualTransition(currentScene.loopStart, 240);
-        } else if (curTime < (currentScene.start - 0.4) || curTime > (currentScene.end + 0.4)) {
+        } else if (curTime < (currentScene.start - 0.4) || curTime > maxBoundary) {
           convergeToTemporalTarget(currentScene.loopStart, false);
         }
       }
@@ -601,9 +817,36 @@ export default function ScrollScrubbedCinematicVideo({
         cancelAnimationFrame(temporalRafRef.current);
         temporalRafRef.current = null;
       }
+      clearTimeout(transitionTimeoutRef.current);
+      clearTimeout(transitionSafetyTimerRef.current);
+      clearTimeout(standbyDecodeTimerRef.current);
       temporalTransitionRef.current = null;
     };
-  }, [hasEntered, envState, isReducedMotion, executeDualTransition, convergeToTemporalTarget]);
+  }, [hasEntered, envState, isReducedMotion, executeDualTransition, convergeToTemporalTarget, ensureVideoPlaying, settleTransition]);
+
+  // 7b. Window Visibility & Tab Backgrounding Safety (Fix 4)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const vA = videoARef.current;
+        const vB = videoBRef.current;
+        if (!vA || !vB) return;
+
+        // If a transition was suspended during tab backgrounding, auto-settle immediately
+        if (isTransitioningRef.current) {
+          settleTransition();
+        }
+
+        const activeVid = activeSlotRef.current === 'A' ? vA : vB;
+        ensureVideoPlaying(activeVid);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [ensureVideoPlaying, settleTransition]);
 
   // 8. Subtle Project Atmosphere Tint
   const atmosphereGradient = useMemo(() => {
@@ -691,7 +934,7 @@ export default function ScrollScrubbedCinematicVideo({
           opacity: 0,
           transform: 'scale(1.025)',
           transformOrigin: '50% 50%',
-          zIndex: 2
+          zIndex: 1
         }}
       />
 

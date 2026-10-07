@@ -142,7 +142,11 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
-      if (veilRef.current) gsap.set(veilRef.current, { autoAlpha: 0 });
+      if (veilRef.current) {
+        gsap.set(veilRef.current, { autoAlpha: 0 });
+        veilRef.current.style.display = 'none';
+        veilRef.current.style.visibility = 'hidden';
+      }
       if (contentRef.current) gsap.set(contentRef.current, { autoAlpha: 1, y: 0 });
       if (portraitFloatRef.current) {
         gsap.set(portraitFloatRef.current, {
@@ -175,6 +179,8 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
         onComplete: () => {
           if (veilRef.current) {
             veilRef.current.style.display = 'none';
+            veilRef.current.style.visibility = 'hidden';
+            veilRef.current.style.pointerEvents = 'none';
           }
         }
       });
@@ -302,6 +308,10 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
           entryTl.pause(0);
         },
         onEnterBack: () => {
+          if (veilRef.current) {
+            veilRef.current.style.display = 'none';
+            veilRef.current.style.visibility = 'hidden';
+          }
           entryTl.restart();
         }
       });
@@ -484,6 +494,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
       <div
         ref={veilRef}
         className="cinematic-blackout-veil"
+        style={{ pointerEvents: 'none' }}
         aria-hidden="true"
       />
 
