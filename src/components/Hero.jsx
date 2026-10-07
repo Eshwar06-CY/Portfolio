@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
 import HolographicPortrait from './HolographicPortrait';
+import { trackPortraitOpen, trackExploreClick } from '../utils/analytics';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,6 +46,7 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
   }, []);
 
   const handleActivate = useCallback(() => {
+    trackPortraitOpen();
     clearTimers();
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
@@ -637,7 +639,10 @@ export default function Hero({ profile, onScrollExplore, onCursorChange, hasEnte
           <Magnetic strength={0.25}>
             <button
               className="scroll-indicator-button"
-              onClick={onScrollExplore}
+              onClick={() => {
+                trackExploreClick();
+                onScrollExplore?.();
+              }}
               onMouseEnter={() => onCursorChange?.('link')}
               onMouseLeave={() => onCursorChange?.('default')}
               aria-label="Scroll to explore"

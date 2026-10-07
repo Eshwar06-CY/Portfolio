@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { portfolioData } from './data/portfolioData';
 import { useLenis } from './hooks/useLenis';
+import { initGA, trackPageView, trackScrollDepth, resetScrollDepthMilestones } from './utils/analytics';
 import GlobalCinematicScene from './components/scene/GlobalCinematicScene';
 import Navbar from './components/Navbar';
 import CustomCursor from './components/CustomCursor';
@@ -182,6 +183,45 @@ function MainApp() {
       return () => clearTimeout(timer);
     }
   }, [location.pathname, location.state]);
+
+  // ============================================================================
+  // GA4 ANALYTICS - INITIALIZATION, SPA PAGE VIEWS & SCROLL DEPTH MILESTONES
+  // ============================================================================
+  useEffect(() => {
+    initGA();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+    resetScrollDepthMilestones();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isHomeRoute && !hasEntered) return;
+
+    let ticking = false;
+    const handleScrollDepth = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY || window.pageYOffset;
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          if (maxScroll > 100) {
+            const pct = Math.round((scrollY / maxScroll) * 100);
+            if (pct >= 25) trackScrollDepth(25);
+            if (pct >= 50) trackScrollDepth(50);
+            if (pct >= 75) trackScrollDepth(75);
+            if (pct >= 90) trackScrollDepth(90);
+            if (pct >= 99) trackScrollDepth(100);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScrollDepth, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollDepth);
+  }, [isHomeRoute, hasEntered, location.pathname]);
 
   // Handle opening case study from Home
   const handleOpenCaseStudy = (proj) => {

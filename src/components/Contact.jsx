@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
+import { trackEmailClick, trackContactClick, trackGithubClick, trackLinkedinClick } from '../utils/analytics';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -141,6 +142,10 @@ export default function Contact({ contactData, onCursorChange }) {
           <a
             href={`mailto:${emailAddress}?subject=Portfolio%20Inquiry`}
             className="contact-editorial-link contact-email-link"
+            onClick={() => {
+              trackEmailClick('contact');
+              trackContactClick('email', 'contact');
+            }}
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label={`Send email to ${emailAddress}`}
@@ -157,6 +162,10 @@ export default function Contact({ contactData, onCursorChange }) {
             target="_blank"
             rel="noopener noreferrer"
             className="contact-editorial-link"
+            onClick={() => {
+              trackGithubClick('contact');
+              trackContactClick('github', 'contact');
+            }}
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label="Visit Eshwar M on GitHub (opens in a new tab)"
@@ -173,6 +182,10 @@ export default function Contact({ contactData, onCursorChange }) {
             target="_blank"
             rel="noopener noreferrer"
             className="contact-editorial-link"
+            onClick={() => {
+              trackLinkedinClick('contact');
+              trackContactClick('linkedin', 'contact');
+            }}
             onMouseEnter={() => onCursorChange?.('link')}
             onMouseLeave={() => onCursorChange?.('default')}
             aria-label="Visit Eshwar M on LinkedIn (opens in a new tab)"

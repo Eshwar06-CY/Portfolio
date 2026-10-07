@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Magnetic from './Magnetic';
 import { triggerCinematicCut } from './CinematicTransitionVeil';
+import { trackProjectView, trackProjectClick } from '../utils/analytics';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -318,6 +319,9 @@ function DesktopProjectReel({
           scrub: 0.65,
           anticipatePin: 1,
           onEnter: () => {
+            if (projects && projects[0]) {
+              trackProjectView(projects[0].title);
+            }
             const modes = ['p1', 'p2', 'p3', 'p4'];
             if (typeof window !== 'undefined') {
               const curIdx = activeIdxRef.current || 0;
@@ -351,8 +355,15 @@ function DesktopProjectReel({
             // Map progress to discrete active index
             const idx = Math.min(projects.length - 1, Math.floor(p * projects.length));
             if (idx !== activeIdxRef.current) {
+              const prev = activeIdxRef.current;
               activeIdxRef.current = idx;
               setActiveIndex(idx);
+              const step = idx > prev ? 1 : -1;
+              for (let i = prev + step; step > 0 ? i <= idx : i >= idx; i += step) {
+                if (projects && projects[i]) {
+                  trackProjectView(projects[i].title);
+                }
+              }
               if (typeof window !== 'undefined') {
                 const modes = ['p1', 'p2', 'p3', 'p4'];
                 window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'default' }));
@@ -754,6 +765,7 @@ function DesktopProjectReel({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="editorial-action-link"
+                            onClick={() => trackProjectClick(project.title, 'github')}
                             onMouseEnter={() => onCursorChange?.('link')}
                             onMouseLeave={() => onCursorChange?.('default')}
                             aria-label={`Open ${project.title} on GitHub in a new tab`}
@@ -769,7 +781,10 @@ function DesktopProjectReel({
                           <button
                             type="button"
                             className="editorial-secondary-link"
-                            onClick={() => handleSelectProject(project, idx)}
+                            onClick={() => {
+                              trackProjectClick(project.title, 'case_study');
+                              handleSelectProject(project, idx);
+                            }}
                             onMouseEnter={() => onCursorChange?.('project')}
                             onMouseLeave={() => onCursorChange?.('default')}
                             aria-label={`Read ${project.title} Case Study`}
@@ -829,6 +844,7 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
               initial={{ opacity: 0.9, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               onViewportEnter={() => {
+                trackProjectView(project.title);
                 const modes = ['p1', 'p2', 'p3', 'p4'];
                 if (typeof window !== 'undefined') {
                   window.dispatchEvent(new CustomEvent('atmosphere-mode', { detail: modes[idx] || 'p1' }));
@@ -898,6 +914,7 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="editorial-action-link"
+                    onClick={() => trackProjectClick(project.title, 'github')}
                     aria-label={`Open ${project.title} on GitHub in a new tab`}
                   >
                     <span className="action-text">VIEW PROJECT</span>
@@ -911,7 +928,10 @@ function MobileProjectReel({ projects, onOpenCaseStudy, onCursorChange }) {
                   <button
                     type="button"
                     className="editorial-secondary-link"
-                    onClick={() => handleMobileSelect(project)}
+                    onClick={() => {
+                      trackProjectClick(project.title, 'case_study');
+                      handleMobileSelect(project);
+                    }}
                     aria-label={`Read ${project.title} Case Study`}
                   >
                     <span>CASE STUDY</span>

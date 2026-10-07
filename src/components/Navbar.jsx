@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Magnetic from './Magnetic';
 import { triggerCinematicCut } from './CinematicTransitionVeil';
+import { trackEmailClick, trackContactClick } from '../utils/analytics';
 
 export default function Navbar({ profile, onNavigate, onCursorChange }) {
   const [scrolled, setScrolled] = useState(false);
@@ -159,7 +160,14 @@ export default function Navbar({ profile, onNavigate, onCursorChange }) {
             <div className="mobile-editorial-footer">
               <span className="mobile-footer-tag">MYSURU, KARNATAKA</span>
               {profile.email && (
-                <a href={`mailto:${profile.email}`} className="mobile-footer-email">
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="mobile-footer-email"
+                  onClick={() => {
+                    trackEmailClick('mobile_menu');
+                    trackContactClick('email', 'mobile_menu');
+                  }}
+                >
                   {profile.email}
                 </a>
               )}
